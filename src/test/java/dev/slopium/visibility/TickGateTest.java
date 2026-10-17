@@ -4,6 +4,18 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TickGateTest {
+    @Test void resetHiddenRestartsGraceAndPreservesPacketWake() {
+        var gate = new TickGate();
+        gate.skip(0, true, 20, 4, 0);
+        assertTrue(gate.skip(21, true, 20, 4, 0));
+        gate.resetHidden();
+        assertFalse(gate.skip(22, true, 20, 4, 0));
+        assertFalse(gate.skip(40, true, 20, 4, 0));
+        gate.wake(50, 100);
+        gate.resetHidden();
+        assertFalse(gate.skip(99, true, 20, 4, 0));
+        assertFalse(gate.skip(149, true, 20, 4, 0));
+    }
     @Test void grantsInitialGraceAndStaggersHiddenTicks() {
         var gate = new TickGate();
         for (int t = 0; t < 20; t++) assertFalse(gate.skip(t, true, 20, 4, 0));

@@ -109,6 +109,7 @@ tasks.named('processResources') {
 }
 tasks.named('test') { useJUnitPlatform() }
 tasks.named('jar') {
+    from('LICENSE') { rename { 'LICENSE-slopium' } }
     manifest { attributes 'Implementation-Title': 'Slopium', 'Implementation-Version': project.version }
 }
 

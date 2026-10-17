@@ -1,0 +1,21 @@
+{
+  "file": "slopium-neoforge-1.21.1-0.1.0-alpha.2.jar",
+  "bytes": 41880,
+  "sha256": "cbd0e855ea9631d3725771d75010e01a3209b91e30cd3cdaf4d36fb071e0343e",
+  "classes": 25,
+  "bundled_dependencies": false,
+  "test_mod_included": false,
+  "unit_tests": {
+    "passed": 9,
+    "failed": 0
+  },
+  "smoke_profiles_passed": [
+    "full",
+    "minimal"
+  ],
+  "logs": [
+    "build/alpha2-final-full.log",
+    "build/alpha2-minimal.log"
+  ],
+  "server_scene_fps_measured": false
+}

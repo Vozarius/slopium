@@ -5,6 +5,8 @@ public final class TickGate {
     private long hiddenSince = Long.MIN_VALUE;
     private long wakeUntil = Long.MIN_VALUE;
 
+    public void resetHidden() { hiddenSince = Long.MIN_VALUE; }
+
     public void wake(long tick, int grace) {
         hiddenSince = Long.MIN_VALUE;
         wakeUntil = tick + grace;

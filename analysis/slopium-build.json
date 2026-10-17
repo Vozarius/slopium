@@ -1,0 +1,8 @@
+{
+  "file": "slopium-neoforge-1.21.1-0.1.0-alpha.1.jar",
+  "bytes": 40379,
+  "sha256": "ae658bdc55af4be5742060a31e93d02738103d63a6357bc1eda4294f34227292",
+  "classes": 24,
+  "bundled_dependencies": false,
+  "test_mod_included": false
+}

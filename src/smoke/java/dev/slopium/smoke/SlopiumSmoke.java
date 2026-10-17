@@ -54,7 +54,8 @@ public final class SlopiumSmoke {
 
     private static void validateOptionalMixins() {
         try {
-            Class.forName("net.minecraft.world.level.chunk.LevelChunk$BoundTickingBlockEntity");
+            SmokeTickChecks.run(Class.forName("net.minecraft.world.level.chunk.LevelChunk$BoundTickingBlockEntity"));
+            SmokeBreakingChecks.run();
             if (Slopium.loaded("sodiumdynamiclights")) {
                 Object lights = Class.forName("toni.sodiumdynamiclights.SodiumDynamicLights").getMethod("get").invoke(null);
                 if (!(lights instanceof LightIndexControl)) throw new AssertionError("Light mixin missing");

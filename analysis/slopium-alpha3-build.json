@@ -1,0 +1,22 @@
+{
+  "file": "slopium-neoforge-1.21.1-0.1.0-alpha.3.jar",
+  "bytes": 45560,
+  "sha256": "3617b2703ceb4c3292e9d67aca0454fa54d983aba7b331f8983b38fc6b3799f3",
+  "classes": 27,
+  "bundled_dependencies": false,
+  "test_mod_included": false,
+  "unit_tests": {
+    "passed": 12,
+    "failed": 0
+  },
+  "smoke_profiles_passed": [
+    "full",
+    "minimal"
+  ],
+  "server_scene_fps_measured": false,
+  "logs": [
+    "build/alpha3-final-full.log",
+    "build/alpha3-minimal.log",
+    "build/alpha3-release.log"
+  ]
+}

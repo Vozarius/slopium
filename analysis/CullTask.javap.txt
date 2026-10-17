@@ -1,0 +1,584 @@
+Compiled from "CullTask.java"
+public class dev.tr7zw.entityculling.CullTask implements java.lang.Runnable {
+  public boolean requestCull;
+
+  public boolean disableEntityCulling;
+
+  public boolean disableBlockEntityCulling;
+
+  private final com.logisticscraft.occlusionculling.OcclusionCullingInstance culling;
+
+  private final net.minecraft.client.Minecraft client;
+
+  private final int sleepDelay;
+
+  private final int hitboxLimit;
+
+  private final java.util.Set<net.minecraft.world.level.block.entity.BlockEntityType<?>> blockEntityWhitelist;
+
+  private final java.util.Set<net.minecraft.world.entity.EntityType<?>> entityWhistelist;
+
+  public double lastTime;
+
+  private com.logisticscraft.occlusionculling.util.Vec3d lastPos;
+
+  private com.logisticscraft.occlusionculling.util.Vec3d aabbMin;
+
+  private com.logisticscraft.occlusionculling.util.Vec3d aabbMax;
+
+  private boolean ingame;
+
+  private java.util.List<net.minecraft.world.entity.Entity> entitiesForRendering;
+
+  private java.util.Map<net.minecraft.core.BlockPos, net.minecraft.world.level.block.entity.BlockEntity> blockEntities;
+
+  private net.minecraft.world.phys.Vec3 cameraMC;
+
+  public dev.tr7zw.entityculling.CullTask(com.logisticscraft.occlusionculling.OcclusionCullingInstance, java.util.Set<net.minecraft.world.level.block.entity.BlockEntityType<?>>, java.util.Set<net.minecraft.world.entity.EntityType<?>>);
+    Code:
+       0: aload_0
+       1: invokespecial #49                 // Method java/lang/Object."<init>":()V
+       4: aload_0
+       5: iconst_0
+       6: putfield      #51                 // Field requestCull:Z
+       9: aload_0
+      10: iconst_0
+      11: putfield      #53                 // Field disableEntityCulling:Z
+      14: aload_0
+      15: iconst_0
+      16: putfield      #55                 // Field disableBlockEntityCulling:Z
+      19: aload_0
+      20: invokestatic  #61                 // Method net/minecraft/client/Minecraft.getInstance:()Lnet/minecraft/client/Minecraft;
+      23: putfield      #63                 // Field client:Lnet/minecraft/client/Minecraft;
+      26: aload_0
+      27: getstatic     #69                 // Field dev/tr7zw/entityculling/EntityCullingModBase.instance:Ldev/tr7zw/entityculling/EntityCullingModBase;
+      30: getfield      #73                 // Field dev/tr7zw/entityculling/EntityCullingModBase.config:Ldev/tr7zw/entityculling/versionless/Config;
+      33: getfield      #77                 // Field dev/tr7zw/entityculling/versionless/Config.sleepDelay:I
+      36: putfield      #78                 // Field sleepDelay:I
+      39: aload_0
+      40: getstatic     #69                 // Field dev/tr7zw/entityculling/EntityCullingModBase.instance:Ldev/tr7zw/entityculling/EntityCullingModBase;
+      43: getfield      #73                 // Field dev/tr7zw/entityculling/EntityCullingModBase.config:Ldev/tr7zw/entityculling/versionless/Config;
+      46: getfield      #80                 // Field dev/tr7zw/entityculling/versionless/Config.hitboxLimit:I
+      49: putfield      #81                 // Field hitboxLimit:I
+      52: aload_0
+      53: dconst_0
+      54: putfield      #83                 // Field lastTime:D
+      57: aload_0
+      58: new           #85                 // class com/logisticscraft/occlusionculling/util/Vec3d
+      61: dup
+      62: dconst_0
+      63: dconst_0
+      64: dconst_0
+      65: invokespecial #88                 // Method com/logisticscraft/occlusionculling/util/Vec3d."<init>":(DDD)V
+      68: putfield      #90                 // Field lastPos:Lcom/logisticscraft/occlusionculling/util/Vec3d;
+      71: aload_0
+      72: new           #85                 // class com/logisticscraft/occlusionculling/util/Vec3d
+      75: dup
+      76: dconst_0
+      77: dconst_0
+      78: dconst_0
+      79: invokespecial #88                 // Method com/logisticscraft/occlusionculling/util/Vec3d."<init>":(DDD)V
+      82: putfield      #92                 // Field aabbMin:Lcom/logisticscraft/occlusionculling/util/Vec3d;
+      85: aload_0
+      86: new           #85                 // class com/logisticscraft/occlusionculling/util/Vec3d
+      89: dup
+      90: dconst_0
+      91: dconst_0
+      92: dconst_0
+      93: invokespecial #88                 // Method com/logisticscraft/occlusionculling/util/Vec3d."<init>":(DDD)V
+      96: putfield      #94                 // Field aabbMax:Lcom/logisticscraft/occlusionculling/util/Vec3d;
+      99: aload_0
+     100: iconst_0
+     101: putfield      #96                 // Field ingame:Z
+     104: aload_0
+     105: new           #98                 // class java/util/ArrayList
+     108: dup
+     109: invokespecial #99                 // Method java/util/ArrayList."<init>":()V
+     112: putfield      #101                // Field entitiesForRendering:Ljava/util/List;
+     115: aload_0
+     116: new           #103                // class java/util/HashMap
+     119: dup
+     120: invokespecial #104                // Method java/util/HashMap."<init>":()V
+     123: putfield      #106                // Field blockEntities:Ljava/util/Map;
+     126: aload_0
+     127: new           #108                // class net/minecraft/world/phys/Vec3
+     130: dup
+     131: dconst_0
+     132: dconst_0
+     133: dconst_0
+     134: invokespecial #109                // Method net/minecraft/world/phys/Vec3."<init>":(DDD)V
+     137: putfield      #111                // Field cameraMC:Lnet/minecraft/world/phys/Vec3;
+     140: aload_0
+     141: aload_1
+     142: putfield      #113                // Field culling:Lcom/logisticscraft/occlusionculling/OcclusionCullingInstance;
+     145: aload_0
+     146: aload_2
+     147: putfield      #115                // Field blockEntityWhitelist:Ljava/util/Set;
+     150: aload_0
+     151: aload_3
+     152: putfield      #117                // Field entityWhistelist:Ljava/util/Set;
+     155: return
+
+  public void run();
+    Code:
+       0: invokestatic  #61                 // Method net/minecraft/client/Minecraft.getInstance:()Lnet/minecraft/client/Minecraft;
+       3: invokevirtual #126                // Method net/minecraft/client/Minecraft.isRunning:()Z
+       6: ifeq          191
+       9: aload_0
+      10: getfield      #78                 // Field sleepDelay:I
+      13: i2l
+      14: invokestatic  #132                // Method java/lang/Thread.sleep:(J)V
+      17: getstatic     #137                // Field dev/tr7zw/entityculling/versionless/EntityCullingVersionlessBase.enabled:Z
+      20: ifeq          175
+      23: aload_0
+      24: getfield      #96                 // Field ingame:Z
+      27: ifeq          175
+      30: aload_0
+      31: getfield      #51                 // Field requestCull:Z
+      34: ifne          91
+      37: aload_0
+      38: getfield      #111                // Field cameraMC:Lnet/minecraft/world/phys/Vec3;
+      41: getfield      #140                // Field net/minecraft/world/phys/Vec3.x:D
+      44: aload_0
+      45: getfield      #90                 // Field lastPos:Lcom/logisticscraft/occlusionculling/util/Vec3d;
+      48: getfield      #141                // Field com/logisticscraft/occlusionculling/util/Vec3d.x:D
+      51: dcmpl
+      52: ifne          91
+      55: aload_0
+      56: getfield      #111                // Field cameraMC:Lnet/minecraft/world/phys/Vec3;
+      59: getfield      #144                // Field net/minecraft/world/phys/Vec3.y:D
+      62: aload_0
+      63: getfield      #90                 // Field lastPos:Lcom/logisticscraft/occlusionculling/util/Vec3d;
+      66: getfield      #145                // Field com/logisticscraft/occlusionculling/util/Vec3d.y:D
+      69: dcmpl
+      70: ifne          91
+      73: aload_0
+      74: getfield      #111                // Field cameraMC:Lnet/minecraft/world/phys/Vec3;
+      77: getfield      #148                // Field net/minecraft/world/phys/Vec3.z:D
+      80: aload_0
+      81: getfield      #90                 // Field lastPos:Lcom/logisticscraft/occlusionculling/util/Vec3d;
+      84: getfield      #149                // Field com/logisticscraft/occlusionculling/util/Vec3d.z:D
+      87: dcmpl
+      88: ifeq          180
+      91: invokestatic  #155                // Method java/lang/System.nanoTime:()J
+      94: lstore_1
+      95: aload_0
+      96: iconst_0
+      97: putfield      #51                 // Field requestCull:Z
+     100: aload_0
+     101: getfield      #90                 // Field lastPos:Lcom/logisticscraft/occlusionculling/util/Vec3d;
+     104: aload_0
+     105: getfield      #111                // Field cameraMC:Lnet/minecraft/world/phys/Vec3;
+     108: getfield      #140                // Field net/minecraft/world/phys/Vec3.x:D
+     111: aload_0
+     112: getfield      #111                // Field cameraMC:Lnet/minecraft/world/phys/Vec3;
+     115: getfield      #144                // Field net/minecraft/world/phys/Vec3.y:D
+     118: aload_0
+     119: getfield      #111                // Field cameraMC:Lnet/minecraft/world/phys/Vec3;
+     122: getfield      #148                // Field net/minecraft/world/phys/Vec3.z:D
+     125: invokevirtual #158                // Method com/logisticscraft/occlusionculling/util/Vec3d.set:(DDD)V
+     128: aload_0
+     129: getfield      #90                 // Field lastPos:Lcom/logisticscraft/occlusionculling/util/Vec3d;
+     132: astore_3
+     133: aload_0
+     134: getfield      #113                // Field culling:Lcom/logisticscraft/occlusionculling/OcclusionCullingInstance;
+     137: invokevirtual #163                // Method com/logisticscraft/occlusionculling/OcclusionCullingInstance.resetCache:()V
+     140: aload_0
+     141: aload_0
+     142: getfield      #111                // Field cameraMC:Lnet/minecraft/world/phys/Vec3;
+     145: aload_3
+     146: invokevirtual #167                // Method cullBlockEntities:(Lnet/minecraft/world/phys/Vec3;Lcom/logisticscraft/occlusionculling/util/Vec3d;)V
+     149: aload_0
+     150: aload_0
+     151: getfield      #111                // Field cameraMC:Lnet/minecraft/world/phys/Vec3;
+     154: aload_3
+     155: invokevirtual #170                // Method cullEntities:(Lnet/minecraft/world/phys/Vec3;Lcom/logisticscraft/occlusionculling/util/Vec3d;)V
+     158: aload_0
+     159: invokestatic  #155                // Method java/lang/System.nanoTime:()J
+     162: lload_1
+     163: lsub
+     164: l2d
+     165: ldc2_w        #171                // double 1000000.0d
+     168: ddiv
+     169: putfield      #83                 // Field lastTime:D
+     172: goto          180
+     175: aload_0
+     176: dconst_0
+     177: putfield      #83                 // Field lastTime:D
+     180: goto          0
+     183: astore_1
+     184: aload_1
+     185: invokevirtual #175                // Method java/lang/Exception.printStackTrace:()V
+     188: goto          0
+     191: getstatic     #179                // Field java/lang/System.out:Ljava/io/PrintStream;
+     194: ldc           #181                // String Shutting down culling task!
+     196: invokevirtual #187                // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+     199: return
+    Exception table:
+       from    to  target type
+           9   180   183   Class java/lang/Exception
+
+  private void cullEntities(net.minecraft.world.phys.Vec3, com.logisticscraft.occlusionculling.util.Vec3d);
+    Code:
+       0: aload_0
+       1: getfield      #53                 // Field disableEntityCulling:Z
+       4: ifeq          8
+       7: return
+       8: aconst_null
+       9: astore_3
+      10: aload_0
+      11: getfield      #101                // Field entitiesForRendering:Ljava/util/List;
+      14: invokeinterface #198,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+      19: astore        4
+      21: aload         4
+      23: invokeinterface #205,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      28: ifeq          306
+      31: aload         4
+      33: invokeinterface #209,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      38: checkcast     #200                // class net/minecraft/world/entity/Entity
+      41: astore_3
+      42: aload_3
+      43: ifnonnull     49
+      46: goto          306
+      49: aload_3
+      50: instanceof    #211                // class dev/tr7zw/entityculling/versionless/access/Cullable
+      53: ifne          59
+      56: goto          21
+      59: aload_0
+      60: getfield      #117                // Field entityWhistelist:Ljava/util/Set;
+      63: aload_3
+      64: invokevirtual #215                // Method net/minecraft/world/entity/Entity.getType:()Lnet/minecraft/world/entity/EntityType;
+      67: invokeinterface #221,  2          // InterfaceMethod java/util/Set.contains:(Ljava/lang/Object;)Z
+      72: ifeq          78
+      75: goto          21
+      78: getstatic     #69                 // Field dev/tr7zw/entityculling/EntityCullingModBase.instance:Ldev/tr7zw/entityculling/EntityCullingModBase;
+      81: aload_3
+      82: invokevirtual #225                // Method dev/tr7zw/entityculling/EntityCullingModBase.isDynamicWhitelisted:(Lnet/minecraft/world/entity/Entity;)Z
+      85: ifeq          91
+      88: goto          21
+      91: aload_3
+      92: checkcast     #211                // class dev/tr7zw/entityculling/versionless/access/Cullable
+      95: astore        5
+      97: aload         5
+      99: invokeinterface #228,  1          // InterfaceMethod dev/tr7zw/entityculling/versionless/access/Cullable.isForcedVisible:()Z
+     104: ifne          303
+     107: invokestatic  #61                 // Method net/minecraft/client/Minecraft.getInstance:()Lnet/minecraft/client/Minecraft;
+     110: aload_3
+     111: invokevirtual #231                // Method net/minecraft/client/Minecraft.shouldEntityAppearGlowing:(Lnet/minecraft/world/entity/Entity;)Z
+     114: ifeq          128
+     117: aload         5
+     119: iconst_0
+     120: invokeinterface #235,  2          // InterfaceMethod dev/tr7zw/entityculling/versionless/access/Cullable.setCulled:(Z)V
+     125: goto          21
+     128: aload_3
+     129: invokevirtual #239                // Method net/minecraft/world/entity/Entity.position:()Lnet/minecraft/world/phys/Vec3;
+     132: aload_1
+     133: getstatic     #69                 // Field dev/tr7zw/entityculling/EntityCullingModBase.instance:Ldev/tr7zw/entityculling/EntityCullingModBase;
+     136: getfield      #73                 // Field dev/tr7zw/entityculling/EntityCullingModBase.config:Ldev/tr7zw/entityculling/versionless/Config;
+     139: getfield      #242                // Field dev/tr7zw/entityculling/versionless/Config.tracingDistance:I
+     142: i2d
+     143: invokevirtual #246                // Method net/minecraft/world/phys/Vec3.closerThan:(Lnet/minecraft/core/Position;D)Z
+     146: ifne          160
+     149: aload         5
+     151: iconst_0
+     152: invokeinterface #235,  2          // InterfaceMethod dev/tr7zw/entityculling/versionless/access/Cullable.setCulled:(Z)V
+     157: goto          21
+     160: aload_3
+     161: invokestatic  #252                // Method dev/tr7zw/entityculling/NMSCullingHelper.getCullingBox:(Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/phys/AABB;
+     164: astore        6
+     166: aload         6
+     168: ifnull        213
+     171: aload         6
+     173: invokevirtual #258                // Method net/minecraft/world/phys/AABB.getXsize:()D
+     176: aload_0
+     177: getfield      #81                 // Field hitboxLimit:I
+     180: i2d
+     181: dcmpl
+     182: ifgt          213
+     185: aload         6
+     187: invokevirtual #261                // Method net/minecraft/world/phys/AABB.getYsize:()D
+     190: aload_0
+     191: getfield      #81                 // Field hitboxLimit:I
+     194: i2d
+     195: dcmpl
+     196: ifgt          213
+     199: aload         6
+     201: invokevirtual #264                // Method net/minecraft/world/phys/AABB.getZsize:()D
+     204: aload_0
+     205: getfield      #81                 // Field hitboxLimit:I
+     208: i2d
+     209: dcmpl
+     210: ifle          224
+     213: aload         5
+     215: iconst_0
+     216: invokeinterface #235,  2          // InterfaceMethod dev/tr7zw/entityculling/versionless/access/Cullable.setCulled:(Z)V
+     221: goto          21
+     224: aload_0
+     225: getfield      #92                 // Field aabbMin:Lcom/logisticscraft/occlusionculling/util/Vec3d;
+     228: aload         6
+     230: getfield      #267                // Field net/minecraft/world/phys/AABB.minX:D
+     233: aload         6
+     235: getfield      #270                // Field net/minecraft/world/phys/AABB.minY:D
+     238: aload         6
+     240: getfield      #273                // Field net/minecraft/world/phys/AABB.minZ:D
+     243: invokevirtual #158                // Method com/logisticscraft/occlusionculling/util/Vec3d.set:(DDD)V
+     246: aload_0
+     247: getfield      #94                 // Field aabbMax:Lcom/logisticscraft/occlusionculling/util/Vec3d;
+     250: aload         6
+     252: getfield      #276                // Field net/minecraft/world/phys/AABB.maxX:D
+     255: aload         6
+     257: getfield      #279                // Field net/minecraft/world/phys/AABB.maxY:D
+     260: aload         6
+     262: getfield      #282                // Field net/minecraft/world/phys/AABB.maxZ:D
+     265: invokevirtual #158                // Method com/logisticscraft/occlusionculling/util/Vec3d.set:(DDD)V
+     268: aload_0
+     269: getfield      #113                // Field culling:Lcom/logisticscraft/occlusionculling/OcclusionCullingInstance;
+     272: aload_0
+     273: getfield      #92                 // Field aabbMin:Lcom/logisticscraft/occlusionculling/util/Vec3d;
+     276: aload_0
+     277: getfield      #94                 // Field aabbMax:Lcom/logisticscraft/occlusionculling/util/Vec3d;
+     280: aload_2
+     281: invokevirtual #286                // Method com/logisticscraft/occlusionculling/OcclusionCullingInstance.isAABBVisible:(Lcom/logisticscraft/occlusionculling/util/Vec3d;Lcom/logisticscraft/occlusionculling/util/Vec3d;Lcom/logisticscraft/occlusionculling/util/Vec3d;)Z
+     284: istore        7
+     286: aload         5
+     288: iload         7
+     290: ifne          297
+     293: iconst_1
+     294: goto          298
+     297: iconst_0
+     298: invokeinterface #235,  2          // InterfaceMethod dev/tr7zw/entityculling/versionless/access/Cullable.setCulled:(Z)V
+     303: goto          21
+     306: return
+
+  private void cullBlockEntities(net.minecraft.world.phys.Vec3, com.logisticscraft.occlusionculling.util.Vec3d);
+    Code:
+       0: aload_0
+       1: getfield      #55                 // Field disableBlockEntityCulling:Z
+       4: ifeq          8
+       7: return
+       8: aload_0
+       9: getfield      #106                // Field blockEntities:Ljava/util/Map;
+      12: invokeinterface #304,  1          // InterfaceMethod java/util/Map.entrySet:()Ljava/util/Set;
+      17: invokeinterface #305,  1          // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+      22: astore_3
+      23: aload_3
+      24: invokeinterface #205,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      29: ifeq          336
+      32: aload_3
+      33: invokeinterface #209,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      38: checkcast     #9                  // class java/util/Map$Entry
+      41: astore        4
+      43: goto          51
+      46: astore        5
+      48: goto          336
+      51: aload         4
+      53: ifnonnull     59
+      56: goto          336
+      59: aload_0
+      60: getfield      #115                // Field blockEntityWhitelist:Ljava/util/Set;
+      63: aload         4
+      65: invokeinterface #310,  1          // InterfaceMethod java/util/Map$Entry.getValue:()Ljava/lang/Object;
+      70: checkcast     #312                // class net/minecraft/world/level/block/entity/BlockEntity
+      73: invokevirtual #315                // Method net/minecraft/world/level/block/entity/BlockEntity.getType:()Lnet/minecraft/world/level/block/entity/BlockEntityType;
+      76: invokeinterface #221,  2          // InterfaceMethod java/util/Set.contains:(Ljava/lang/Object;)Z
+      81: ifeq          87
+      84: goto          23
+      87: aload_0
+      88: getfield      #63                 // Field client:Lnet/minecraft/client/Minecraft;
+      91: invokevirtual #319                // Method net/minecraft/client/Minecraft.getBlockEntityRenderDispatcher:()Lnet/minecraft/client/renderer/blockentity/BlockEntityRenderDispatcher;
+      94: aload         4
+      96: invokeinterface #310,  1          // InterfaceMethod java/util/Map$Entry.getValue:()Ljava/lang/Object;
+     101: checkcast     #312                // class net/minecraft/world/level/block/entity/BlockEntity
+     104: invokevirtual #325                // Method net/minecraft/client/renderer/blockentity/BlockEntityRenderDispatcher.getRenderer:(Lnet/minecraft/world/level/block/entity/BlockEntity;)Lnet/minecraft/client/renderer/blockentity/BlockEntityRenderer;
+     107: ifnonnull     113
+     110: goto          23
+     113: getstatic     #69                 // Field dev/tr7zw/entityculling/EntityCullingModBase.instance:Ldev/tr7zw/entityculling/EntityCullingModBase;
+     116: aload         4
+     118: invokeinterface #310,  1          // InterfaceMethod java/util/Map$Entry.getValue:()Ljava/lang/Object;
+     123: checkcast     #312                // class net/minecraft/world/level/block/entity/BlockEntity
+     126: invokevirtual #328                // Method dev/tr7zw/entityculling/EntityCullingModBase.isDynamicWhitelisted:(Lnet/minecraft/world/level/block/entity/BlockEntity;)Z
+     129: ifeq          135
+     132: goto          23
+     135: aload         4
+     137: invokeinterface #310,  1          // InterfaceMethod java/util/Map$Entry.getValue:()Ljava/lang/Object;
+     142: checkcast     #211                // class dev/tr7zw/entityculling/versionless/access/Cullable
+     145: astore        5
+     147: aload         5
+     149: invokeinterface #228,  1          // InterfaceMethod dev/tr7zw/entityculling/versionless/access/Cullable.isForcedVisible:()Z
+     154: ifne          333
+     157: aload         4
+     159: invokeinterface #331,  1          // InterfaceMethod java/util/Map$Entry.getKey:()Ljava/lang/Object;
+     164: checkcast     #333                // class net/minecraft/core/BlockPos
+     167: astore        6
+     169: aload         6
+     171: aload_1
+     172: ldc2_w        #334                // double 64.0d
+     175: invokestatic  #338                // Method closerThan:(Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Position;D)Z
+     178: ifeq          333
+     181: getstatic     #69                 // Field dev/tr7zw/entityculling/EntityCullingModBase.instance:Ldev/tr7zw/entityculling/EntityCullingModBase;
+     184: aload         4
+     186: invokeinterface #310,  1          // InterfaceMethod java/util/Map$Entry.getValue:()Ljava/lang/Object;
+     191: checkcast     #312                // class net/minecraft/world/level/block/entity/BlockEntity
+     194: aload         6
+     196: invokevirtual #342                // Method dev/tr7zw/entityculling/EntityCullingModBase.setupAABB:(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/phys/AABB;
+     199: astore        7
+     201: aload         7
+     203: invokevirtual #258                // Method net/minecraft/world/phys/AABB.getXsize:()D
+     206: aload_0
+     207: getfield      #81                 // Field hitboxLimit:I
+     210: i2d
+     211: dcmpl
+     212: ifgt          243
+     215: aload         7
+     217: invokevirtual #261                // Method net/minecraft/world/phys/AABB.getYsize:()D
+     220: aload_0
+     221: getfield      #81                 // Field hitboxLimit:I
+     224: i2d
+     225: dcmpl
+     226: ifgt          243
+     229: aload         7
+     231: invokevirtual #264                // Method net/minecraft/world/phys/AABB.getZsize:()D
+     234: aload_0
+     235: getfield      #81                 // Field hitboxLimit:I
+     238: i2d
+     239: dcmpl
+     240: ifle          254
+     243: aload         5
+     245: iconst_0
+     246: invokeinterface #235,  2          // InterfaceMethod dev/tr7zw/entityculling/versionless/access/Cullable.setCulled:(Z)V
+     251: goto          23
+     254: aload_0
+     255: getfield      #92                 // Field aabbMin:Lcom/logisticscraft/occlusionculling/util/Vec3d;
+     258: aload         7
+     260: getfield      #267                // Field net/minecraft/world/phys/AABB.minX:D
+     263: aload         7
+     265: getfield      #270                // Field net/minecraft/world/phys/AABB.minY:D
+     268: aload         7
+     270: getfield      #273                // Field net/minecraft/world/phys/AABB.minZ:D
+     273: invokevirtual #158                // Method com/logisticscraft/occlusionculling/util/Vec3d.set:(DDD)V
+     276: aload_0
+     277: getfield      #94                 // Field aabbMax:Lcom/logisticscraft/occlusionculling/util/Vec3d;
+     280: aload         7
+     282: getfield      #276                // Field net/minecraft/world/phys/AABB.maxX:D
+     285: aload         7
+     287: getfield      #279                // Field net/minecraft/world/phys/AABB.maxY:D
+     290: aload         7
+     292: getfield      #282                // Field net/minecraft/world/phys/AABB.maxZ:D
+     295: invokevirtual #158                // Method com/logisticscraft/occlusionculling/util/Vec3d.set:(DDD)V
+     298: aload_0
+     299: getfield      #113                // Field culling:Lcom/logisticscraft/occlusionculling/OcclusionCullingInstance;
+     302: aload_0
+     303: getfield      #92                 // Field aabbMin:Lcom/logisticscraft/occlusionculling/util/Vec3d;
+     306: aload_0
+     307: getfield      #94                 // Field aabbMax:Lcom/logisticscraft/occlusionculling/util/Vec3d;
+     310: aload_2
+     311: invokevirtual #286                // Method com/logisticscraft/occlusionculling/OcclusionCullingInstance.isAABBVisible:(Lcom/logisticscraft/occlusionculling/util/Vec3d;Lcom/logisticscraft/occlusionculling/util/Vec3d;Lcom/logisticscraft/occlusionculling/util/Vec3d;)Z
+     314: istore        8
+     316: aload         5
+     318: iload         8
+     320: ifne          327
+     323: iconst_1
+     324: goto          328
+     327: iconst_0
+     328: invokeinterface #235,  2          // InterfaceMethod dev/tr7zw/entityculling/versionless/access/Cullable.setCulled:(Z)V
+     333: goto          23
+     336: return
+    Exception table:
+       from    to  target type
+          32    43    46   Class java/lang/NullPointerException
+          32    43    46   Class java/util/ConcurrentModificationException
+
+  private static boolean closerThan(net.minecraft.core.BlockPos, net.minecraft.core.Position, double);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokeinterface #356,  1          // InterfaceMethod net/minecraft/core/Position.x:()D
+       7: aload_1
+       8: invokeinterface #358,  1          // InterfaceMethod net/minecraft/core/Position.y:()D
+      13: aload_1
+      14: invokeinterface #360,  1          // InterfaceMethod net/minecraft/core/Position.z:()D
+      19: iconst_1
+      20: invokestatic  #364                // Method distSqr:(Lnet/minecraft/core/BlockPos;DDDZ)D
+      23: dload_2
+      24: dload_2
+      25: dmul
+      26: dcmpg
+      27: ifge          34
+      30: iconst_1
+      31: goto          35
+      34: iconst_0
+      35: ireturn
+
+  private static double distSqr(net.minecraft.core.BlockPos, double, double, double, boolean);
+    Code:
+       0: iload         7
+       2: ifeq          11
+       5: ldc2_w        #368                // double 0.5d
+       8: goto          12
+      11: dconst_0
+      12: dstore        8
+      14: aload_0
+      15: invokevirtual #373                // Method net/minecraft/core/BlockPos.getX:()I
+      18: i2d
+      19: dload         8
+      21: dadd
+      22: dload_1
+      23: dsub
+      24: dstore        10
+      26: aload_0
+      27: invokevirtual #376                // Method net/minecraft/core/BlockPos.getY:()I
+      30: i2d
+      31: dload         8
+      33: dadd
+      34: dload_3
+      35: dsub
+      36: dstore        12
+      38: aload_0
+      39: invokevirtual #379                // Method net/minecraft/core/BlockPos.getZ:()I
+      42: i2d
+      43: dload         8
+      45: dadd
+      46: dload         5
+      48: dsub
+      49: dstore        14
+      51: dload         10
+      53: dload         10
+      55: dmul
+      56: dload         12
+      58: dload         12
+      60: dmul
+      61: dadd
+      62: dload         14
+      64: dload         14
+      66: dmul
+      67: dadd
+      68: dreturn
+
+  public void setIngame(boolean);
+    Code:
+       0: aload_0
+       1: iload_1
+       2: putfield      #96                 // Field ingame:Z
+       5: return
+
+  public void setEntitiesForRendering(java.util.List<net.minecraft.world.entity.Entity>);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: putfield      #101                // Field entitiesForRendering:Ljava/util/List;
+       5: return
+
+  public void setBlockEntities(java.util.Map<net.minecraft.core.BlockPos, net.minecraft.world.level.block.entity.BlockEntity>);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: putfield      #106                // Field blockEntities:Ljava/util/Map;
+       5: return
+
+  public void setCameraMC(net.minecraft.world.phys.Vec3);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: putfield      #111                // Field cameraMC:Lnet/minecraft/world/phys/Vec3;
+       5: return
+}

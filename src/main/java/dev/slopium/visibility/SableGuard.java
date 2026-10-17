@@ -16,7 +16,7 @@ public final class SableGuard {
     private SableGuard() {}
 
     public static boolean protects(Level level, BlockPos pos) {
-        if (!Slopium.loaded("sable")) return false;
+        if (!Slopium.sableAvailable()) return false;
         if (!initialized) {
             initialized = true;
             try {

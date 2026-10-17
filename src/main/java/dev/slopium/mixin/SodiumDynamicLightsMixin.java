@@ -95,6 +95,12 @@ public abstract class SodiumDynamicLightsMixin implements LightIndexControl {
                 && snapshot.frame() == Slopium.frame() && snapshot.revision() == Slopium.configRevision()
                 && snapshot.sourcesRevision() == slopium$sourcesRevision.get()) {
             if (renderThread && config.diagnostics) SlopiumStats.lightQueries++;
+            // With Create/Sable light disabled, many frames have no sources.
+            // Every position is then zero; a per-position hash cache only adds work.
+            if (snapshot.grid().size() == 0) {
+                cir.setReturnValue(0.0);
+                return;
+            }
             boolean packable = pos.getX() >= -33554432 && pos.getX() < 33554432
                 && pos.getZ() >= -33554432 && pos.getZ() < 33554432 && pos.getY() >= -2048 && pos.getY() < 2048;
             if (renderThread && config.lightQueryCache && packable) {

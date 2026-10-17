@@ -1,0 +1,584 @@
+Compiled from "EntityCullingModBase.java"
+public abstract class dev.tr7zw.entityculling.EntityCullingModBase extends dev.tr7zw.entityculling.versionless.EntityCullingVersionlessBase {
+  public static dev.tr7zw.entityculling.EntityCullingModBase instance;
+
+  public final dev.tr7zw.entityculling.DebugCollector debugCollector;
+
+  public java.util.Set<net.minecraft.world.level.block.entity.BlockEntityType<?>> blockEntityWhitelist;
+
+  public java.util.Set<net.minecraft.world.entity.EntityType<?>> entityWhitelist;
+
+  public java.util.Set<net.minecraft.world.entity.EntityType<?>> tickCullWhitelists;
+
+  public dev.tr7zw.entityculling.CullTask cullTask;
+
+  private java.util.Set<java.util.function.Function<net.minecraft.world.level.block.entity.BlockEntity, java.lang.Boolean>> dynamicBlockEntityWhitelist;
+
+  private java.util.Set<java.util.function.Function<net.minecraft.world.entity.Entity, java.lang.Boolean>> dynamicEntityWhitelist;
+
+  private int tickCounter;
+
+  public double lastTickTime;
+
+  private boolean freezeCamera;
+
+  public dev.tr7zw.entityculling.EntityCullingModBase();
+    Code:
+       0: aload_0
+       1: invokespecial #46                 // Method dev/tr7zw/entityculling/versionless/EntityCullingVersionlessBase."<init>":()V
+       4: aload_0
+       5: new           #14                 // class dev/tr7zw/entityculling/DebugCollector
+       8: dup
+       9: invokespecial #47                 // Method dev/tr7zw/entityculling/DebugCollector."<init>":()V
+      12: putfield      #49                 // Field debugCollector:Ldev/tr7zw/entityculling/DebugCollector;
+      15: aload_0
+      16: new           #51                 // class java/util/HashSet
+      19: dup
+      20: invokespecial #52                 // Method java/util/HashSet."<init>":()V
+      23: putfield      #54                 // Field blockEntityWhitelist:Ljava/util/Set;
+      26: aload_0
+      27: new           #51                 // class java/util/HashSet
+      30: dup
+      31: invokespecial #52                 // Method java/util/HashSet."<init>":()V
+      34: putfield      #56                 // Field entityWhitelist:Ljava/util/Set;
+      37: aload_0
+      38: new           #51                 // class java/util/HashSet
+      41: dup
+      42: invokespecial #52                 // Method java/util/HashSet."<init>":()V
+      45: putfield      #58                 // Field tickCullWhitelists:Ljava/util/Set;
+      48: aload_0
+      49: new           #51                 // class java/util/HashSet
+      52: dup
+      53: invokespecial #52                 // Method java/util/HashSet."<init>":()V
+      56: putfield      #60                 // Field dynamicBlockEntityWhitelist:Ljava/util/Set;
+      59: aload_0
+      60: new           #51                 // class java/util/HashSet
+      63: dup
+      64: invokespecial #52                 // Method java/util/HashSet."<init>":()V
+      67: putfield      #62                 // Field dynamicEntityWhitelist:Ljava/util/Set;
+      70: aload_0
+      71: iconst_0
+      72: putfield      #64                 // Field tickCounter:I
+      75: aload_0
+      76: dconst_0
+      77: putfield      #66                 // Field lastTickTime:D
+      80: aload_0
+      81: iconst_0
+      82: putfield      #68                 // Field freezeCamera:Z
+      85: return
+
+  public void onInitialize();
+    Code:
+       0: aload_0
+       1: putstatic     #72                 // Field instance:Ldev/tr7zw/entityculling/EntityCullingModBase;
+       4: aload_0
+       5: invokespecial #74                 // Method dev/tr7zw/entityculling/versionless/EntityCullingVersionlessBase.onInitialize:()V
+       8: aload_0
+       9: new           #76                 // class com/logisticscraft/occlusionculling/OcclusionCullingInstance
+      12: dup
+      13: aload_0
+      14: getfield      #80                 // Field config:Ldev/tr7zw/entityculling/versionless/Config;
+      17: getfield      #85                 // Field dev/tr7zw/entityculling/versionless/Config.tracingDistance:I
+      20: new           #87                 // class dev/tr7zw/entityculling/Provider
+      23: dup
+      24: invokespecial #88                 // Method dev/tr7zw/entityculling/Provider."<init>":()V
+      27: invokespecial #91                 // Method com/logisticscraft/occlusionculling/OcclusionCullingInstance."<init>":(ILcom/logisticscraft/occlusionculling/DataProvider;)V
+      30: putfield      #95                 // Field culling:Lcom/logisticscraft/occlusionculling/OcclusionCullingInstance;
+      33: aload_0
+      34: new           #97                 // class dev/tr7zw/entityculling/CullTask
+      37: dup
+      38: aload_0
+      39: getfield      #95                 // Field culling:Lcom/logisticscraft/occlusionculling/OcclusionCullingInstance;
+      42: aload_0
+      43: getfield      #54                 // Field blockEntityWhitelist:Ljava/util/Set;
+      46: aload_0
+      47: getfield      #56                 // Field entityWhitelist:Ljava/util/Set;
+      50: invokespecial #100                // Method dev/tr7zw/entityculling/CullTask."<init>":(Lcom/logisticscraft/occlusionculling/OcclusionCullingInstance;Ljava/util/Set;Ljava/util/Set;)V
+      53: putfield      #102                // Field cullTask:Ldev/tr7zw/entityculling/CullTask;
+      56: aload_0
+      57: new           #9                  // class java/lang/Thread
+      60: dup
+      61: aload_0
+      62: getfield      #102                // Field cullTask:Ldev/tr7zw/entityculling/CullTask;
+      65: ldc           #104                // String CullThread
+      67: invokespecial #107                // Method java/lang/Thread."<init>":(Ljava/lang/Runnable;Ljava/lang/String;)V
+      70: putfield      #111                // Field cullThread:Ljava/lang/Thread;
+      73: aload_0
+      74: getfield      #111                // Field cullThread:Ljava/lang/Thread;
+      77: invokedynamic #128,  0            // InvokeDynamic #0:uncaughtException:()Ljava/lang/Thread$UncaughtExceptionHandler;
+      82: invokevirtual #132                // Method java/lang/Thread.setUncaughtExceptionHandler:(Ljava/lang/Thread$UncaughtExceptionHandler;)V
+      85: invokestatic  #138                // Method dev/tr7zw/transition/manager/CodeManager.getInstance:()Ldev/tr7zw/transition/manager/CodeManager;
+      88: ldc           #140                // String entityculling_debug
+      90: aload_0
+      91: invokedynamic #149,  0            // InvokeDynamic #1:run:(Ldev/tr7zw/entityculling/EntityCullingModBase;)Ljava/lang/Runnable;
+      96: invokevirtual #153                // Method dev/tr7zw/transition/manager/CodeManager.registerCode:(Ljava/lang/String;Ljava/lang/Runnable;)V
+      99: invokestatic  #138                // Method dev/tr7zw/transition/manager/CodeManager.getInstance:()Ldev/tr7zw/transition/manager/CodeManager;
+     102: ldc           #155                // String entityculling_freezecam
+     104: aload_0
+     105: invokedynamic #160,  0            // InvokeDynamic #2:run:(Ldev/tr7zw/entityculling/EntityCullingModBase;)Ljava/lang/Runnable;
+     110: invokevirtual #153                // Method dev/tr7zw/transition/manager/CodeManager.registerCode:(Ljava/lang/String;Ljava/lang/Runnable;)V
+     113: aload_0
+     114: invokevirtual #163                // Method initModloader:()V
+     117: return
+
+  public void worldTick();
+    Code:
+       0: aload_0
+       1: getfield      #102                // Field cullTask:Ldev/tr7zw/entityculling/CullTask;
+       4: iconst_1
+       5: putfield      #167                // Field dev/tr7zw/entityculling/CullTask.requestCull:Z
+       8: return
+
+  public void clientTick();
+    Code:
+       0: aload_0
+       1: getfield      #171                // Field lateInit:Z
+       4: ifne          193
+       7: aload_0
+       8: iconst_1
+       9: putfield      #171                // Field lateInit:Z
+      12: aload_0
+      13: getfield      #111                // Field cullThread:Ljava/lang/Thread;
+      16: invokevirtual #174                // Method java/lang/Thread.start:()V
+      19: aload_0
+      20: getfield      #80                 // Field config:Ldev/tr7zw/entityculling/versionless/Config;
+      23: getfield      #175                // Field dev/tr7zw/entityculling/versionless/Config.blockEntityWhitelist:Ljava/util/Set;
+      26: invokeinterface #181,  1          // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+      31: astore_1
+      32: aload_1
+      33: invokeinterface #187,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      38: ifeq          77
+      41: aload_1
+      42: invokeinterface #191,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      47: checkcast     #193                // class java/lang/String
+      50: astore_2
+      51: getstatic     #199                // Field net/minecraft/core/registries/BuiltInRegistries.BLOCK_ENTITY_TYPE:Lnet/minecraft/core/Registry;
+      54: aload_2
+      55: invokestatic  #205                // Method dev/tr7zw/transition/mc/GeneralUtil.getResourceLocation:(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;
+      58: invokeinterface #211,  2          // InterfaceMethod net/minecraft/core/Registry.getOptional:(Lnet/minecraft/resources/ResourceLocation;)Ljava/util/Optional;
+      63: astore_3
+      64: aload_3
+      65: aload_0
+      66: invokedynamic #223,  0            // InvokeDynamic #3:accept:(Ldev/tr7zw/entityculling/EntityCullingModBase;)Ljava/util/function/Consumer;
+      71: invokevirtual #229                // Method java/util/Optional.ifPresent:(Ljava/util/function/Consumer;)V
+      74: goto          32
+      77: aload_0
+      78: getfield      #80                 // Field config:Ldev/tr7zw/entityculling/versionless/Config;
+      81: getfield      #232                // Field dev/tr7zw/entityculling/versionless/Config.tickCullingWhitelist:Ljava/util/Set;
+      84: invokeinterface #181,  1          // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+      89: astore_1
+      90: aload_1
+      91: invokeinterface #187,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      96: ifeq          135
+      99: aload_1
+     100: invokeinterface #191,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+     105: checkcast     #193                // class java/lang/String
+     108: astore_2
+     109: getstatic     #236                // Field net/minecraft/core/registries/BuiltInRegistries.ENTITY_TYPE:Lnet/minecraft/core/DefaultedRegistry;
+     112: aload_2
+     113: invokestatic  #205                // Method dev/tr7zw/transition/mc/GeneralUtil.getResourceLocation:(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;
+     116: invokeinterface #239,  2          // InterfaceMethod net/minecraft/core/DefaultedRegistry.getOptional:(Lnet/minecraft/resources/ResourceLocation;)Ljava/util/Optional;
+     121: astore_3
+     122: aload_3
+     123: aload_0
+     124: invokedynamic #246,  0            // InvokeDynamic #4:accept:(Ldev/tr7zw/entityculling/EntityCullingModBase;)Ljava/util/function/Consumer;
+     129: invokevirtual #229                // Method java/util/Optional.ifPresent:(Ljava/util/function/Consumer;)V
+     132: goto          90
+     135: aload_0
+     136: getfield      #80                 // Field config:Ldev/tr7zw/entityculling/versionless/Config;
+     139: getfield      #247                // Field dev/tr7zw/entityculling/versionless/Config.entityWhitelist:Ljava/util/Set;
+     142: invokeinterface #181,  1          // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+     147: astore_1
+     148: aload_1
+     149: invokeinterface #187,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+     154: ifeq          193
+     157: aload_1
+     158: invokeinterface #191,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+     163: checkcast     #193                // class java/lang/String
+     166: astore_2
+     167: getstatic     #236                // Field net/minecraft/core/registries/BuiltInRegistries.ENTITY_TYPE:Lnet/minecraft/core/DefaultedRegistry;
+     170: aload_2
+     171: invokestatic  #205                // Method dev/tr7zw/transition/mc/GeneralUtil.getResourceLocation:(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;
+     174: invokeinterface #239,  2          // InterfaceMethod net/minecraft/core/DefaultedRegistry.getOptional:(Lnet/minecraft/resources/ResourceLocation;)Ljava/util/Optional;
+     179: astore_3
+     180: aload_3
+     181: aload_0
+     182: invokedynamic #252,  0            // InvokeDynamic #5:accept:(Ldev/tr7zw/entityculling/EntityCullingModBase;)Ljava/util/function/Consumer;
+     187: invokevirtual #229                // Method java/util/Optional.ifPresent:(Ljava/util/function/Consumer;)V
+     190: goto          148
+     193: getstatic     #258                // Field dev/tr7zw/entityculling/KeybindHolder.INSTANCE:Ldev/tr7zw/entityculling/KeybindHolder;
+     196: getfield      #262                // Field dev/tr7zw/entityculling/KeybindHolder.keybind:Lnet/minecraft/client/KeyMapping;
+     199: invokevirtual #267                // Method net/minecraft/client/KeyMapping.isDown:()Z
+     202: ifeq          274
+     205: aload_0
+     206: getfield      #270                // Field pressed:Z
+     209: ifeq          213
+     212: return
+     213: aload_0
+     214: iconst_1
+     215: putfield      #270                // Field pressed:Z
+     218: getstatic     #273                // Field enabled:Z
+     221: ifne          228
+     224: iconst_1
+     225: goto          229
+     228: iconst_0
+     229: putstatic     #273                // Field enabled:Z
+     232: getstatic     #273                // Field enabled:Z
+     235: ifeq          256
+     238: ldc_w         #275                // String Culling on
+     241: invokestatic  #281                // Method dev/tr7zw/transition/mc/ComponentProvider.literal:(Ljava/lang/String;)Lnet/minecraft/network/chat/MutableComponent;
+     244: getstatic     #287                // Field net/minecraft/ChatFormatting.GREEN:Lnet/minecraft/ChatFormatting;
+     247: invokevirtual #293                // Method net/minecraft/network/chat/MutableComponent.withStyle:(Lnet/minecraft/ChatFormatting;)Lnet/minecraft/network/chat/MutableComponent;
+     250: invokestatic  #299                // Method dev/tr7zw/transition/mc/ClientUtil.sendChatMessage:(Lnet/minecraft/network/chat/Component;)V
+     253: goto          279
+     256: ldc_w         #301                // String Culling off
+     259: invokestatic  #281                // Method dev/tr7zw/transition/mc/ComponentProvider.literal:(Ljava/lang/String;)Lnet/minecraft/network/chat/MutableComponent;
+     262: getstatic     #304                // Field net/minecraft/ChatFormatting.RED:Lnet/minecraft/ChatFormatting;
+     265: invokevirtual #293                // Method net/minecraft/network/chat/MutableComponent.withStyle:(Lnet/minecraft/ChatFormatting;)Lnet/minecraft/network/chat/MutableComponent;
+     268: invokestatic  #299                // Method dev/tr7zw/transition/mc/ClientUtil.sendChatMessage:(Lnet/minecraft/network/chat/Component;)V
+     271: goto          279
+     274: aload_0
+     275: iconst_0
+     276: putfield      #270                // Field pressed:Z
+     279: getstatic     #258                // Field dev/tr7zw/entityculling/KeybindHolder.INSTANCE:Ldev/tr7zw/entityculling/KeybindHolder;
+     282: getfield      #307                // Field dev/tr7zw/entityculling/KeybindHolder.keybindBoxes:Lnet/minecraft/client/KeyMapping;
+     285: invokevirtual #267                // Method net/minecraft/client/KeyMapping.isDown:()Z
+     288: ifeq          363
+     291: aload_0
+     292: getfield      #310                // Field pressedBox:Z
+     295: ifeq          299
+     298: return
+     299: aload_0
+     300: iconst_1
+     301: putfield      #310                // Field pressedBox:Z
+     304: aload_0
+     305: aload_0
+     306: getfield      #313                // Field debugHitboxes:Z
+     309: ifne          316
+     312: iconst_1
+     313: goto          317
+     316: iconst_0
+     317: putfield      #313                // Field debugHitboxes:Z
+     320: aload_0
+     321: getfield      #313                // Field debugHitboxes:Z
+     324: ifeq          345
+     327: ldc_w         #315                // String Debug Cullboxes on
+     330: invokestatic  #281                // Method dev/tr7zw/transition/mc/ComponentProvider.literal:(Ljava/lang/String;)Lnet/minecraft/network/chat/MutableComponent;
+     333: getstatic     #287                // Field net/minecraft/ChatFormatting.GREEN:Lnet/minecraft/ChatFormatting;
+     336: invokevirtual #293                // Method net/minecraft/network/chat/MutableComponent.withStyle:(Lnet/minecraft/ChatFormatting;)Lnet/minecraft/network/chat/MutableComponent;
+     339: invokestatic  #299                // Method dev/tr7zw/transition/mc/ClientUtil.sendChatMessage:(Lnet/minecraft/network/chat/Component;)V
+     342: goto          368
+     345: ldc_w         #317                // String Debug Cullboxes off
+     348: invokestatic  #281                // Method dev/tr7zw/transition/mc/ComponentProvider.literal:(Ljava/lang/String;)Lnet/minecraft/network/chat/MutableComponent;
+     351: getstatic     #304                // Field net/minecraft/ChatFormatting.RED:Lnet/minecraft/ChatFormatting;
+     354: invokevirtual #293                // Method net/minecraft/network/chat/MutableComponent.withStyle:(Lnet/minecraft/ChatFormatting;)Lnet/minecraft/network/chat/MutableComponent;
+     357: invokestatic  #299                // Method dev/tr7zw/transition/mc/ClientUtil.sendChatMessage:(Lnet/minecraft/network/chat/Component;)V
+     360: goto          368
+     363: aload_0
+     364: iconst_0
+     365: putfield      #310                // Field pressedBox:Z
+     368: invokestatic  #323                // Method java/lang/System.nanoTime:()J
+     371: lstore_1
+     372: aload_0
+     373: getfield      #49                 // Field debugCollector:Ldev/tr7zw/entityculling/DebugCollector;
+     376: invokevirtual #326                // Method dev/tr7zw/entityculling/DebugCollector.tick:()V
+     379: invokestatic  #331                // Method net/minecraft/client/Minecraft.getInstance:()Lnet/minecraft/client/Minecraft;
+     382: astore_3
+     383: aload_3
+     384: getfield      #335                // Field net/minecraft/client/Minecraft.level:Lnet/minecraft/client/multiplayer/ClientLevel;
+     387: ifnull        413
+     390: aload_3
+     391: getfield      #339                // Field net/minecraft/client/Minecraft.player:Lnet/minecraft/client/player/LocalPlayer;
+     394: ifnull        413
+     397: aload_3
+     398: getfield      #339                // Field net/minecraft/client/Minecraft.player:Lnet/minecraft/client/player/LocalPlayer;
+     401: getfield      #344                // Field net/minecraft/client/player/LocalPlayer.tickCount:I
+     404: bipush        10
+     406: if_icmple     413
+     409: iconst_1
+     410: goto          414
+     413: iconst_0
+     414: istore        4
+     416: iload         4
+     418: ifeq          725
+     421: getstatic     #273                // Field enabled:Z
+     424: ifeq          725
+     427: iconst_0
+     428: istore        5
+     430: aload_0
+     431: dup
+     432: getfield      #64                 // Field tickCounter:I
+     435: dup_x1
+     436: iconst_1
+     437: iadd
+     438: putfield      #64                 // Field tickCounter:I
+     441: aload_0
+     442: getfield      #80                 // Field config:Ldev/tr7zw/entityculling/versionless/Config;
+     445: getfield      #347                // Field dev/tr7zw/entityculling/versionless/Config.captureRate:I
+     448: irem
+     449: ifne          640
+     452: aload_0
+     453: getfield      #80                 // Field config:Ldev/tr7zw/entityculling/versionless/Config;
+     456: getfield      #350                // Field dev/tr7zw/entityculling/versionless/Config.skipEntityCulling:Z
+     459: ifne          511
+     462: aload_3
+     463: getfield      #335                // Field net/minecraft/client/Minecraft.level:Lnet/minecraft/client/multiplayer/ClientLevel;
+     466: invokevirtual #356                // Method net/minecraft/client/multiplayer/ClientLevel.entitiesForRendering:()Ljava/lang/Iterable;
+     469: invokeinterface #362,  1          // InterfaceMethod java/lang/Iterable.spliterator:()Ljava/util/Spliterator;
+     474: iconst_0
+     475: invokestatic  #368                // Method java/util/stream/StreamSupport.stream:(Ljava/util/Spliterator;Z)Ljava/util/stream/Stream;
+     478: invokeinterface #374,  1          // InterfaceMethod java/util/stream/Stream.toList:()Ljava/util/List;
+     483: astore        6
+     485: aload_0
+     486: getfield      #102                // Field cullTask:Ldev/tr7zw/entityculling/CullTask;
+     489: aload         6
+     491: invokevirtual #378                // Method dev/tr7zw/entityculling/CullTask.setEntitiesForRendering:(Ljava/util/List;)V
+     494: aload_0
+     495: getfield      #49                 // Field debugCollector:Ldev/tr7zw/entityculling/DebugCollector;
+     498: invokevirtual #382                // Method dev/tr7zw/entityculling/DebugCollector.getDataHolder:()Ldev/tr7zw/entityculling/DebugCollector$DataHolder;
+     501: aload         6
+     503: invokeinterface #388,  1          // InterfaceMethod java/util/List.size:()I
+     508: putfield      #391                // Field dev/tr7zw/entityculling/DebugCollector$DataHolder.consideredEntities:I
+     511: aload_0
+     512: getfield      #80                 // Field config:Ldev/tr7zw/entityculling/versionless/Config;
+     515: getfield      #394                // Field dev/tr7zw/entityculling/versionless/Config.skipBlockEntityCulling:Z
+     518: ifne          637
+     521: new           #396                // class java/util/HashMap
+     524: dup
+     525: invokespecial #397                // Method java/util/HashMap."<init>":()V
+     528: astore        6
+     530: bipush        -8
+     532: istore        7
+     534: iload         7
+     536: bipush        8
+     538: if_icmpgt     611
+     541: bipush        -8
+     543: istore        8
+     545: iload         8
+     547: bipush        8
+     549: if_icmpgt     605
+     552: aload_3
+     553: getfield      #335                // Field net/minecraft/client/Minecraft.level:Lnet/minecraft/client/multiplayer/ClientLevel;
+     556: aload_3
+     557: getfield      #339                // Field net/minecraft/client/Minecraft.player:Lnet/minecraft/client/player/LocalPlayer;
+     560: invokevirtual #403                // Method net/minecraft/client/player/LocalPlayer.chunkPosition:()Lnet/minecraft/world/level/ChunkPos;
+     563: getfield      #408                // Field net/minecraft/world/level/ChunkPos.x:I
+     566: iload         7
+     568: iadd
+     569: aload_3
+     570: getfield      #339                // Field net/minecraft/client/Minecraft.player:Lnet/minecraft/client/player/LocalPlayer;
+     573: invokevirtual #403                // Method net/minecraft/client/player/LocalPlayer.chunkPosition:()Lnet/minecraft/world/level/ChunkPos;
+     576: getfield      #411                // Field net/minecraft/world/level/ChunkPos.z:I
+     579: iload         8
+     581: iadd
+     582: invokevirtual #415                // Method net/minecraft/client/multiplayer/ClientLevel.getChunk:(II)Lnet/minecraft/world/level/chunk/LevelChunk;
+     585: astore        9
+     587: aload         6
+     589: aload         9
+     591: invokevirtual #421                // Method net/minecraft/world/level/chunk/LevelChunk.getBlockEntities:()Ljava/util/Map;
+     594: invokeinterface #425,  2          // InterfaceMethod java/util/Map.putAll:(Ljava/util/Map;)V
+     599: iinc          8, 1
+     602: goto          545
+     605: iinc          7, 1
+     608: goto          534
+     611: aload_0
+     612: getfield      #102                // Field cullTask:Ldev/tr7zw/entityculling/CullTask;
+     615: aload         6
+     617: invokevirtual #428                // Method dev/tr7zw/entityculling/CullTask.setBlockEntities:(Ljava/util/Map;)V
+     620: aload_0
+     621: getfield      #49                 // Field debugCollector:Ldev/tr7zw/entityculling/DebugCollector;
+     624: invokevirtual #382                // Method dev/tr7zw/entityculling/DebugCollector.getDataHolder:()Ldev/tr7zw/entityculling/DebugCollector$DataHolder;
+     627: aload         6
+     629: invokeinterface #429,  1          // InterfaceMethod java/util/Map.size:()I
+     634: putfield      #432                // Field dev/tr7zw/entityculling/DebugCollector$DataHolder.consideredBlockEntities:I
+     637: iconst_1
+     638: istore        5
+     640: aload_0
+     641: getfield      #102                // Field cullTask:Ldev/tr7zw/entityculling/CullTask;
+     644: iconst_1
+     645: invokevirtual #436                // Method dev/tr7zw/entityculling/CullTask.setIngame:(Z)V
+     648: aload_0
+     649: getfield      #68                 // Field freezeCamera:Z
+     652: ifne          695
+     655: aload_0
+     656: getfield      #102                // Field cullTask:Ldev/tr7zw/entityculling/CullTask;
+     659: getstatic     #72                 // Field instance:Ldev/tr7zw/entityculling/EntityCullingModBase;
+     662: getfield      #80                 // Field config:Ldev/tr7zw/entityculling/versionless/Config;
+     665: getfield      #439                // Field dev/tr7zw/entityculling/versionless/Config.debugMode:Z
+     668: ifeq          682
+     671: aload_3
+     672: getfield      #339                // Field net/minecraft/client/Minecraft.player:Lnet/minecraft/client/player/LocalPlayer;
+     675: fconst_0
+     676: invokevirtual #443                // Method net/minecraft/client/player/LocalPlayer.getEyePosition:(F)Lnet/minecraft/world/phys/Vec3;
+     679: goto          692
+     682: aload_3
+     683: getfield      #447                // Field net/minecraft/client/Minecraft.gameRenderer:Lnet/minecraft/client/renderer/GameRenderer;
+     686: invokevirtual #453                // Method net/minecraft/client/renderer/GameRenderer.getMainCamera:()Lnet/minecraft/client/Camera;
+     689: invokevirtual #459                // Method net/minecraft/client/Camera.getPosition:()Lnet/minecraft/world/phys/Vec3;
+     692: invokevirtual #465                // Method dev/tr7zw/entityculling/CullTask.setCameraMC:(Lnet/minecraft/world/phys/Vec3;)V
+     695: aload_0
+     696: getfield      #102                // Field cullTask:Ldev/tr7zw/entityculling/CullTask;
+     699: iconst_1
+     700: putfield      #167                // Field dev/tr7zw/entityculling/CullTask.requestCull:Z
+     703: iload         5
+     705: ifeq          722
+     708: aload_0
+     709: invokestatic  #323                // Method java/lang/System.nanoTime:()J
+     712: lload_1
+     713: lsub
+     714: l2d
+     715: ldc2_w        #466                // double 1000000.0d
+     718: ddiv
+     719: putfield      #66                 // Field lastTickTime:D
+     722: goto          767
+     725: aload_0
+     726: getfield      #102                // Field cullTask:Ldev/tr7zw/entityculling/CullTask;
+     729: iconst_0
+     730: invokevirtual #436                // Method dev/tr7zw/entityculling/CullTask.setIngame:(Z)V
+     733: aload_0
+     734: getfield      #102                // Field cullTask:Ldev/tr7zw/entityculling/CullTask;
+     737: invokestatic  #472                // Method java/util/Collections.emptyList:()Ljava/util/List;
+     740: invokevirtual #378                // Method dev/tr7zw/entityculling/CullTask.setEntitiesForRendering:(Ljava/util/List;)V
+     743: aload_0
+     744: getfield      #102                // Field cullTask:Ldev/tr7zw/entityculling/CullTask;
+     747: invokestatic  #475                // Method java/util/Collections.emptyMap:()Ljava/util/Map;
+     750: invokevirtual #428                // Method dev/tr7zw/entityculling/CullTask.setBlockEntities:(Ljava/util/Map;)V
+     753: aload_0
+     754: invokestatic  #323                // Method java/lang/System.nanoTime:()J
+     757: lload_1
+     758: lsub
+     759: l2d
+     760: ldc2_w        #466                // double 1000000.0d
+     763: ddiv
+     764: putfield      #66                 // Field lastTickTime:D
+     767: return
+
+  public abstract net.minecraft.world.phys.AABB setupAABB(net.minecraft.world.level.block.entity.BlockEntity, net.minecraft.core.BlockPos);
+
+  public boolean isDynamicWhitelisted(net.minecraft.world.level.block.entity.BlockEntity);
+    Code:
+       0: aload_0
+       1: getfield      #60                 // Field dynamicBlockEntityWhitelist:Ljava/util/Set;
+       4: invokeinterface #181,  1          // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+       9: astore_2
+      10: aload_2
+      11: invokeinterface #187,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      16: ifeq          50
+      19: aload_2
+      20: invokeinterface #191,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      25: checkcast     #502                // class java/util/function/Function
+      28: astore_3
+      29: aload_3
+      30: aload_1
+      31: invokeinterface #506,  2          // InterfaceMethod java/util/function/Function.apply:(Ljava/lang/Object;)Ljava/lang/Object;
+      36: checkcast     #508                // class java/lang/Boolean
+      39: invokevirtual #511                // Method java/lang/Boolean.booleanValue:()Z
+      42: ifeq          47
+      45: iconst_1
+      46: ireturn
+      47: goto          10
+      50: iconst_0
+      51: ireturn
+
+  public boolean isDynamicWhitelisted(net.minecraft.world.entity.Entity);
+    Code:
+       0: aload_0
+       1: getfield      #62                 // Field dynamicEntityWhitelist:Ljava/util/Set;
+       4: invokeinterface #181,  1          // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+       9: astore_2
+      10: aload_2
+      11: invokeinterface #187,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      16: ifeq          50
+      19: aload_2
+      20: invokeinterface #191,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      25: checkcast     #502                // class java/util/function/Function
+      28: astore_3
+      29: aload_3
+      30: aload_1
+      31: invokeinterface #506,  2          // InterfaceMethod java/util/function/Function.apply:(Ljava/lang/Object;)Ljava/lang/Object;
+      36: checkcast     #508                // class java/lang/Boolean
+      39: invokevirtual #511                // Method java/lang/Boolean.booleanValue:()Z
+      42: ifeq          47
+      45: iconst_1
+      46: ireturn
+      47: goto          10
+      50: iconst_0
+      51: ireturn
+
+  public void addDynamicBlockEntityWhitelist(java.util.function.Function<net.minecraft.world.level.block.entity.BlockEntity, java.lang.Boolean>);
+    Code:
+       0: aload_0
+       1: getfield      #60                 // Field dynamicBlockEntityWhitelist:Ljava/util/Set;
+       4: aload_1
+       5: invokeinterface #526,  2          // InterfaceMethod java/util/Set.add:(Ljava/lang/Object;)Z
+      10: pop
+      11: return
+
+  public void addDynamicEntityWhitelist(java.util.function.Function<net.minecraft.world.entity.Entity, java.lang.Boolean>);
+    Code:
+       0: aload_0
+       1: getfield      #62                 // Field dynamicEntityWhitelist:Ljava/util/Set;
+       4: aload_1
+       5: invokeinterface #526,  2          // InterfaceMethod java/util/Set.add:(Ljava/lang/Object;)Z
+      10: pop
+      11: return
+
+  private void lambda$clientTick$2(net.minecraft.world.entity.EntityType);
+    Code:
+       0: aload_0
+       1: getfield      #56                 // Field entityWhitelist:Ljava/util/Set;
+       4: aload_1
+       5: invokeinterface #526,  2          // InterfaceMethod java/util/Set.add:(Ljava/lang/Object;)Z
+      10: pop
+      11: return
+
+  private void lambda$clientTick$1(net.minecraft.world.entity.EntityType);
+    Code:
+       0: aload_0
+       1: getfield      #58                 // Field tickCullWhitelists:Ljava/util/Set;
+       4: aload_1
+       5: invokeinterface #526,  2          // InterfaceMethod java/util/Set.add:(Ljava/lang/Object;)Z
+      10: pop
+      11: return
+
+  private void lambda$clientTick$0(net.minecraft.world.level.block.entity.BlockEntityType);
+    Code:
+       0: aload_0
+       1: getfield      #54                 // Field blockEntityWhitelist:Ljava/util/Set;
+       4: aload_1
+       5: invokeinterface #526,  2          // InterfaceMethod java/util/Set.add:(Ljava/lang/Object;)Z
+      10: pop
+      11: return
+
+  private void lambda$onInitialize$2();
+    Code:
+       0: aload_0
+       1: aload_0
+       2: getfield      #68                 // Field freezeCamera:Z
+       5: ifne          12
+       8: iconst_1
+       9: goto          13
+      12: iconst_0
+      13: putfield      #68                 // Field freezeCamera:Z
+      16: aload_0
+      17: getfield      #68                 // Field freezeCamera:Z
+      20: invokedynamic #544,  0            // InvokeDynamic #6:makeConcatWithConstants:(Z)Ljava/lang/String;
+      25: invokestatic  #281                // Method dev/tr7zw/transition/mc/ComponentProvider.literal:(Ljava/lang/String;)Lnet/minecraft/network/chat/MutableComponent;
+      28: invokestatic  #299                // Method dev/tr7zw/transition/mc/ClientUtil.sendChatMessage:(Lnet/minecraft/network/chat/Component;)V
+      31: return
+
+  private void lambda$onInitialize$1();
+    Code:
+       0: aload_0
+       1: getfield      #49                 // Field debugCollector:Ldev/tr7zw/entityculling/DebugCollector;
+       4: invokevirtual #547                // Method dev/tr7zw/entityculling/DebugCollector.requestStart:()V
+       7: return
+
+  private static void lambda$onInitialize$0(java.lang.Thread, java.lang.Throwable);
+    Code:
+       0: getstatic     #553                // Field LOGGER:Lorg/apache/logging/log4j/Logger;
+       3: ldc_w         #555                // String The CullingThread has crashed! Please report the following stacktrace!
+       6: aload_1
+       7: invokeinterface #561,  3          // InterfaceMethod org/apache/logging/log4j/Logger.error:(Ljava/lang/String;Ljava/lang/Throwable;)V
+      12: return
+}

@@ -13,4 +13,7 @@ public abstract class BlockEntityStateMixin implements TrackedBlockEntity {
         if (slopium$gate == null) slopium$gate = new TickGate();
         return slopium$gate;
     }
+    @Override public void slopium$resetHiddenState() {
+        if (slopium$gate != null) slopium$gate.resetHidden();
+    }
 }

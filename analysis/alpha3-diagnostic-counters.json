@@ -1,0 +1,39 @@
+{
+  "eligible": 15667137,
+  "not_ready": 1502,
+  "visible_or_excluded": 12708557,
+  "near": 77606,
+  "sable": 0,
+  "hidden": 2879472,
+  "skipped": 1897805,
+  "queries": 4672652,
+  "cache_hits": 513723,
+  "cracks_checked": 51700,
+  "cracks_skipped": 24088,
+  "sources_last": 7,
+  "last_index_ms": 0.005,
+  "percentages": {
+    "visible_or_excluded": 81.11601372988568,
+    "near": 0.49534257599202713,
+    "hidden": 18.3790567478921,
+    "skipped": 12.113285279882342,
+    "hidden_skipped": 65.90809009429506,
+    "cracks_skipped": 46.59187620889749,
+    "cache_hit": 10.994249090238263
+  },
+  "reset_time_msk": "2026-10-18T01:37:14.002+03:00",
+  "status_time_msk": "2026-10-18T01:38:50.215+03:00",
+  "counter_wall_seconds": 96.213,
+  "same_window_as_spark": false,
+  "frames_displayed": {
+    "samples": 1706,
+    "recorded_seconds": 59.2,
+    "average_fps": 28.8,
+    "p50_ms": 36.17,
+    "p95_ms": 50.62,
+    "p99_ms": 80.81,
+    "max_ms": 341.35,
+    "over_16_67_ms_percent": 96.8,
+    "values_rounded_by_status": true
+  }
+}

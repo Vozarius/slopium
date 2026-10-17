@@ -1,0 +1,17 @@
+{
+  "eligible": 11389063,
+  "not_ready": 1559,
+  "visible_or_excluded": 8375019,
+  "near": 111081,
+  "sable": 0,
+  "hidden": 2901404,
+  "skipped": 1959096,
+  "queries": 7267057,
+  "cache_hits": 2681659,
+  "cracks_skipped": 0,
+  "last_index_ms": 0.002,
+  "sources_last": 6,
+  "reset_time_msk": "2026-10-18T01:07:35.077+03:00",
+  "status_time_msk": "2026-10-18T01:08:45.036+03:00",
+  "same_window_as_spark": false
+}
