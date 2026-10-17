@@ -1,0 +1,784 @@
+Compiled from "SodiumDynamicLights.java"
+public class toni.sodiumdynamiclights.SodiumDynamicLights {
+  public static final java.lang.String NAMESPACE;
+
+  private static final double MAX_RADIUS;
+
+  private static final double MAX_RADIUS_SQUARED;
+
+  private static toni.sodiumdynamiclights.SodiumDynamicLights INSTANCE;
+
+  public final org.slf4j.Logger logger;
+
+  public final toni.sodiumdynamiclights.DynamicLightsConfig config;
+
+  private final java.util.Set<toni.sodiumdynamiclights.DynamicLightSource> dynamicLightSources;
+
+  private final java.util.concurrent.locks.ReentrantReadWriteLock lightSourcesLock;
+
+  private long lastUpdate;
+
+  private int lastUpdateCount;
+
+  private static java.util.List<net.minecraft.server.packs.resources.PreparableReloadListener> serverDataReloadListeners;
+
+  public toni.sodiumdynamiclights.SodiumDynamicLights(net.neoforged.bus.api.IEventBus, net.neoforged.fml.ModContainer);
+    Code:
+       0: aload_0
+       1: invokespecial #68                 // Method java/lang/Object."<init>":()V
+       4: aload_0
+       5: ldc           #36                 // String sodiumdynamiclights
+       7: invokestatic  #74                 // Method org/slf4j/LoggerFactory.getLogger:(Ljava/lang/String;)Lorg/slf4j/Logger;
+      10: putfield      #76                 // Field logger:Lorg/slf4j/Logger;
+      13: aload_0
+      14: new           #78                 // class toni/sodiumdynamiclights/DynamicLightsConfig
+      17: dup
+      18: invokespecial #79                 // Method toni/sodiumdynamiclights/DynamicLightsConfig."<init>":()V
+      21: putfield      #81                 // Field config:Ltoni/sodiumdynamiclights/DynamicLightsConfig;
+      24: aload_0
+      25: new           #83                 // class java/util/HashSet
+      28: dup
+      29: invokespecial #84                 // Method java/util/HashSet."<init>":()V
+      32: putfield      #86                 // Field dynamicLightSources:Ljava/util/Set;
+      35: aload_0
+      36: new           #19                 // class java/util/concurrent/locks/ReentrantReadWriteLock
+      39: dup
+      40: invokespecial #87                 // Method java/util/concurrent/locks/ReentrantReadWriteLock."<init>":()V
+      43: putfield      #89                 // Field lightSourcesLock:Ljava/util/concurrent/locks/ReentrantReadWriteLock;
+      46: aload_0
+      47: invokestatic  #95                 // Method java/lang/System.currentTimeMillis:()J
+      50: putfield      #97                 // Field lastUpdate:J
+      53: aload_0
+      54: iconst_0
+      55: putfield      #99                 // Field lastUpdateCount:I
+      58: aload_1
+      59: aload_0
+      60: invokedynamic #118,  0            // InvokeDynamic #0:accept:(Ltoni/sodiumdynamiclights/SodiumDynamicLights;)Ljava/util/function/Consumer;
+      65: invokeinterface #124,  2          // InterfaceMethod net/neoforged/bus/api/IEventBus.addListener:(Ljava/util/function/Consumer;)V
+      70: aload_2
+      71: getstatic     #128                // Field net/neoforged/fml/config/ModConfig$Type.CLIENT:Lnet/neoforged/fml/config/ModConfig$Type;
+      74: getstatic     #132                // Field toni/sodiumdynamiclights/DynamicLightsConfig.SPECS:Lnet/neoforged/neoforge/common/ModConfigSpec;
+      77: invokevirtual #138                // Method net/neoforged/fml/ModContainer.registerConfig:(Lnet/neoforged/fml/config/ModConfig$Type;Lnet/neoforged/fml/config/IConfigSpec;)V
+      80: return
+
+  public void onInitializeClient();
+    Code:
+       0: aload_0
+       1: putstatic     #144                // Field INSTANCE:Ltoni/sodiumdynamiclights/SodiumDynamicLights;
+       4: aload_0
+       5: ldc           #146                // String Initializing SodiumDynamicLights...
+       7: invokevirtual #150                // Method log:(Ljava/lang/String;)V
+      10: getstatic     #156                // Field net/minecraft/server/packs/PackType.CLIENT_RESOURCES:Lnet/minecraft/server/packs/PackType;
+      13: new           #10                 // class toni/sodiumdynamiclights/SodiumDynamicLights$1
+      16: dup
+      17: aload_0
+      18: invokespecial #159                // Method toni/sodiumdynamiclights/SodiumDynamicLights$1."<init>":(Ltoni/sodiumdynamiclights/SodiumDynamicLights;)V
+      21: invokestatic  #163                // Method registerReloadListener:(Lnet/minecraft/server/packs/PackType;Lnet/minecraft/server/packs/resources/SimplePreparableReloadListener;)V
+      24: invokestatic  #168                // Method dev/lambdaurora/lambdynlights/api/DynamicLightHandlers.registerDefaultHandlers:()V
+      27: return
+
+  public void clientSetup(net.neoforged.fml.event.lifecycle.FMLClientSetupEvent);
+    Code:
+       0: aload_0
+       1: invokevirtual #172                // Method onInitializeClient:()V
+       4: return
+
+  public static void registerReloadListener(net.minecraft.server.packs.PackType, net.minecraft.server.packs.resources.SimplePreparableReloadListener);
+    Code:
+       0: aload_0
+       1: getstatic     #178                // Field net/minecraft/server/packs/PackType.SERVER_DATA:Lnet/minecraft/server/packs/PackType;
+       4: if_acmpne     20
+       7: getstatic     #180                // Field serverDataReloadListeners:Ljava/util/List;
+      10: aload_1
+      11: invokeinterface #186,  2          // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+      16: pop
+      17: goto          31
+      20: aload_0
+      21: getstatic     #156                // Field net/minecraft/server/packs/PackType.CLIENT_RESOURCES:Lnet/minecraft/server/packs/PackType;
+      24: if_acmpne     31
+      27: aload_1
+      28: invokestatic  #190                // Method registerClient:(Lnet/minecraft/server/packs/resources/PreparableReloadListener;)V
+      31: return
+
+  private static void registerClient(net.minecraft.server.packs.resources.PreparableReloadListener);
+    Code:
+       0: invokestatic  #197                // Method net/minecraft/client/Minecraft.getInstance:()Lnet/minecraft/client/Minecraft;
+       3: invokevirtual #201                // Method net/minecraft/client/Minecraft.getResourceManager:()Lnet/minecraft/server/packs/resources/ResourceManager;
+       6: checkcast     #203                // class net/minecraft/server/packs/resources/ReloadableResourceManager
+       9: aload_0
+      10: invokevirtual #205                // Method net/minecraft/server/packs/resources/ReloadableResourceManager.registerReloadListener:(Lnet/minecraft/server/packs/resources/PreparableReloadListener;)V
+      13: return
+
+  public static void addReloadListeners(net.neoforged.neoforge.event.AddReloadListenerEvent);
+    Code:
+       0: getstatic     #180                // Field serverDataReloadListeners:Ljava/util/List;
+       3: invokeinterface #212,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+       8: astore_1
+       9: aload_1
+      10: invokeinterface #218,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      15: ifeq          36
+      18: aload_1
+      19: invokeinterface #222,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      24: checkcast     #224                // class net/minecraft/server/packs/resources/PreparableReloadListener
+      27: astore_2
+      28: aload_0
+      29: aload_2
+      30: invokevirtual #228                // Method net/neoforged/neoforge/event/AddReloadListenerEvent.addListener:(Lnet/minecraft/server/packs/resources/PreparableReloadListener;)V
+      33: goto          9
+      36: return
+
+  public void updateAll(net.minecraft.client.renderer.LevelRenderer);
+    Code:
+       0: aload_0
+       1: getfield      #81                 // Field config:Ltoni/sodiumdynamiclights/DynamicLightsConfig;
+       4: invokevirtual #237                // Method toni/sodiumdynamiclights/DynamicLightsConfig.getDynamicLightsMode:()Ltoni/sodiumdynamiclights/DynamicLightsMode;
+       7: invokevirtual #242                // Method toni/sodiumdynamiclights/DynamicLightsMode.isEnabled:()Z
+      10: ifne          14
+      13: return
+      14: invokestatic  #95                 // Method java/lang/System.currentTimeMillis:()J
+      17: lstore_2
+      18: lload_2
+      19: aload_0
+      20: getfield      #97                 // Field lastUpdate:J
+      23: ldc2_w        #243                // long 50l
+      26: ladd
+      27: lcmp
+      28: iflt          118
+      31: aload_0
+      32: lload_2
+      33: putfield      #97                 // Field lastUpdate:J
+      36: aload_0
+      37: iconst_0
+      38: putfield      #99                 // Field lastUpdateCount:I
+      41: aload_0
+      42: getfield      #89                 // Field lightSourcesLock:Ljava/util/concurrent/locks/ReentrantReadWriteLock;
+      45: invokevirtual #248                // Method java/util/concurrent/locks/ReentrantReadWriteLock.readLock:()Ljava/util/concurrent/locks/ReentrantReadWriteLock$ReadLock;
+      48: invokevirtual #251                // Method java/util/concurrent/locks/ReentrantReadWriteLock$ReadLock.lock:()V
+      51: aload_0
+      52: getfield      #86                 // Field dynamicLightSources:Ljava/util/Set;
+      55: invokeinterface #254,  1          // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+      60: astore        4
+      62: aload         4
+      64: invokeinterface #218,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      69: ifeq          108
+      72: aload         4
+      74: invokeinterface #222,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      79: checkcast     #256                // class toni/sodiumdynamiclights/DynamicLightSource
+      82: astore        5
+      84: aload         5
+      86: aload_1
+      87: invokeinterface #260,  2          // InterfaceMethod toni/sodiumdynamiclights/DynamicLightSource.sodiumdynamiclights$updateDynamicLight:(Lnet/minecraft/client/renderer/LevelRenderer;)Z
+      92: ifeq          105
+      95: aload_0
+      96: dup
+      97: getfield      #99                 // Field lastUpdateCount:I
+     100: iconst_1
+     101: iadd
+     102: putfield      #99                 // Field lastUpdateCount:I
+     105: goto          62
+     108: aload_0
+     109: getfield      #89                 // Field lightSourcesLock:Ljava/util/concurrent/locks/ReentrantReadWriteLock;
+     112: invokevirtual #248                // Method java/util/concurrent/locks/ReentrantReadWriteLock.readLock:()Ljava/util/concurrent/locks/ReentrantReadWriteLock$ReadLock;
+     115: invokevirtual #263                // Method java/util/concurrent/locks/ReentrantReadWriteLock$ReadLock.unlock:()V
+     118: return
+
+  public int getLastUpdateCount();
+    Code:
+       0: aload_0
+       1: getfield      #99                 // Field lastUpdateCount:I
+       4: ireturn
+
+  public int getLightmapWithDynamicLight(net.minecraft.core.BlockPos, int);
+    Code:
+       0: aload_0
+       1: aload_0
+       2: aload_1
+       3: invokevirtual #277                // Method getDynamicLightLevel:(Lnet/minecraft/core/BlockPos;)D
+       6: iload_2
+       7: invokevirtual #280                // Method getLightmapWithDynamicLight:(DI)I
+      10: ireturn
+
+  public int getLightmapWithDynamicLight(net.minecraft.world.entity.Entity, int);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #289                // Method net/minecraft/world/entity/Entity.getOnPos:()Lnet/minecraft/core/BlockPos;
+       5: invokevirtual #277                // Method getDynamicLightLevel:(Lnet/minecraft/core/BlockPos;)D
+       8: d2i
+       9: istore_3
+      10: aload_1
+      11: checkcast     #256                // class toni/sodiumdynamiclights/DynamicLightSource
+      14: invokeinterface #292,  1          // InterfaceMethod toni/sodiumdynamiclights/DynamicLightSource.sdl$getLuminance:()I
+      19: istore        4
+      21: aload_0
+      22: iload_3
+      23: iload         4
+      25: invokestatic  #298                // Method java/lang/Math.max:(II)I
+      28: i2d
+      29: iload_2
+      30: invokevirtual #280                // Method getLightmapWithDynamicLight:(DI)I
+      33: ireturn
+
+  public int getLightmapWithDynamicLight(double, int);
+    Code:
+       0: dload_1
+       1: dconst_0
+       2: dcmpl
+       3: ifle          43
+       6: iload_3
+       7: invokestatic  #308                // Method net/minecraft/client/renderer/LightTexture.block:(I)I
+      10: istore        4
+      12: dload_1
+      13: iload         4
+      15: i2d
+      16: dcmpl
+      17: ifle          43
+      20: dload_1
+      21: ldc2_w        #309                // double 16.0d
+      24: dmul
+      25: d2i
+      26: istore        5
+      28: iload_3
+      29: ldc_w         #311                // int -1048576
+      32: iand
+      33: istore_3
+      34: iload_3
+      35: iload         5
+      37: ldc_w         #312                // int 1048575
+      40: iand
+      41: ior
+      42: istore_3
+      43: iload_3
+      44: ireturn
+
+  public double getDynamicLightLevel(net.minecraft.core.BlockPos);
+    Code:
+       0: dconst_0
+       1: dstore_2
+       2: aload_0
+       3: getfield      #89                 // Field lightSourcesLock:Ljava/util/concurrent/locks/ReentrantReadWriteLock;
+       6: invokevirtual #248                // Method java/util/concurrent/locks/ReentrantReadWriteLock.readLock:()Ljava/util/concurrent/locks/ReentrantReadWriteLock$ReadLock;
+       9: invokevirtual #251                // Method java/util/concurrent/locks/ReentrantReadWriteLock$ReadLock.lock:()V
+      12: aload_0
+      13: getfield      #86                 // Field dynamicLightSources:Ljava/util/Set;
+      16: invokeinterface #254,  1          // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+      21: astore        4
+      23: aload         4
+      25: invokeinterface #218,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      30: ifeq          56
+      33: aload         4
+      35: invokeinterface #222,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      40: checkcast     #256                // class toni/sodiumdynamiclights/DynamicLightSource
+      43: astore        5
+      45: aload_1
+      46: aload         5
+      48: dload_2
+      49: invokestatic  #318                // Method maxDynamicLightLevel:(Lnet/minecraft/core/BlockPos;Ltoni/sodiumdynamiclights/DynamicLightSource;D)D
+      52: dstore_2
+      53: goto          23
+      56: aload_0
+      57: getfield      #89                 // Field lightSourcesLock:Ljava/util/concurrent/locks/ReentrantReadWriteLock;
+      60: invokevirtual #248                // Method java/util/concurrent/locks/ReentrantReadWriteLock.readLock:()Ljava/util/concurrent/locks/ReentrantReadWriteLock$ReadLock;
+      63: invokevirtual #263                // Method java/util/concurrent/locks/ReentrantReadWriteLock$ReadLock.unlock:()V
+      66: dload_2
+      67: dconst_0
+      68: ldc2_w        #319                // double 15.0d
+      71: invokestatic  #326                // Method net/minecraft/util/Mth.clamp:(DDD)D
+      74: dreturn
+
+  public static double maxDynamicLightLevel(net.minecraft.core.BlockPos, toni.sodiumdynamiclights.DynamicLightSource, double);
+    Code:
+       0: aload_1
+       1: invokeinterface #292,  1          // InterfaceMethod toni/sodiumdynamiclights/DynamicLightSource.sdl$getLuminance:()I
+       6: istore        4
+       8: iload         4
+      10: ifle          126
+      13: aload_0
+      14: invokevirtual #333                // Method net/minecraft/core/BlockPos.getX:()I
+      17: i2d
+      18: aload_1
+      19: invokeinterface #337,  1          // InterfaceMethod toni/sodiumdynamiclights/DynamicLightSource.sdl$getDynamicLightX:()D
+      24: dsub
+      25: ldc2_w        #338                // double 0.5d
+      28: dadd
+      29: dstore        5
+      31: aload_0
+      32: invokevirtual #342                // Method net/minecraft/core/BlockPos.getY:()I
+      35: i2d
+      36: aload_1
+      37: invokeinterface #345,  1          // InterfaceMethod toni/sodiumdynamiclights/DynamicLightSource.sdl$getDynamicLightY:()D
+      42: dsub
+      43: ldc2_w        #338                // double 0.5d
+      46: dadd
+      47: dstore        7
+      49: aload_0
+      50: invokevirtual #348                // Method net/minecraft/core/BlockPos.getZ:()I
+      53: i2d
+      54: aload_1
+      55: invokeinterface #351,  1          // InterfaceMethod toni/sodiumdynamiclights/DynamicLightSource.sdl$getDynamicLightZ:()D
+      60: dsub
+      61: ldc2_w        #338                // double 0.5d
+      64: dadd
+      65: dstore        9
+      67: dload         5
+      69: dload         5
+      71: dmul
+      72: dload         7
+      74: dload         7
+      76: dmul
+      77: dadd
+      78: dload         9
+      80: dload         9
+      82: dmul
+      83: dadd
+      84: dstore        11
+      86: dload         11
+      88: ldc2_w        #42                 // double 60.0625d
+      91: dcmpg
+      92: ifgt          126
+      95: dconst_1
+      96: dload         11
+      98: invokestatic  #355                // Method java/lang/Math.sqrt:(D)D
+     101: ldc2_w        #39                 // double 7.75d
+     104: ddiv
+     105: dsub
+     106: dstore        13
+     108: dload         13
+     110: iload         4
+     112: i2d
+     113: dmul
+     114: dstore        15
+     116: dload         15
+     118: dload_2
+     119: dcmpl
+     120: ifle          126
+     123: dload         15
+     125: dreturn
+     126: dload_2
+     127: dreturn
+
+  public void addLightSource(toni.sodiumdynamiclights.DynamicLightSource);
+    Code:
+       0: aload_1
+       1: invokeinterface #367,  1          // InterfaceMethod toni/sodiumdynamiclights/DynamicLightSource.sdl$getDynamicLightLevel:()Lnet/minecraft/world/level/Level;
+       6: invokevirtual #372                // Method net/minecraft/world/level/Level.isClientSide:()Z
+       9: ifne          13
+      12: return
+      13: aload_0
+      14: getfield      #81                 // Field config:Ltoni/sodiumdynamiclights/DynamicLightsConfig;
+      17: invokevirtual #237                // Method toni/sodiumdynamiclights/DynamicLightsConfig.getDynamicLightsMode:()Ltoni/sodiumdynamiclights/DynamicLightsMode;
+      20: invokevirtual #242                // Method toni/sodiumdynamiclights/DynamicLightsMode.isEnabled:()Z
+      23: ifne          27
+      26: return
+      27: aload_0
+      28: aload_1
+      29: invokevirtual #376                // Method containsLightSource:(Ltoni/sodiumdynamiclights/DynamicLightSource;)Z
+      32: ifeq          36
+      35: return
+      36: aload_0
+      37: getfield      #89                 // Field lightSourcesLock:Ljava/util/concurrent/locks/ReentrantReadWriteLock;
+      40: invokevirtual #380                // Method java/util/concurrent/locks/ReentrantReadWriteLock.writeLock:()Ljava/util/concurrent/locks/ReentrantReadWriteLock$WriteLock;
+      43: invokevirtual #381                // Method java/util/concurrent/locks/ReentrantReadWriteLock$WriteLock.lock:()V
+      46: aload_0
+      47: getfield      #86                 // Field dynamicLightSources:Ljava/util/Set;
+      50: aload_1
+      51: invokeinterface #382,  2          // InterfaceMethod java/util/Set.add:(Ljava/lang/Object;)Z
+      56: pop
+      57: aload_0
+      58: getfield      #89                 // Field lightSourcesLock:Ljava/util/concurrent/locks/ReentrantReadWriteLock;
+      61: invokevirtual #380                // Method java/util/concurrent/locks/ReentrantReadWriteLock.writeLock:()Ljava/util/concurrent/locks/ReentrantReadWriteLock$WriteLock;
+      64: invokevirtual #383                // Method java/util/concurrent/locks/ReentrantReadWriteLock$WriteLock.unlock:()V
+      67: return
+
+  public boolean containsLightSource(toni.sodiumdynamiclights.DynamicLightSource);
+    Code:
+       0: aload_1
+       1: invokeinterface #367,  1          // InterfaceMethod toni/sodiumdynamiclights/DynamicLightSource.sdl$getDynamicLightLevel:()Lnet/minecraft/world/level/Level;
+       6: invokevirtual #372                // Method net/minecraft/world/level/Level.isClientSide:()Z
+       9: ifne          14
+      12: iconst_0
+      13: ireturn
+      14: aload_0
+      15: getfield      #89                 // Field lightSourcesLock:Ljava/util/concurrent/locks/ReentrantReadWriteLock;
+      18: invokevirtual #248                // Method java/util/concurrent/locks/ReentrantReadWriteLock.readLock:()Ljava/util/concurrent/locks/ReentrantReadWriteLock$ReadLock;
+      21: invokevirtual #251                // Method java/util/concurrent/locks/ReentrantReadWriteLock$ReadLock.lock:()V
+      24: aload_0
+      25: getfield      #86                 // Field dynamicLightSources:Ljava/util/Set;
+      28: aload_1
+      29: invokeinterface #386,  2          // InterfaceMethod java/util/Set.contains:(Ljava/lang/Object;)Z
+      34: istore_2
+      35: aload_0
+      36: getfield      #89                 // Field lightSourcesLock:Ljava/util/concurrent/locks/ReentrantReadWriteLock;
+      39: invokevirtual #248                // Method java/util/concurrent/locks/ReentrantReadWriteLock.readLock:()Ljava/util/concurrent/locks/ReentrantReadWriteLock$ReadLock;
+      42: invokevirtual #263                // Method java/util/concurrent/locks/ReentrantReadWriteLock$ReadLock.unlock:()V
+      45: iload_2
+      46: ireturn
+
+  public int getLightSourcesCount();
+    Code:
+       0: aload_0
+       1: getfield      #89                 // Field lightSourcesLock:Ljava/util/concurrent/locks/ReentrantReadWriteLock;
+       4: invokevirtual #248                // Method java/util/concurrent/locks/ReentrantReadWriteLock.readLock:()Ljava/util/concurrent/locks/ReentrantReadWriteLock$ReadLock;
+       7: invokevirtual #251                // Method java/util/concurrent/locks/ReentrantReadWriteLock$ReadLock.lock:()V
+      10: aload_0
+      11: getfield      #86                 // Field dynamicLightSources:Ljava/util/Set;
+      14: invokeinterface #391,  1          // InterfaceMethod java/util/Set.size:()I
+      19: istore_1
+      20: aload_0
+      21: getfield      #89                 // Field lightSourcesLock:Ljava/util/concurrent/locks/ReentrantReadWriteLock;
+      24: invokevirtual #248                // Method java/util/concurrent/locks/ReentrantReadWriteLock.readLock:()Ljava/util/concurrent/locks/ReentrantReadWriteLock$ReadLock;
+      27: invokevirtual #263                // Method java/util/concurrent/locks/ReentrantReadWriteLock$ReadLock.unlock:()V
+      30: iload_1
+      31: ireturn
+
+  public void removeLightSource(toni.sodiumdynamiclights.DynamicLightSource);
+    Code:
+       0: aload_0
+       1: getfield      #89                 // Field lightSourcesLock:Ljava/util/concurrent/locks/ReentrantReadWriteLock;
+       4: invokevirtual #380                // Method java/util/concurrent/locks/ReentrantReadWriteLock.writeLock:()Ljava/util/concurrent/locks/ReentrantReadWriteLock$WriteLock;
+       7: invokevirtual #381                // Method java/util/concurrent/locks/ReentrantReadWriteLock$WriteLock.lock:()V
+      10: aload_0
+      11: getfield      #86                 // Field dynamicLightSources:Ljava/util/Set;
+      14: invokeinterface #254,  1          // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+      19: astore_2
+      20: aload_2
+      21: invokeinterface #218,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      26: ifeq          70
+      29: aload_2
+      30: invokeinterface #222,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      35: checkcast     #256                // class toni/sodiumdynamiclights/DynamicLightSource
+      38: astore_3
+      39: aload_3
+      40: aload_1
+      41: invokeinterface #395,  2          // InterfaceMethod toni/sodiumdynamiclights/DynamicLightSource.equals:(Ljava/lang/Object;)Z
+      46: ifeq          20
+      49: aload_2
+      50: invokeinterface #398,  1          // InterfaceMethod java/util/Iterator.remove:()V
+      55: aload_1
+      56: invokestatic  #197                // Method net/minecraft/client/Minecraft.getInstance:()Lnet/minecraft/client/Minecraft;
+      59: getfield      #401                // Field net/minecraft/client/Minecraft.levelRenderer:Lnet/minecraft/client/renderer/LevelRenderer;
+      62: invokeinterface #404,  2          // InterfaceMethod toni/sodiumdynamiclights/DynamicLightSource.sodiumdynamiclights$scheduleTrackedChunksRebuild:(Lnet/minecraft/client/renderer/LevelRenderer;)V
+      67: goto          70
+      70: aload_0
+      71: getfield      #89                 // Field lightSourcesLock:Ljava/util/concurrent/locks/ReentrantReadWriteLock;
+      74: invokevirtual #380                // Method java/util/concurrent/locks/ReentrantReadWriteLock.writeLock:()Ljava/util/concurrent/locks/ReentrantReadWriteLock$WriteLock;
+      77: invokevirtual #383                // Method java/util/concurrent/locks/ReentrantReadWriteLock$WriteLock.unlock:()V
+      80: return
+
+  public void clearLightSources();
+    Code:
+       0: aload_0
+       1: getfield      #89                 // Field lightSourcesLock:Ljava/util/concurrent/locks/ReentrantReadWriteLock;
+       4: invokevirtual #380                // Method java/util/concurrent/locks/ReentrantReadWriteLock.writeLock:()Ljava/util/concurrent/locks/ReentrantReadWriteLock$WriteLock;
+       7: invokevirtual #381                // Method java/util/concurrent/locks/ReentrantReadWriteLock$WriteLock.lock:()V
+      10: aload_0
+      11: getfield      #86                 // Field dynamicLightSources:Ljava/util/Set;
+      14: invokeinterface #254,  1          // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+      19: astore_1
+      20: aload_1
+      21: invokeinterface #218,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      26: ifeq          75
+      29: aload_1
+      30: invokeinterface #222,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      35: checkcast     #256                // class toni/sodiumdynamiclights/DynamicLightSource
+      38: astore_2
+      39: aload_1
+      40: invokeinterface #398,  1          // InterfaceMethod java/util/Iterator.remove:()V
+      45: aload_2
+      46: invokeinterface #292,  1          // InterfaceMethod toni/sodiumdynamiclights/DynamicLightSource.sdl$getLuminance:()I
+      51: ifle          60
+      54: aload_2
+      55: invokeinterface #411,  1          // InterfaceMethod toni/sodiumdynamiclights/DynamicLightSource.sdl$resetDynamicLight:()V
+      60: aload_2
+      61: invokestatic  #197                // Method net/minecraft/client/Minecraft.getInstance:()Lnet/minecraft/client/Minecraft;
+      64: getfield      #401                // Field net/minecraft/client/Minecraft.levelRenderer:Lnet/minecraft/client/renderer/LevelRenderer;
+      67: invokeinterface #404,  2          // InterfaceMethod toni/sodiumdynamiclights/DynamicLightSource.sodiumdynamiclights$scheduleTrackedChunksRebuild:(Lnet/minecraft/client/renderer/LevelRenderer;)V
+      72: goto          20
+      75: aload_0
+      76: getfield      #89                 // Field lightSourcesLock:Ljava/util/concurrent/locks/ReentrantReadWriteLock;
+      79: invokevirtual #380                // Method java/util/concurrent/locks/ReentrantReadWriteLock.writeLock:()Ljava/util/concurrent/locks/ReentrantReadWriteLock$WriteLock;
+      82: invokevirtual #383                // Method java/util/concurrent/locks/ReentrantReadWriteLock$WriteLock.unlock:()V
+      85: return
+
+  public void removeLightSources(java.util.function.Predicate<toni.sodiumdynamiclights.DynamicLightSource>);
+    Code:
+       0: aload_0
+       1: getfield      #89                 // Field lightSourcesLock:Ljava/util/concurrent/locks/ReentrantReadWriteLock;
+       4: invokevirtual #380                // Method java/util/concurrent/locks/ReentrantReadWriteLock.writeLock:()Ljava/util/concurrent/locks/ReentrantReadWriteLock$WriteLock;
+       7: invokevirtual #381                // Method java/util/concurrent/locks/ReentrantReadWriteLock$WriteLock.lock:()V
+      10: aload_0
+      11: getfield      #86                 // Field dynamicLightSources:Ljava/util/Set;
+      14: invokeinterface #254,  1          // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+      19: astore_2
+      20: aload_2
+      21: invokeinterface #218,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      26: ifeq          85
+      29: aload_2
+      30: invokeinterface #222,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      35: checkcast     #256                // class toni/sodiumdynamiclights/DynamicLightSource
+      38: astore_3
+      39: aload_1
+      40: aload_3
+      41: invokeinterface #420,  2          // InterfaceMethod java/util/function/Predicate.test:(Ljava/lang/Object;)Z
+      46: ifeq          20
+      49: aload_2
+      50: invokeinterface #398,  1          // InterfaceMethod java/util/Iterator.remove:()V
+      55: aload_3
+      56: invokeinterface #292,  1          // InterfaceMethod toni/sodiumdynamiclights/DynamicLightSource.sdl$getLuminance:()I
+      61: ifle          70
+      64: aload_3
+      65: invokeinterface #411,  1          // InterfaceMethod toni/sodiumdynamiclights/DynamicLightSource.sdl$resetDynamicLight:()V
+      70: aload_3
+      71: invokestatic  #197                // Method net/minecraft/client/Minecraft.getInstance:()Lnet/minecraft/client/Minecraft;
+      74: getfield      #401                // Field net/minecraft/client/Minecraft.levelRenderer:Lnet/minecraft/client/renderer/LevelRenderer;
+      77: invokeinterface #404,  2          // InterfaceMethod toni/sodiumdynamiclights/DynamicLightSource.sodiumdynamiclights$scheduleTrackedChunksRebuild:(Lnet/minecraft/client/renderer/LevelRenderer;)V
+      82: goto          85
+      85: aload_0
+      86: getfield      #89                 // Field lightSourcesLock:Ljava/util/concurrent/locks/ReentrantReadWriteLock;
+      89: invokevirtual #380                // Method java/util/concurrent/locks/ReentrantReadWriteLock.writeLock:()Ljava/util/concurrent/locks/ReentrantReadWriteLock$WriteLock;
+      92: invokevirtual #383                // Method java/util/concurrent/locks/ReentrantReadWriteLock$WriteLock.unlock:()V
+      95: return
+
+  public void removeEntitiesLightSource();
+    Code:
+       0: aload_0
+       1: invokedynamic #432,  0            // InvokeDynamic #1:test:()Ljava/util/function/Predicate;
+       6: invokevirtual #434                // Method removeLightSources:(Ljava/util/function/Predicate;)V
+       9: return
+
+  public void removeCreeperLightSources();
+    Code:
+       0: aload_0
+       1: invokedynamic #440,  0            // InvokeDynamic #2:test:()Ljava/util/function/Predicate;
+       6: invokevirtual #434                // Method removeLightSources:(Ljava/util/function/Predicate;)V
+       9: return
+
+  public void removeTntLightSources();
+    Code:
+       0: aload_0
+       1: invokedynamic #446,  0            // InvokeDynamic #3:test:()Ljava/util/function/Predicate;
+       6: invokevirtual #434                // Method removeLightSources:(Ljava/util/function/Predicate;)V
+       9: return
+
+  public void removeBlockEntitiesLightSource();
+    Code:
+       0: aload_0
+       1: invokedynamic #452,  0            // InvokeDynamic #4:test:()Ljava/util/function/Predicate;
+       6: invokevirtual #434                // Method removeLightSources:(Ljava/util/function/Predicate;)V
+       9: return
+
+  public void log(java.lang.String);
+    Code:
+       0: aload_0
+       1: getfield      #76                 // Field logger:Lorg/slf4j/Logger;
+       4: aload_1
+       5: invokedynamic #465,  0            // InvokeDynamic #5:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+      10: invokeinterface #469,  2          // InterfaceMethod org/slf4j/Logger.info:(Ljava/lang/String;)V
+      15: return
+
+  public void warn(java.lang.String);
+    Code:
+       0: aload_0
+       1: getfield      #76                 // Field logger:Lorg/slf4j/Logger;
+       4: aload_1
+       5: invokedynamic #465,  0            // InvokeDynamic #5:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+      10: invokeinterface #472,  2          // InterfaceMethod org/slf4j/Logger.warn:(Ljava/lang/String;)V
+      15: return
+
+  public static void scheduleChunkRebuild(net.minecraft.client.renderer.LevelRenderer, net.minecraft.core.BlockPos);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #333                // Method net/minecraft/core/BlockPos.getX:()I
+       5: aload_1
+       6: invokevirtual #342                // Method net/minecraft/core/BlockPos.getY:()I
+       9: aload_1
+      10: invokevirtual #348                // Method net/minecraft/core/BlockPos.getZ:()I
+      13: invokestatic  #478                // Method scheduleChunkRebuild:(Lnet/minecraft/client/renderer/LevelRenderer;III)V
+      16: return
+
+  public static void scheduleChunkRebuild(net.minecraft.client.renderer.LevelRenderer, long);
+    Code:
+       0: aload_0
+       1: lload_1
+       2: invokestatic  #482                // Method net/minecraft/core/BlockPos.getX:(J)I
+       5: lload_1
+       6: invokestatic  #484                // Method net/minecraft/core/BlockPos.getY:(J)I
+       9: lload_1
+      10: invokestatic  #486                // Method net/minecraft/core/BlockPos.getZ:(J)I
+      13: invokestatic  #478                // Method scheduleChunkRebuild:(Lnet/minecraft/client/renderer/LevelRenderer;III)V
+      16: return
+
+  public static void scheduleChunkRebuild(net.minecraft.client.renderer.LevelRenderer, int, int, int);
+    Code:
+       0: invokestatic  #197                // Method net/minecraft/client/Minecraft.getInstance:()Lnet/minecraft/client/Minecraft;
+       3: getfield      #493                // Field net/minecraft/client/Minecraft.level:Lnet/minecraft/client/multiplayer/ClientLevel;
+       6: ifnull        22
+       9: aload_0
+      10: checkcast     #495                // class toni/sodiumdynamiclights/accessor/WorldRendererAccessor
+      13: iload_1
+      14: iload_2
+      15: iload_3
+      16: iconst_0
+      17: invokeinterface #499,  5          // InterfaceMethod toni/sodiumdynamiclights/accessor/WorldRendererAccessor.sodiumdynamiclights$scheduleChunkRebuild:(IIIZ)V
+      22: return
+
+  public static void updateTrackedChunks(net.minecraft.core.BlockPos, it.unimi.dsi.fastutil.longs.LongOpenHashSet, it.unimi.dsi.fastutil.longs.LongOpenHashSet);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: aload_2
+       5: ifnull        33
+       8: aload_0
+       9: invokevirtual #507                // Method net/minecraft/core/BlockPos.asLong:()J
+      12: lstore_3
+      13: aload_1
+      14: ifnull        23
+      17: aload_1
+      18: lload_3
+      19: invokevirtual #512                // Method it/unimi/dsi/fastutil/longs/LongOpenHashSet.remove:(J)Z
+      22: pop
+      23: aload_2
+      24: ifnull        33
+      27: aload_2
+      28: lload_3
+      29: invokevirtual #514                // Method it/unimi/dsi/fastutil/longs/LongOpenHashSet.add:(J)Z
+      32: pop
+      33: return
+
+  public static void updateTracking(toni.sodiumdynamiclights.DynamicLightSource);
+    Code:
+       0: aload_0
+       1: invokeinterface #519,  1          // InterfaceMethod toni/sodiumdynamiclights/DynamicLightSource.sdl$isDynamicLightEnabled:()Z
+       6: istore_1
+       7: aload_0
+       8: invokeinterface #292,  1          // InterfaceMethod toni/sodiumdynamiclights/DynamicLightSource.sdl$getLuminance:()I
+      13: istore_2
+      14: iload_1
+      15: ifne          32
+      18: iload_2
+      19: ifle          32
+      22: aload_0
+      23: iconst_1
+      24: invokeinterface #523,  2          // InterfaceMethod toni/sodiumdynamiclights/DynamicLightSource.sdl$setDynamicLightEnabled:(Z)V
+      29: goto          48
+      32: iload_1
+      33: ifeq          48
+      36: iload_2
+      37: iconst_1
+      38: if_icmpge     48
+      41: aload_0
+      42: iconst_0
+      43: invokeinterface #523,  2          // InterfaceMethod toni/sodiumdynamiclights/DynamicLightSource.sdl$setDynamicLightEnabled:(Z)V
+      48: return
+
+  private static boolean isEyeSubmergedInFluid(net.minecraft.world.entity.LivingEntity);
+    Code:
+       0: invokestatic  #530                // Method get:()Ltoni/sodiumdynamiclights/SodiumDynamicLights;
+       3: getfield      #81                 // Field config:Ltoni/sodiumdynamiclights/DynamicLightsConfig;
+       6: invokevirtual #534                // Method toni/sodiumdynamiclights/DynamicLightsConfig.getWaterSensitiveCheck:()Lnet/neoforged/neoforge/common/ModConfigSpec$BooleanValue;
+       9: invokevirtual #536                // Method net/neoforged/neoforge/common/ModConfigSpec$BooleanValue.get:()Ljava/lang/Object;
+      12: checkcast     #538                // class java/lang/Boolean
+      15: invokevirtual #541                // Method java/lang/Boolean.booleanValue:()Z
+      18: ifne          23
+      21: iconst_0
+      22: ireturn
+      23: aload_0
+      24: invokevirtual #545                // Method net/minecraft/world/entity/LivingEntity.getX:()D
+      27: aload_0
+      28: invokevirtual #548                // Method net/minecraft/world/entity/LivingEntity.getEyeY:()D
+      31: aload_0
+      32: invokevirtual #550                // Method net/minecraft/world/entity/LivingEntity.getZ:()D
+      35: invokestatic  #554                // Method net/minecraft/core/BlockPos.containing:(DDD)Lnet/minecraft/core/BlockPos;
+      38: astore_1
+      39: aload_0
+      40: invokevirtual #556                // Method net/minecraft/world/entity/LivingEntity.level:()Lnet/minecraft/world/level/Level;
+      43: aload_1
+      44: invokevirtual #560                // Method net/minecraft/world/level/Level.getFluidState:(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/material/FluidState;
+      47: invokevirtual #565                // Method net/minecraft/world/level/material/FluidState.isEmpty:()Z
+      50: ifne          57
+      53: iconst_1
+      54: goto          58
+      57: iconst_0
+      58: ireturn
+
+  public static int getLivingEntityLuminanceFromItems(net.minecraft.world.entity.LivingEntity);
+    Code:
+       0: aload_0
+       1: invokestatic  #571                // Method isEyeSubmergedInFluid:(Lnet/minecraft/world/entity/LivingEntity;)Z
+       4: istore_1
+       5: iconst_0
+       6: istore_2
+       7: aload_0
+       8: invokevirtual #575                // Method net/minecraft/world/entity/LivingEntity.getAllSlots:()Ljava/lang/Iterable;
+      11: invokeinterface #578,  1          // InterfaceMethod java/lang/Iterable.iterator:()Ljava/util/Iterator;
+      16: astore_3
+      17: aload_3
+      18: invokeinterface #218,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      23: ifeq          59
+      26: aload_3
+      27: invokeinterface #222,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      32: checkcast     #580                // class net/minecraft/world/item/ItemStack
+      35: astore        4
+      37: aload         4
+      39: invokevirtual #581                // Method net/minecraft/world/item/ItemStack.isEmpty:()Z
+      42: ifne          56
+      45: iload_2
+      46: aload         4
+      48: iload_1
+      49: invokestatic  #585                // Method getLuminanceFromItemStack:(Lnet/minecraft/world/item/ItemStack;Z)I
+      52: invokestatic  #298                // Method java/lang/Math.max:(II)I
+      55: istore_2
+      56: goto          17
+      59: iload_2
+      60: ireturn
+
+  public static int getLuminanceFromItemStack(net.minecraft.world.item.ItemStack, boolean);
+    Code:
+       0: aload_0
+       1: iload_1
+       2: invokestatic  #595                // Method dev/lambdaurora/lambdynlights/api/item/ItemLightSources.getLuminance:(Lnet/minecraft/world/item/ItemStack;Z)I
+       5: ireturn
+
+  public static toni.sodiumdynamiclights.SodiumDynamicLights get();
+    Code:
+       0: getstatic     #144                // Field INSTANCE:Ltoni/sodiumdynamiclights/SodiumDynamicLights;
+       3: areturn
+
+  private static boolean lambda$removeBlockEntitiesLightSource$3(toni.sodiumdynamiclights.DynamicLightSource);
+    Code:
+       0: aload_0
+       1: instanceof    #597                // class net/minecraft/world/level/block/entity/BlockEntity
+       4: ireturn
+
+  private static boolean lambda$removeTntLightSources$2(toni.sodiumdynamiclights.DynamicLightSource);
+    Code:
+       0: aload_0
+       1: instanceof    #599                // class net/minecraft/world/entity/item/PrimedTnt
+       4: ireturn
+
+  private static boolean lambda$removeCreeperLightSources$1(toni.sodiumdynamiclights.DynamicLightSource);
+    Code:
+       0: aload_0
+       1: instanceof    #601                // class net/minecraft/world/entity/monster/Creeper
+       4: ireturn
+
+  private static boolean lambda$removeEntitiesLightSource$0(toni.sodiumdynamiclights.DynamicLightSource);
+    Code:
+       0: aload_0
+       1: instanceof    #285                // class net/minecraft/world/entity/Entity
+       4: ifeq          18
+       7: aload_0
+       8: instanceof    #603                // class net/minecraft/world/entity/player/Player
+      11: ifne          18
+      14: iconst_1
+      15: goto          19
+      18: iconst_0
+      19: ireturn
+
+  static {};
+    Code:
+       0: invokestatic  #610                // Method com/google/common/collect/Lists.newArrayList:()Ljava/util/ArrayList;
+       3: putstatic     #180                // Field serverDataReloadListeners:Ljava/util/List;
+       6: return
+}

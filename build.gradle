@@ -1,0 +1,114 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.141'
+}
+
+group = 'dev.slopium'
+version = mod_version
+base.archivesName = 'slopium-neoforge-1.21.1'
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+sourceSets {
+    smoke {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+configurations {
+    smokeImplementation.extendsFrom implementation
+    smokeCompileOnly.extendsFrom compileOnly
+    smokeRuntimeOnly.extendsFrom runtimeOnly
+}
+
+repositories { mavenCentral() }
+
+def smokeProfile = providers.gradleProperty('smokeProfile').getOrElse('full')
+def smokeDir = file("run/smoke-${smokeProfile}")
+
+neoForge {
+    version = neo_version
+    mods {
+        slopium { sourceSet sourceSets.main }
+        slopium_smoke { sourceSet sourceSets.smoke }
+    }
+    runs {
+        client { client(); loadedMods = [mods.slopium] }
+        smokeClient {
+            client()
+            sourceSet = sourceSets.smoke
+            gameDirectory = smokeDir
+            jvmArgument '-Xmx4G'
+            programArguments.addAll('--width', '1280', '--height', '720')
+        }
+    }
+}
+
+def compatDir = layout.buildDirectory.dir('compat')
+def extractCompat = tasks.register('extractCompat') {
+    inputs.files(fileTree('reference/mods') { include 'sodium-neoforge-*.jar'; include 'create-1.21.1-*.jar' })
+    outputs.dir(compatDir)
+    doLast {
+        inputs.files.each { jar ->
+            copy {
+                from zipTree(jar)
+                include 'META-INF/jarjar/*sodium*mod.jar'
+                include 'META-INF/jarjar/*flywheel*.jar'
+                include 'META-INF/jarjar/*Registrate*.jar'
+                include 'META-INF/jarjar/*ponder*.jar'
+                eachFile { path = name }
+                includeEmptyDirs = false
+                into compatDir
+            }
+        }
+    }
+}
+
+dependencies {
+    // Reference binaries are compile-only and are never bundled in Slopium.
+    compileOnly fileTree('reference/mods') {
+        include 'create-1.21.1-*.jar'
+        include 'sodiumdynamiclights-*.jar'
+        include 'entityculling-*.jar'
+    }
+    compileOnly files(extractCompat.map { compatDir.get().asFile.listFiles() ?: [] })
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+// Let the normal mods-folder locator handle Sodium's service-library wrapper and
+// nested mod. Treating the outer JAR as a Gradle runtime mod breaks Jar-in-Jar selection.
+if (project.hasProperty('withReferenceMods')) {
+    def smokeMods = tasks.register('prepareSmokeMods', Copy) {
+        from('reference/mods') {
+            if (smokeProfile == 'full') {
+                include '*.jar'
+                exclude 'create-dyn-light-forge-1.21.1-2.0.1.jar'
+            } else {
+                include 'sodium-neoforge-*.jar', 'reeses-sodium-options-*.jar'
+                if (smokeProfile == 'legacy') {
+                    include 'create-1.21.1-*.jar', 'sodiumdynamiclights-*.jar'
+                    include 'create-dyn-light-forge-1.21.1-2.0.1.jar'
+                }
+            }
+        }
+        into new File(smokeDir, 'mods')
+        doLast {
+            def options = new File(smokeDir, 'options.txt')
+            if (!options.exists()) options.text = 'lang:ru_ru\nguiScale:2\n'
+        }
+    }
+    tasks.named('runSmokeClient') { dependsOn smokeMods }
+}
+
+tasks.named('compileJava') { dependsOn extractCompat }
+tasks.named('compileSmokeJava') { dependsOn extractCompat }
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+tasks.named('processResources') {
+    inputs.property 'version', project.version
+    filesMatching('META-INF/neoforge.mods.toml') { expand version: project.version }
+}
+tasks.named('test') { useJUnitPlatform() }
+tasks.named('jar') {
+    manifest { attributes 'Implementation-Title': 'Slopium', 'Implementation-Version': project.version }
+}
+

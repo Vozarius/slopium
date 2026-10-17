@@ -1,0 +1,6 @@
+{"kind":"synthetic: one snapshot build + 4096 queries, no cache","cases":[
+{"name":"empty","linear_ms":0.03360,"index_build_and_queries_ms":0.01460,"ratio":2.301},
+{"name":"16 spread sources","linear_ms":0.10150,"index_build_and_queries_ms":0.11330,"ratio":0.896},
+{"name":"2048 spread sources","linear_ms":11.79150,"index_build_and_queries_ms":1.41730,"ratio":8.320},
+{"name":"2048 dense sources (worst locality)","linear_ms":47.78970,"index_build_and_queries_ms":36.50740,"ratio":1.309}
+]}

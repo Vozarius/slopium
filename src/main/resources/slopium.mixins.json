@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.slopium.mixin",
+  "plugin": "dev.slopium.mixin.SlopiumMixinPlugin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "SodiumDynamicLightsMixin", "BlockEntityStateMixin", "BoundTickingBlockEntityMixin",
+    "SmartBlockEntityMixin", "LevelRendererAccessor", "BreakingOverlayMixin",
+    "CreateLightToggleMixin", "SableLightToggleMixin"
+  ],
+  "injectors": { "defaultRequire": 1 }
+}

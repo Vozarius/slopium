@@ -1,0 +1,304 @@
+Compiled from "SableSubLevelEventHandler.java"
+public final class top.leonx.dynlight.sodium.sable.SableSubLevelEventHandler {
+  private static long lastScanMillis;
+
+  private static boolean lastEnabled;
+
+  private static net.minecraft.world.level.Level lastLevel;
+
+  private top.leonx.dynlight.sodium.sable.SableSubLevelEventHandler();
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+       4: return
+
+  public static void onTick(net.minecraft.world.level.Level);
+    Code:
+       0: aload_0
+       1: invokevirtual #7                  // Method net/minecraft/world/level/Level.isClientSide:()Z
+       4: ifne          8
+       7: return
+       8: invokestatic  #13                 // Method top/leonx/dynlight/sodium/SodiumDynLightsDelegate.isAvailable:()Z
+      11: ifeq          60
+      14: invokestatic  #18                 // Method top/leonx/dynlight/config/CreateDynLightAllConfigs.client:()Ltop/leonx/dynlight/config/CreateDynLightClient;
+      17: getfield      #24                 // Field top/leonx/dynlight/config/CreateDynLightClient.enableSodiumDynamicLight:Lnet/createmod/catnip/config/ConfigBase$ConfigBool;
+      20: invokevirtual #30                 // Method net/createmod/catnip/config/ConfigBase$ConfigBool.get:()Ljava/lang/Object;
+      23: checkcast     #36                 // class java/lang/Boolean
+      26: invokevirtual #38                 // Method java/lang/Boolean.booleanValue:()Z
+      29: ifeq          60
+      32: invokestatic  #18                 // Method top/leonx/dynlight/config/CreateDynLightAllConfigs.client:()Ltop/leonx/dynlight/config/CreateDynLightClient;
+      35: getfield      #41                 // Field top/leonx/dynlight/config/CreateDynLightClient.enableSableDynamicLight:Lnet/createmod/catnip/config/ConfigBase$ConfigBool;
+      38: invokevirtual #30                 // Method net/createmod/catnip/config/ConfigBase$ConfigBool.get:()Ljava/lang/Object;
+      41: checkcast     #36                 // class java/lang/Boolean
+      44: invokevirtual #38                 // Method java/lang/Boolean.booleanValue:()Z
+      47: ifeq          60
+      50: invokestatic  #44                 // Method top/leonx/dynlight/sodium/sable/SableReflection.isSableLoaded:()Z
+      53: ifeq          60
+      56: iconst_1
+      57: goto          61
+      60: iconst_0
+      61: istore_1
+      62: iload_1
+      63: ifne          83
+      66: getstatic     #49                 // Field lastEnabled:Z
+      69: ifeq          78
+      72: getstatic     #55                 // Field top/leonx/dynlight/sodium/sable/SableDynLightSourceHolder.INSTANCE:Ltop/leonx/dynlight/sodium/sable/SableDynLightSourceHolder;
+      75: invokevirtual #61                 // Method top/leonx/dynlight/sodium/sable/SableDynLightSourceHolder.clear:()V
+      78: iconst_0
+      79: putstatic     #49                 // Field lastEnabled:Z
+      82: return
+      83: getstatic     #49                 // Field lastEnabled:Z
+      86: ifne          97
+      89: lconst_0
+      90: putstatic     #64                 // Field lastScanMillis:J
+      93: iconst_1
+      94: putstatic     #49                 // Field lastEnabled:Z
+      97: getstatic     #68                 // Field lastLevel:Lnet/minecraft/world/level/Level;
+     100: aload_0
+     101: if_acmpeq     118
+     104: getstatic     #55                 // Field top/leonx/dynlight/sodium/sable/SableDynLightSourceHolder.INSTANCE:Ltop/leonx/dynlight/sodium/sable/SableDynLightSourceHolder;
+     107: invokevirtual #61                 // Method top/leonx/dynlight/sodium/sable/SableDynLightSourceHolder.clear:()V
+     110: aload_0
+     111: putstatic     #68                 // Field lastLevel:Lnet/minecraft/world/level/Level;
+     114: lconst_0
+     115: putstatic     #64                 // Field lastScanMillis:J
+     118: invokestatic  #72                 // Method java/lang/System.currentTimeMillis:()J
+     121: lstore_2
+     122: invokestatic  #18                 // Method top/leonx/dynlight/config/CreateDynLightAllConfigs.client:()Ltop/leonx/dynlight/config/CreateDynLightClient;
+     125: getfield      #78                 // Field top/leonx/dynlight/config/CreateDynLightClient.sableScanInterval:Lnet/createmod/catnip/config/ConfigBase$ConfigInt;
+     128: invokevirtual #82                 // Method net/createmod/catnip/config/ConfigBase$ConfigInt.get:()Ljava/lang/Object;
+     131: checkcast     #85                 // class java/lang/Integer
+     134: invokevirtual #87                 // Method java/lang/Integer.intValue:()I
+     137: istore        4
+     139: getstatic     #64                 // Field lastScanMillis:J
+     142: lconst_0
+     143: lcmp
+     144: ifeq          166
+     147: lload_2
+     148: getstatic     #64                 // Field lastScanMillis:J
+     151: iload         4
+     153: i2l
+     154: ladd
+     155: lcmp
+     156: ifge          166
+     159: getstatic     #55                 // Field top/leonx/dynlight/sodium/sable/SableDynLightSourceHolder.INSTANCE:Ltop/leonx/dynlight/sodium/sable/SableDynLightSourceHolder;
+     162: invokevirtual #91                 // Method top/leonx/dynlight/sodium/sable/SableDynLightSourceHolder.tickAll:()V
+     165: return
+     166: lload_2
+     167: putstatic     #64                 // Field lastScanMillis:J
+     170: aload_0
+     171: invokestatic  #94                 // Method top/leonx/dynlight/sodium/sable/SableReflection.getContainer:(Lnet/minecraft/world/level/Level;)Ljava/util/Optional;
+     174: astore        5
+     176: aload         5
+     178: invokevirtual #98                 // Method java/util/Optional.isEmpty:()Z
+     181: ifeq          191
+     184: getstatic     #55                 // Field top/leonx/dynlight/sodium/sable/SableDynLightSourceHolder.INSTANCE:Ltop/leonx/dynlight/sodium/sable/SableDynLightSourceHolder;
+     187: invokevirtual #61                 // Method top/leonx/dynlight/sodium/sable/SableDynLightSourceHolder.clear:()V
+     190: return
+     191: new           #103                // class java/util/HashSet
+     194: dup
+     195: invokespecial #105                // Method java/util/HashSet."<init>":()V
+     198: astore        6
+     200: aload         5
+     202: invokevirtual #106                // Method java/util/Optional.get:()Ljava/lang/Object;
+     205: invokestatic  #107                // Method top/leonx/dynlight/sodium/sable/SableReflection.getAllSubLevels:(Ljava/lang/Object;)Ljava/util/List;
+     208: invokeinterface #111,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+     213: astore        7
+     215: aload         7
+     217: invokeinterface #117,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+     222: ifeq          298
+     225: aload         7
+     227: invokeinterface #122,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+     232: astore        8
+     234: aload         8
+     236: ifnull        215
+     239: aload         8
+     241: invokestatic  #125                // Method top/leonx/dynlight/sodium/sable/SableReflection.isSubLevelRemoved:(Ljava/lang/Object;)Z
+     244: ifeq          250
+     247: goto          215
+     250: aload         8
+     252: invokestatic  #129                // Method top/leonx/dynlight/sodium/sable/SableReflection.getSubLevelId:(Ljava/lang/Object;)Ljava/util/UUID;
+     255: astore        9
+     257: aload         9
+     259: ifnonnull     265
+     262: goto          215
+     265: aload         6
+     267: aload         9
+     269: invokeinterface #133,  2          // InterfaceMethod java/util/Set.add:(Ljava/lang/Object;)Z
+     274: pop
+     275: aload         8
+     277: invokestatic  #138                // Method scanLightSources:(Ljava/lang/Object;)Ljava/util/List;
+     280: astore        10
+     282: getstatic     #55                 // Field top/leonx/dynlight/sodium/sable/SableDynLightSourceHolder.INSTANCE:Ltop/leonx/dynlight/sodium/sable/SableDynLightSourceHolder;
+     285: aload_0
+     286: aload         8
+     288: aload         9
+     290: aload         10
+     292: invokevirtual #141                // Method top/leonx/dynlight/sodium/sable/SableDynLightSourceHolder.syncSubLevel:(Lnet/minecraft/world/level/Level;Ljava/lang/Object;Ljava/util/UUID;Ljava/lang/Iterable;)V
+     295: goto          215
+     298: getstatic     #55                 // Field top/leonx/dynlight/sodium/sable/SableDynLightSourceHolder.INSTANCE:Ltop/leonx/dynlight/sodium/sable/SableDynLightSourceHolder;
+     301: aload         6
+     303: invokevirtual #145                // Method top/leonx/dynlight/sodium/sable/SableDynLightSourceHolder.removeMissingSubLevels:(Ljava/util/Set;)V
+     306: getstatic     #55                 // Field top/leonx/dynlight/sodium/sable/SableDynLightSourceHolder.INSTANCE:Ltop/leonx/dynlight/sodium/sable/SableDynLightSourceHolder;
+     309: invokevirtual #91                 // Method top/leonx/dynlight/sodium/sable/SableDynLightSourceHolder.tickAll:()V
+     312: return
+
+  private static java.util.List<top.leonx.dynlight.sodium.sable.SableLightCandidate> scanLightSources(java.lang.Object);
+    Code:
+       0: invokestatic  #18                 // Method top/leonx/dynlight/config/CreateDynLightAllConfigs.client:()Ltop/leonx/dynlight/config/CreateDynLightClient;
+       3: getfield      #149                // Field top/leonx/dynlight/config/CreateDynLightClient.maxSableLightSources:Lnet/createmod/catnip/config/ConfigBase$ConfigInt;
+       6: invokevirtual #82                 // Method net/createmod/catnip/config/ConfigBase$ConfigInt.get:()Ljava/lang/Object;
+       9: checkcast     #85                 // class java/lang/Integer
+      12: invokevirtual #87                 // Method java/lang/Integer.intValue:()I
+      15: istore_1
+      16: invokestatic  #18                 // Method top/leonx/dynlight/config/CreateDynLightAllConfigs.client:()Ltop/leonx/dynlight/config/CreateDynLightClient;
+      19: getfield      #152                // Field top/leonx/dynlight/config/CreateDynLightClient.sableLightEmissionLowerLimit:Lnet/createmod/catnip/config/ConfigBase$ConfigInt;
+      22: invokevirtual #82                 // Method net/createmod/catnip/config/ConfigBase$ConfigInt.get:()Ljava/lang/Object;
+      25: checkcast     #85                 // class java/lang/Integer
+      28: invokevirtual #87                 // Method java/lang/Integer.intValue:()I
+      31: istore_2
+      32: new           #155                // class java/util/ArrayList
+      35: dup
+      36: invokespecial #157                // Method java/util/ArrayList."<init>":()V
+      39: astore_3
+      40: aload_0
+      41: invokestatic  #158                // Method top/leonx/dynlight/sodium/sable/SableReflection.getLoadedChunkHolders:(Ljava/lang/Object;)Ljava/util/Collection;
+      44: invokeinterface #162,  1          // InterfaceMethod java/util/Collection.iterator:()Ljava/util/Iterator;
+      49: astore        4
+      51: aload         4
+      53: invokeinterface #117,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      58: ifeq          123
+      61: aload         4
+      63: invokeinterface #122,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      68: astore        5
+      70: aload         5
+      72: invokestatic  #165                // Method top/leonx/dynlight/sodium/sable/SableReflection.getChunk:(Ljava/lang/Object;)Lnet/minecraft/world/level/chunk/LevelChunk;
+      75: astore        6
+      77: aload         6
+      79: ifnonnull     85
+      82: goto          51
+      85: aload         6
+      87: aload_3
+      88: iload_2
+      89: iload_1
+      90: invokestatic  #169                // Method scanChunk:(Lnet/minecraft/world/level/chunk/LevelChunk;Ljava/util/List;II)V
+      93: aload_3
+      94: invokeinterface #173,  1          // InterfaceMethod java/util/List.size:()I
+      99: iload_1
+     100: if_icmplt     120
+     103: getstatic     #176                // Field top/leonx/dynlight/CreateDynLight.LOGGER:Lorg/slf4j/Logger;
+     106: ldc           #182                // String Reached Sable dynamic-light source cap [{}] while scanning sub-level
+     108: iload_1
+     109: invokestatic  #184                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     112: invokeinterface #188,  3          // InterfaceMethod org/slf4j/Logger.debug:(Ljava/lang/String;Ljava/lang/Object;)V
+     117: goto          123
+     120: goto          51
+     123: aload_3
+     124: areturn
+
+  private static void scanChunk(net.minecraft.world.level.chunk.LevelChunk, java.util.List<top.leonx.dynlight.sodium.sable.SableLightCandidate>, int, int);
+    Code:
+       0: aload_0
+       1: invokevirtual #194                // Method net/minecraft/world/level/chunk/LevelChunk.getSections:()[Lnet/minecraft/world/level/chunk/LevelChunkSection;
+       4: astore        4
+       6: aload_0
+       7: invokevirtual #200                // Method net/minecraft/world/level/chunk/LevelChunk.getPos:()Lnet/minecraft/world/level/ChunkPos;
+      10: astore        5
+      12: new           #204                // class net/minecraft/core/BlockPos$MutableBlockPos
+      15: dup
+      16: invokespecial #206                // Method net/minecraft/core/BlockPos$MutableBlockPos."<init>":()V
+      19: astore        6
+      21: iconst_0
+      22: istore        7
+      24: iload         7
+      26: aload         4
+      28: arraylength
+      29: if_icmpge     207
+      32: aload         4
+      34: iload         7
+      36: aaload
+      37: astore        8
+      39: aload         8
+      41: ifnull        201
+      44: aload         8
+      46: invokevirtual #207                // Method net/minecraft/world/level/chunk/LevelChunkSection.hasOnlyAir:()Z
+      49: ifeq          55
+      52: goto          201
+      55: aload_0
+      56: iload         7
+      58: invokevirtual #212                // Method net/minecraft/world/level/chunk/LevelChunk.getSectionYFromSectionIndex:(I)I
+      61: iconst_4
+      62: ishl
+      63: istore        9
+      65: iconst_0
+      66: istore        10
+      68: iload         10
+      70: bipush        16
+      72: if_icmpge     201
+      75: iconst_0
+      76: istore        11
+      78: iload         11
+      80: bipush        16
+      82: if_icmpge     195
+      85: iconst_0
+      86: istore        12
+      88: iload         12
+      90: bipush        16
+      92: if_icmpge     189
+      95: aload         8
+      97: iload         10
+      99: iload         11
+     101: iload         12
+     103: invokevirtual #218                // Method net/minecraft/world/level/chunk/LevelChunkSection.getBlockState:(III)Lnet/minecraft/world/level/block/state/BlockState;
+     106: astore        13
+     108: aload         13
+     110: invokevirtual #222                // Method net/minecraft/world/level/block/state/BlockState.getLightEmission:()I
+     113: istore        14
+     115: iload         14
+     117: iload_2
+     118: if_icmpge     124
+     121: goto          183
+     124: aload         6
+     126: aload         5
+     128: invokevirtual #227                // Method net/minecraft/world/level/ChunkPos.getMinBlockX:()I
+     131: iload         10
+     133: iadd
+     134: iload         9
+     136: iload         11
+     138: iadd
+     139: aload         5
+     141: invokevirtual #232                // Method net/minecraft/world/level/ChunkPos.getMinBlockZ:()I
+     144: iload         12
+     146: iadd
+     147: invokevirtual #235                // Method net/minecraft/core/BlockPos$MutableBlockPos.set:(III)Lnet/minecraft/core/BlockPos$MutableBlockPos;
+     150: pop
+     151: aload_1
+     152: new           #239                // class top/leonx/dynlight/sodium/sable/SableLightCandidate
+     155: dup
+     156: aload         6
+     158: invokevirtual #241                // Method net/minecraft/core/BlockPos$MutableBlockPos.immutable:()Lnet/minecraft/core/BlockPos;
+     161: iload         14
+     163: invokespecial #245                // Method top/leonx/dynlight/sodium/sable/SableLightCandidate."<init>":(Lnet/minecraft/core/BlockPos;I)V
+     166: invokeinterface #248,  2          // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+     171: pop
+     172: aload_1
+     173: invokeinterface #173,  1          // InterfaceMethod java/util/List.size:()I
+     178: iload_3
+     179: if_icmplt     183
+     182: return
+     183: iinc          12, 1
+     186: goto          88
+     189: iinc          11, 1
+     192: goto          78
+     195: iinc          10, 1
+     198: goto          68
+     201: iinc          7, 1
+     204: goto          24
+     207: return
+
+  static {};
+    Code:
+       0: iconst_1
+       1: putstatic     #49                 // Field lastEnabled:Z
+       4: return
+}

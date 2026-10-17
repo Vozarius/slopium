@@ -1,0 +1,8 @@
+.gradle/
+.gradle-user-home/
+build/
+run/
+out/
+*.log
+analysis/__pycache__/
+

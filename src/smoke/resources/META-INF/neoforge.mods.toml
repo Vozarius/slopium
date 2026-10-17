@@ -1,0 +1,8 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="MIT"
+[[mods]]
+modId="slopium_smoke"
+version="1"
+displayName="Slopium integration test (development only)"
+
