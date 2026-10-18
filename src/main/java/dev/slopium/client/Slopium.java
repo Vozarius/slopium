@@ -51,10 +51,12 @@ public final class Slopium {
 
     // Loaded lazily after mod discovery, then reused in hot paths.
     private static final class Integrations {
+        static final boolean CREATE = loaded("create");
         static final boolean CREATE_TICKS = loaded("create") && loaded("entityculling");
         static final boolean SABLE = loaded("sable");
     }
     public static boolean createTickIntegrationAvailable() { return Integrations.CREATE_TICKS; }
+    public static boolean createAvailable() { return Integrations.CREATE; }
     public static boolean sableAvailable() { return Integrations.SABLE; }
 
     private static void registerCommands(RegisterClientCommandsEvent event) {
@@ -76,6 +78,12 @@ public final class Slopium {
                     + " | Sable protected=" + SlopiumStats.tickSableProtected
                     + " | hidden=" + SlopiumStats.hiddenTicksChecked
                     + " | skipped=" + SlopiumStats.hiddenTicksSkipped), false);
+                context.getSource().sendSuccess(() -> Component.literal(
+                    "Tests | skipped BE draws=" + SlopiumStats.blockEntityDrawsSkipped
+                    + " | Flywheel draws=" + SlopiumStats.flywheelDrawsSkipped
+                    + " | particle calls=" + SlopiumStats.particleCallsSkipped
+                    + " | ambient passes=" + SlopiumStats.ambientPassesSkipped
+                    + " | frozen Create ticks=" + SlopiumStats.frozenCreateTicks), false);
                 var timing = SlopiumStats.FRAME_TIMES.snapshot();
                 context.getSource().sendSuccess(() -> Component.literal(timing.samples() == 0
                     ? "Frames | no samples; enable diagnostics and close menus in the world"

@@ -43,7 +43,14 @@ public final class SlopiumOptions implements ConfigEntryPoint {
                         Slopium.loaded("create") && Slopium.loaded("entityculling")))
                     .addOption(integer(builder, "tick_interval", v -> c.hiddenTickInterval = v, () -> c.hiddenTickInterval, 4, 2, 10, 1))
                     .addOption(integer(builder, "protected_distance", v -> c.protectedDistance = v, () -> c.protectedDistance, 24, 16, 64, 4))
-                    .addOption(integer(builder, "hidden_grace", v -> c.hiddenGraceTicks = v, () -> c.hiddenGraceTicks, 20, 10, 100, 10))));
+                    .addOption(integer(builder, "hidden_grace", v -> c.hiddenGraceTicks = v, () -> c.hiddenGraceTicks, 20, 10, 100, 10))))
+            .addPage(builder.createOptionPage().setName(text("page.tests"))
+                .addOptionGroup(builder.createOptionGroup()
+                    .addOption(bool(builder, "disable_be_render", v -> c.disableBlockEntityRendering = v, () -> c.disableBlockEntityRendering, false, true))
+                    .addOption(bool(builder, "disable_flywheel_render", v -> c.disableFlywheelRendering = v, () -> c.disableFlywheelRendering, false, Slopium.loaded("flywheel")))
+                    .addOption(bool(builder, "disable_particles", v -> c.disableParticles = v, () -> c.disableParticles, false, true))
+                    .addOption(bool(builder, "disable_ambient", v -> c.disableAmbientEffects = v, () -> c.disableAmbientEffects, false, true))
+                    .addOption(bool(builder, "freeze_create_ticks", v -> c.freezeCreateClientTicks = v, () -> c.freezeCreateClientTicks, false, Slopium.loaded("create")))));
     }
 
     private BooleanOptionBuilder bool(ConfigBuilder b, String key, Consumer<Boolean> set, Supplier<Boolean> get, boolean defaults, boolean enabled) {

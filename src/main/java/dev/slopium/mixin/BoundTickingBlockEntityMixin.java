@@ -3,6 +3,7 @@ package dev.slopium.mixin;
 import dev.slopium.client.Slopium;
 import dev.slopium.client.SlopiumConfig;
 import dev.slopium.visibility.CreateTickControl;
+import dev.slopium.visibility.CreateFreezeControl;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.spongepowered.asm.mixin.Final;
@@ -17,9 +18,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class BoundTickingBlockEntityMixin {
     @Shadow @Final private BlockEntity blockEntity;
     @Unique private boolean slopium$eligible;
+    @Unique private boolean slopium$create;
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void slopium$classifyOnce(CallbackInfo ci) {
+        slopium$create = Slopium.createAvailable() && CreateFreezeControl.isCandidate(blockEntity);
         slopium$eligible = Slopium.createTickIntegrationAvailable() && CreateTickControl.isCandidate(blockEntity);
     }
 
@@ -27,9 +30,11 @@ public abstract class BoundTickingBlockEntityMixin {
     @ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE",
         target = "Lnet/minecraft/world/level/block/entity/BlockEntity;hasLevel()Z"))
     private boolean slopium$allowClientTick(boolean hasLevel) {
-        if (!hasLevel || !slopium$eligible) return hasLevel;
+        if (!hasLevel || (!slopium$eligible && !slopium$create)) return hasLevel;
         SlopiumConfig config = SlopiumConfig.get();
-        return !config.enabled || !config.throttleHiddenCreate || !CreateTickControl.skipEligible(blockEntity, config);
+        if (!config.enabled) return true;
+        if (slopium$create && config.freezeCreateClientTicks && CreateFreezeControl.skip(blockEntity, config.diagnostics)) return false;
+        return !slopium$eligible || !config.throttleHiddenCreate || !CreateTickControl.skipEligible(blockEntity, config);
     }
 }
 

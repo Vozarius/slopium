@@ -25,6 +25,12 @@ public final class SlopiumConfig {
     public int protectedDistance = 24;
     public int hiddenGraceTicks = 20;
     public boolean diagnostics = false;
+    // Diagnostic visual cuts, deliberately opt-in.
+    public volatile boolean disableBlockEntityRendering = false;
+    public volatile boolean disableFlywheelRendering = false;
+    public volatile boolean disableParticles = false;
+    public volatile boolean disableAmbientEffects = false;
+    public volatile boolean freezeCreateClientTicks = false;
 
     public static SlopiumConfig get() {
         if (instance == null) {

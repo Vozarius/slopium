@@ -33,16 +33,16 @@ public final class SlopiumSmoke {
         if (opened || !(client.screen instanceof TitleScreen)) return;
         var options = ConfigManager.CONFIG.getModOptions().stream()
             .filter(mod -> mod.configId().equals("slopium")).findFirst().orElseThrow();
-        if (options.pages().size() != 3) throw new IllegalStateException("Missing Slopium pages");
+        if (options.pages().size() != 4) throw new IllegalStateException("Missing Slopium pages");
         validateOptionalMixins();
-        client.setScreen(VideoSettingsScreen.createScreen(client.screen, (OptionPage) options.pages().get(1)));
+        client.setScreen(VideoSettingsScreen.createScreen(client.screen, (OptionPage) options.pages().get(3)));
         // Reese replaces createScreen and ignores Sodium's initial-page argument.
         if (Slopium.loaded("reeses_sodium_options")) {
             try {
                 Object frame = client.screen.getClass().getMethod("rso$getTabFrame").invoke(client.screen);
                 var tabs = (java.util.List<?>) frame.getClass().getMethod("getTabs").invoke(frame);
                 Object selected = tabs.stream().filter(tab -> {
-                    try { return tab.getClass().getMethod("getPage").invoke(tab) == options.pages().get(1); }
+                    try { return tab.getClass().getMethod("getPage").invoke(tab) == options.pages().get(3); }
                     catch (ReflectiveOperationException e) { throw new AssertionError(e); }
                 }).findFirst().orElseThrow();
                 frame.getClass().getMethod("setTab", java.util.Optional.class).invoke(frame, java.util.Optional.of(selected));
@@ -56,6 +56,7 @@ public final class SlopiumSmoke {
         try {
             SmokeTickChecks.run(Class.forName("net.minecraft.world.level.chunk.LevelChunk$BoundTickingBlockEntity"));
             SmokeBreakingChecks.run();
+            SmokeExperimentChecks.run();
             if (Slopium.loaded("sodiumdynamiclights")) {
                 Object lights = Class.forName("toni.sodiumdynamiclights.SodiumDynamicLights").getMethod("get").invoke(null);
                 if (!(lights instanceof LightIndexControl)) throw new AssertionError("Light mixin missing");

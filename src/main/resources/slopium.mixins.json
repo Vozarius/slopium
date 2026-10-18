@@ -5,9 +5,22 @@
   "plugin": "dev.slopium.mixin.SlopiumMixinPlugin",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "SodiumDynamicLightsMixin", "BlockEntityStateMixin", "BoundTickingBlockEntityMixin",
-    "SmartBlockEntityMixin", "LevelRendererAccessor", "BreakingOverlayMixin",
-    "CreateLightToggleMixin", "SableLightToggleMixin"
+    "SodiumDynamicLightsMixin",
+    "BlockEntityStateMixin",
+    "BoundTickingBlockEntityMixin",
+    "SmartBlockEntityMixin",
+    "LevelRendererAccessor",
+    "BreakingOverlayMixin",
+    "CreateLightToggleMixin",
+    "SableLightToggleMixin",
+    "BlockEntityRenderCutMixin",
+    "ParticleCutMixin",
+    "AmbientCutMixin",
+    "FlywheelInstancedCutMixin",
+    "FlywheelIndirectCutMixin",
+    "FlywheelCrumblingCutMixin"
   ],
-  "injectors": { "defaultRequire": 1 }
+  "injectors": {
+    "defaultRequire": 1
+  }
 }

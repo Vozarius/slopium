@@ -25,5 +25,16 @@
   "slopium.protected_distance": "Full-rate radius, blocks",
   "slopium.protected_distance.tooltip": "Hidden mechanisms inside this radius keep their full update rate.",
   "slopium.hidden_grace": "Hidden grace period, ticks",
-  "slopium.hidden_grace.tooltip": "How long an object must remain hidden. Server updates and restored visibility immediately restore full-rate updates."
+  "slopium.hidden_grace.tooltip": "How long an object must remain hidden. Server updates and restored visibility immediately restore full-rate updates.",
+  "slopium.page.tests": "Diagnostic cuts",
+  "slopium.disable_be_render": "Disable block entity rendering",
+  "slopium.disable_be_render.tooltip": "Hides world block entity renderers. Static block meshes remain. Ticks and packets continue. Flywheel is controlled separately.",
+  "slopium.disable_flywheel_render": "Disable Flywheel drawing",
+  "slopium.disable_flywheel_render.tooltip": "Skips Flywheel instancing and indirect draws, including moving Create parts. Visual updates and resource maintenance continue. Fallback uses normal renderers.",
+  "slopium.disable_particles": "Disable particles",
+  "slopium.disable_particles.tooltip": "Skips standard ParticleEngine additions and rendering. Existing particles keep aging. Custom particle systems may remain.",
+  "slopium.disable_ambient": "Disable ambient block effects",
+  "slopium.disable_ambient.tooltip": "Skips client ambient block/fluid animateTick effects, including particles and some sounds. Server random ticks and block state updates are unchanged.",
+  "slopium.freeze_create_ticks": "DIAGNOSTIC: freeze Create client ticks",
+  "slopium.freeze_create_ticks.tooltip": "Diagnostic only: freezes initialized Create SmartBlockEntity client ticks, including visible blocks. Animations, indicators and client interactions can malfunction. Packets and server ticks continue. Virtual worlds and Sable-protected blocks are excluded. Disable after measurement; reconnect if necessary."
 }
