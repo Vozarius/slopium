@@ -18,7 +18,13 @@
     "AmbientCutMixin",
     "FlywheelInstancedCutMixin",
     "FlywheelIndirectCutMixin",
-    "FlywheelCrumblingCutMixin"
+    "FlywheelCrumblingCutMixin",
+    "ItemRenderBudgetMixin",
+    "XaeroBenchmarkMixin",
+    "EntityShadowCutMixin",
+    "SodiumBlockEntityBudgetMixin",
+    "FlywheelDistanceBudgetMixin",
+    "FlywheelBandedBudgetMixin"
   ],
   "injectors": {
     "defaultRequire": 1

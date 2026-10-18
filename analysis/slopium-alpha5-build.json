@@ -1,0 +1,13 @@
+{
+  "version": "0.1.0-alpha.5",
+  "jar": "build\\libs\\slopium-neoforge-1.21.1-0.1.0-alpha.5.jar",
+  "bytes": 66986,
+  "sha256": "7dd5907166ba035aa3035aa1d628951caae97060451a6ee0e5e91ea7dbd85d0e",
+  "unit_tests": 12,
+  "smoke_profiles": [
+    "full",
+    "minimal",
+    "legacy"
+  ],
+  "world_fps_verified": false
+}

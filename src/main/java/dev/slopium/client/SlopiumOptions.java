@@ -50,7 +50,21 @@ public final class SlopiumOptions implements ConfigEntryPoint {
                     .addOption(bool(builder, "disable_flywheel_render", v -> c.disableFlywheelRendering = v, () -> c.disableFlywheelRendering, false, Slopium.loaded("flywheel")))
                     .addOption(bool(builder, "disable_particles", v -> c.disableParticles = v, () -> c.disableParticles, false, true))
                     .addOption(bool(builder, "disable_ambient", v -> c.disableAmbientEffects = v, () -> c.disableAmbientEffects, false, true))
-                    .addOption(bool(builder, "freeze_create_ticks", v -> c.freezeCreateClientTicks = v, () -> c.freezeCreateClientTicks, false, Slopium.loaded("create")))));
+                    .addOption(bool(builder, "freeze_create_ticks", v -> c.freezeCreateClientTicks = v, () -> c.freezeCreateClientTicks, false, Slopium.loaded("create")))))
+            .addPage(builder.createOptionPage().setName(text("page.render_budget"))
+                .addOptionGroup(builder.createOptionGroup()
+                    .addOption(bool(builder, "item_lod", v -> c.itemStackLod = v, () -> c.itemStackLod, false, true))
+                    .addOption(integer(builder, "item_lod_distance", v -> c.itemLodDistance = v, () -> c.itemLodDistance, 16, 0, 512, 1))
+                    .addOption(bool(builder, "item_range", v -> c.limitItemRendering = v, () -> c.limitItemRendering, false, true))
+                    .addOption(integer(builder, "item_render_distance", v -> c.itemRenderDistance = v, () -> c.itemRenderDistance, 64, 0, 512, 1)))
+                .addOptionGroup(builder.createOptionGroup()
+                    .addOption(bool(builder, "be_range", v -> c.limitBlockEntityRendering = v, () -> c.limitBlockEntityRendering, false, true))
+                    .addOption(integer(builder, "be_render_distance", v -> c.blockEntityRenderDistance = v, () -> c.blockEntityRenderDistance, 64, 0, 512, 1))
+                    .addOption(bool(builder, "pause_xaero_benchmark", v -> c.pauseXaeroBenchmark = v, () -> c.pauseXaeroBenchmark, false, Slopium.loaded("xaeroworldmap")))
+                    .addOption(bool(builder, "flywheel_distance", v -> c.throttleFlywheelDistance = v, () -> c.throttleFlywheelDistance, false, Slopium.loaded("flywheel")))
+                    .addOption(integer(builder, "flywheel_distance_radius", v -> c.flywheelFullRateDistance = v, () -> c.flywheelFullRateDistance, 32, 0, 512, 1))
+                    .addOption(integer(builder, "flywheel_interval", v -> c.flywheelFrameInterval = v, () -> c.flywheelFrameInterval, 3, 2, 8, 1))
+                    .addOption(bool(builder, "disable_shadows", v -> c.disableEntityShadows = v, () -> c.disableEntityShadows, false, true))));
     }
 
     private BooleanOptionBuilder bool(ConfigBuilder b, String key, Consumer<Boolean> set, Supplier<Boolean> get, boolean defaults, boolean enabled) {

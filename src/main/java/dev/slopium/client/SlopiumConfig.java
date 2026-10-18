@@ -31,6 +31,17 @@ public final class SlopiumConfig {
     public volatile boolean disableParticles = false;
     public volatile boolean disableAmbientEffects = false;
     public volatile boolean freezeCreateClientTicks = false;
+    public volatile boolean itemStackLod = false;
+    public int itemLodDistance = 16;
+    public volatile boolean limitItemRendering = false;
+    public int itemRenderDistance = 64;
+    public volatile boolean limitBlockEntityRendering = false;
+    public int blockEntityRenderDistance = 64;
+    public volatile boolean pauseXaeroBenchmark = false;
+    public volatile boolean disableEntityShadows = false;
+    public volatile boolean throttleFlywheelDistance = false;
+    public volatile int flywheelFullRateDistance = 32;
+    public volatile int flywheelFrameInterval = 3;
 
     public static SlopiumConfig get() {
         if (instance == null) {
@@ -73,6 +84,11 @@ public final class SlopiumConfig {
     }
 
     private void validate() {
+        flywheelFullRateDistance = Math.clamp(flywheelFullRateDistance, 0, 512);
+        flywheelFrameInterval = Math.clamp(flywheelFrameInterval, 2, 8);
+        itemLodDistance = Math.clamp(itemLodDistance, 0, 512);
+        itemRenderDistance = Math.clamp(itemRenderDistance, 0, 512);
+        blockEntityRenderDistance = Math.clamp(blockEntityRenderDistance, 0, 512);
         hiddenTickInterval = Math.clamp(hiddenTickInterval, 2, 10);
         protectedDistance = Math.clamp(protectedDistance, 16, 64);
         hiddenGraceTicks = Math.clamp(hiddenGraceTicks, 10, 100);

@@ -1,0 +1,1860 @@
+{
+  "file": "profile-2026-10-18_19.02.13.sparkprofile",
+  "sha256": "d8493a3079d6b127eec80019f8bbf4ed0fdfa178962190e229d1859cce0bb0fb",
+  "duration_s": 104.958,
+  "start_msk": "2026-10-18T18:59:47.463000+03:00",
+  "end_msk": "2026-10-18T19:01:32.421000+03:00",
+  "interval_us": 4000,
+  "samplerEngine": 0,
+  "samplerMode": 0,
+  "threadDumper": {
+    "type": 1,
+    "ids": [
+      1
+    ]
+  },
+  "dataAggregator": {
+    "threadGrouper": 1
+  },
+  "platform": {
+    "type": 1,
+    "name": "NeoForge",
+    "version": "21.1.242",
+    "minecraftVersion": "1.21.1",
+    "sparkVersion": 2,
+    "brand": "NeoForge"
+  },
+  "system": {
+    "cpu": {
+      "threads": 12,
+      "processUsage": {
+        "last1m": 0.20315274773323772,
+        "last15m": 0.30881179464126973
+      },
+      "systemUsage": {
+        "last1m": 0.9634063555560259,
+        "last15m": 0.780721113045339
+      }
+    },
+    "memory": {
+      "physical": {
+        "used": 29849100288,
+        "total": 34205982720
+      },
+      "swap": {
+        "used": 45873737728,
+        "total": 63197011968
+      }
+    },
+    "gc": {
+      "ZGC Cycles": {
+        "total": 18,
+        "avgTime": 766.8888888888889,
+        "avgFrequency": 11733.0
+      },
+      "ZGC Pauses": {
+        "total": 55,
+        "avgFrequency": 4090.0
+      }
+    },
+    "disk": {
+      "used": 478352732160,
+      "total": 511065452544
+    },
+    "os": {
+      "arch": "amd64",
+      "name": "Windows 11",
+      "version": "10.0"
+    },
+    "java": {
+      "vendor": "Microsoft",
+      "version": "21.0.7",
+      "vendorVersion": "Microsoft-11369940"
+    },
+    "uptime": 225003,
+    "jvm": {
+      "name": "OpenJDK 64-Bit Server VM",
+      "vendor": "Microsoft",
+      "version": "21.0.7+6-LTS"
+    }
+  },
+  "platformStatistics": {
+    "memory": {
+      "heap": {
+        "used": 8103395328,
+        "committed": 8350859264,
+        "init": 8388608,
+        "max": 8589934592
+      },
+      "nonHeap": {
+        "used": 433697128,
+        "committed": 485359616,
+        "init": 7667712,
+        "max": -1
+      },
+      "pools": [
+        {
+          "name": "ZHeap",
+          "usage": {
+            "used": 8109686784,
+            "committed": 8350859264,
+            "init": 8388608,
+            "max": 8589934592
+          },
+          "collectionUsage": {
+            "used": 1971322880,
+            "committed": 8350859264,
+            "init": 8388608,
+            "max": 8589934592
+          }
+        }
+      ]
+    },
+    "uptime": 198814,
+    "tps": {
+      "last1m": 19.997340686977644,
+      "last5m": 19.68216887297744,
+      "last15m": 19.892921865520442
+    },
+    "mspt": {
+      "last1m": {
+        "mean": 2.8261094166666667,
+        "max": 18.7773,
+        "min": 1.5082,
+        "median": 2.6505,
+        "percentile95": 3.9975
+      },
+      "last5m": {
+        "mean": 3.6239385447660264,
+        "max": 382.0285,
+        "min": 0.0845,
+        "median": 2.844,
+        "percentile95": 12.8693
+      }
+    }
+  },
+  "world": {
+    "totalEntities": 267,
+    "entityCounts": {
+      "create:super_glue": 11,
+      "minecraft:skeleton": 13,
+      "minecraft:bat": 9,
+      "minecraft:player": 1,
+      "minecraft:pig": 9,
+      "minecraft:iron_golem": 4,
+      "minecraft:sheep": 28,
+      "minecraft:glow_squid": 4,
+      "create:stationary_contraption": 2,
+      "minecraft:cave_spider": 4,
+      "minecraft:villager": 9,
+      "simulated:honey_glue": 6,
+      "minecraft:cow": 33,
+      "minecraft:camel": 4,
+      "minecraft:item_frame": 16,
+      "minecraft:chicken": 40,
+      "minecraft:spider": 7,
+      "minecraft:zombie": 10,
+      "minecraft:creeper": 10,
+      "minecraft:rabbit": 35,
+      "minecraft:item": 11,
+      "minecraft:leash_knot": 1
+    }
+  },
+  "timeWindows": [
+    29872319,
+    29872320,
+    29872321
+  ],
+  "timeWindowStatistics": {
+    "29872321": {
+      "ticks": 645,
+      "cpuProcess": 0.20315274773323772,
+      "cpuSystem": 0.9634063555560259,
+      "tps": 19.997340686977644,
+      "msptMedian": 2.6505,
+      "msptMax": 18.7773,
+      "players": -1,
+      "entities": 267,
+      "tileEntities": -1,
+      "chunks": 145,
+      "startTime": 1792339260001,
+      "endTime": 1792339292233,
+      "duration": 32232
+    },
+    "29872320": {
+      "ticks": 1200,
+      "cpuProcess": 0.32137559410975913,
+      "cpuSystem": 0.9744461371564707,
+      "tps": 20.0030119535249,
+      "msptMedian": 2.7215,
+      "msptMax": 51.953,
+      "players": -1,
+      "entities": 121,
+      "tileEntities": -1,
+      "chunks": 145,
+      "startTime": 1792339200001,
+      "endTime": 1792339260001,
+      "duration": 60000
+    },
+    "29872319": {
+      "ticks": 250,
+      "cpuProcess": 0.5328810121244277,
+      "cpuSystem": 0.8307098661286215,
+      "tps": 18.35933073978922,
+      "msptMedian": 4.0907,
+      "msptMax": 382.0285,
+      "players": -1,
+      "entities": 331,
+      "tileEntities": -1,
+      "chunks": 145,
+      "startTime": 1792339187464,
+      "endTime": 1792339200001,
+      "duration": 12537
+    }
+  },
+  "sources": {
+    "atmosphere": {
+      "name": "atmosphere",
+      "version": "1.0.17",
+      "description": "library for localized weather systems"
+    },
+    "fabric_renderer_api_v1": {
+      "name": "fabric_renderer_api_v1",
+      "version": "3.4.1+9125b6dc19",
+      "description": "Defines rendering extensions for dynamic/fancy block and item models."
+    },
+    "sodium_extra": {
+      "name": "sodium_extra",
+      "version": "0.9.4+mc1.21.1",
+      "description": "Features that shouldn't be in Sodium.\n"
+    },
+    "puffish_biome_dither": {
+      "name": "puffish_biome_dither",
+      "version": "1.0.0",
+      "description": "Adds dithering on the biome borders to the game."
+    },
+    "codecui": {
+      "name": "codecui",
+      "version": "1.21.1-1.4.5",
+      "description": "Declarative schemas and auto-generated editor GUIs for DataFixerUpper codecs"
+    },
+    "tinyredstone": {
+      "name": "tinyredstone",
+      "version": "1.21.1-6.1.6",
+      "description": "Tiny redstone components and panels for making tiny redstone circuits."
+    },
+    "createdeco": {
+      "name": "createdeco",
+      "version": "2.1.3",
+      "description": "Decorative options for your Create factory"
+    },
+    "azimuth": {
+      "name": "azimuth",
+      "version": "1.4.9",
+      "description": "A minecraft mod library designed to extend the accessibility and capability of Create's systems. Primarily for use with mods developed by Aztech group.\n"
+    },
+    "playeranimator": {
+      "name": "playeranimator",
+      "version": "2.0.4+1.21.1",
+      "description": "A lightweight library to easily animate the player"
+    },
+    "aeronautics_bundled": {
+      "name": "aeronautics_bundled",
+      "version": "1.3.2",
+      "description": "Expands the Create mod with physics-based contraptions, to build anything from cars to planes. This is a bundled JAR that contains Simulated, Aeronautics, and Offroad."
+    },
+    "ritchiesprojectilelib": {
+      "name": "ritchiesprojectilelib",
+      "version": "2.1.2",
+      "description": "A Minecraft modding library for better projectiles."
+    },
+    "xaeroworldmap": {
+      "name": "xaeroworldmap",
+      "version": "1.46.0",
+      "description": "A self-writing fullscreen map which also works as an add-on to Xaero's Minimap."
+    },
+    "neoforge": {
+      "name": "neoforge",
+      "version": "21.1.242",
+      "description": "    NeoForge, a NEW broad compatibility API.\n    "
+    },
+    "modernfix": {
+      "name": "modernfix",
+      "version": "5.27.24+mc1.21.1",
+      "description": "Egregious, yet effective performance improvements for modern Minecraft\n"
+    },
+    "fabric_block_view_api_v2": {
+      "name": "fabric_block_view_api_v2",
+      "version": "1.0.10+9afaaf8c19",
+      "description": "Hooks for block views"
+    },
+    "veil": {
+      "name": "veil",
+      "version": "4.3.2",
+      "description": "Veil is a sophisticated collection of tools and utilities designed to facilitate advanced rendering for Minecraft mod developers. Our goal is to enable more modern game-engine level content in Java Minecraft, pushing the boundaries of what is possible in modding."
+    },
+    "simulated": {
+      "name": "simulated",
+      "version": "1.3.2",
+      "description": "Expands Create with physics-based interactive contraptions. Typically included in an aeronautics-bundled JAR."
+    },
+    "panoramica": {
+      "name": "panoramica",
+      "version": "1.3.0",
+      "description": "Take cubic panorama screenshots like the one in the Title screen!"
+    },
+    "railways": {
+      "name": "railways",
+      "version": "0.3.0-beta.2+neoforge-mc1.21.1",
+      "description": "Unofficial port of Create: Steam 'n' Rails to 1.21.1.\n\nThis mod bring all of the features from Steam 'n' Rails to a newer Minecraft version!\n"
+    },
+    "struts": {
+      "name": "struts",
+      "version": "1.3.1",
+      "description": "Extracted girder strut library for NeoForge."
+    },
+    "sodiumdynamiclights": {
+      "name": "sodiumdynamiclights",
+      "version": "1.0.9",
+      "description": "Fork of LambDynLights to work with Sodium on Neoforge 1.21+"
+    },
+    "konkrete": {
+      "name": "konkrete",
+      "version": "1.9.9",
+      "description": "Library for Keksuccino's mods."
+    },
+    "vista": {
+      "name": "vista",
+      "version": "1.21.1-5.5.6",
+      "description": "The tech blocks you never knew you needed"
+    },
+    "farmersdelight": {
+      "name": "farmersdelight",
+      "version": "1.3.4",
+      "description": "A cozy farming and cooking expansion for Minecraft!"
+    },
+    "cmparallelpipes": {
+      "name": "cmparallelpipes",
+      "version": "2.0.2",
+      "description": "Allows you to have pipes that don't automatically connect with each other akin to encased pipes."
+    },
+    "spark": {
+      "name": "spark",
+      "version": "1.10.124",
+      "description": "spark is a performance profiling plugin/mod for Minecraft clients, servers and proxies."
+    },
+    "reeses_sodium_options": {
+      "name": "reeses_sodium_options",
+      "version": "2.2.4+mc1.21.1",
+      "description": "Replaces Sodium's Options Screen\n"
+    },
+    "trading_floor": {
+      "name": "trading_floor",
+      "version": "3.0.16",
+      "description": "Automate trading with villagers in Create!"
+    },
+    "measurements": {
+      "name": "measurements",
+      "version": "3.0.3",
+      "description": "Measure the distance between positions :)\n"
+    },
+    "mr_dungeons_andtavernsjungletemplereplacement": {
+      "name": "mr_dungeons_andtavernsjungletemplereplacement",
+      "version": "1-v1.2",
+      "description": "Comming from Dungeons and Taverns we made a Standalone version of it replacing Vanillas Jungle Temples. To Stay Compatible with DnT will the structure be a lot more rare. Jungle Explorer Maps lead towards them."
+    },
+    "createrailwaysnavigator": {
+      "name": "createrailwaysnavigator",
+      "version": "1.21.1-beta-0.9.1-C6",
+      "description": "Get possible train connections in your world from one station to another using the Create Railways Navigator. An addon for the Create Mod."
+    },
+    "aiimprovements": {
+      "name": "aiimprovements",
+      "version": "0.5.3",
+      "description": "Small adjustments and improvements to AI logic focusing on optimizations for increased server performance"
+    },
+    "cupboard": {
+      "name": "cupboard",
+      "version": "4.2",
+      "description": "Cupboard library for utilities and configs\n"
+    },
+    "conditional_mixin": {
+      "name": "conditional_mixin",
+      "version": "0.6.4",
+      "description": "Use annotation to conditionally apply your mixins"
+    },
+    "transition": {
+      "name": "transition",
+      "version": "1.0.21",
+      "description": "Library to transition between Modloaders and Minecraft versions\n"
+    },
+    "fabric_rendering_data_attachment_v1": {
+      "name": "fabric_rendering_data_attachment_v1",
+      "version": "0.3.48+73761d2e19",
+      "description": "Thread-safe hooks for block entity data use during terrain rendering."
+    },
+    "aerocopycats": {
+      "name": "aerocopycats",
+      "version": "1.1.0",
+      "description": "Example mod description.\n"
+    },
+    "createbigcannons": {
+      "name": "createbigcannons",
+      "version": "5.11.7",
+      "description": "Artillery engineering comes to Create\nAttributions:\nLogo by Milkyfur\nTextures by rbasamoyai, Milkyfur, and LopyLuna\n"
+    },
+    "copycats": {
+      "name": "copycats",
+      "version": "3.0.9+mc.1.21.1-neoforge",
+      "description": "All the copycats you've ever wanted, combined into a single mod!"
+    },
+    "jei": {
+      "name": "jei",
+      "version": "19.51.0.418",
+      "description": "JEI is an item and recipe viewing mod for Minecraft, built from the ground up for stability and performance.\n"
+    },
+    "crawl": {
+      "name": "crawl",
+      "version": "0.14.9",
+      "description": "Allows you to crawl"
+    },
+    "lithostitched": {
+      "name": "lithostitched",
+      "version": "1.7.2",
+      "description": "A library mod with new configurability and compatibility enhancements for worldgen"
+    },
+    "aeronautics": {
+      "name": "aeronautics",
+      "version": "1.3.2",
+      "description": "Enables all manner of flying contraptions with hot air, propellers, and magic floating rocks. Typically included in an aeronautics-bundled JAR."
+    },
+    "xaerolib": {
+      "name": "xaerolib",
+      "version": "1.7.3",
+      "description": "A library containing shared code for Xaero's Minimap and World Map."
+    },
+    "trender": {
+      "name": "trender",
+      "version": "1.0.15",
+      "description": "Multi version rendering library based on CottonMC LibGui\n"
+    },
+    "mr_lithosphere": {
+      "name": "mr_lithosphere",
+      "version": "1.7",
+      "description": "Lithosphere aims to change the overworld worldgen to be more cinematic, polished and beautiful."
+    },
+    "mr_better_snowybiome": {
+      "name": "mr_better_snowybiome",
+      "version": "1-v2.5.1",
+      "description": "Better Snowy Biomes: Adds white turning leaves while snowfall (like in Bedrock), smooth snow and much more"
+    },
+    "mapsyncer": {
+      "name": "mapsyncer",
+      "version": "1.0.3",
+      "description": "Syncs server-side explored areas to client's Xaero World Map"
+    },
+    "distanthorizons": {
+      "name": "distanthorizons",
+      "version": "3.3.3",
+      "description": "This mod generates and renders simplified terrain beyond the normal view distance at a low performance cost. Allowing you to see much farther without turning your game into a slideshow."
+    },
+    "sodium": {
+      "name": "sodium",
+      "version": "0.8.13+mc1.21.1",
+      "description": "Sodium is a powerful rendering engine for Minecraft which improves frame rates and reduces lag spikes.\n"
+    },
+    "tfmg": {
+      "name": "tfmg",
+      "version": "1.3.1-community",
+      "description": "Create: The Factory Must Grow brings the age of steel, oil and electricity to the Create mod"
+    },
+    "snassets": {
+      "name": "snassets",
+      "version": "1.0.2",
+      "description": "A cross-loader asset library containing reusable non-engine sounds and general assets."
+    },
+    "offroad": {
+      "name": "offroad",
+      "version": "1.3.2",
+      "description": "Adds components to build cars and land vehicles. Typically included in an aeronautics-bundled JAR."
+    },
+    "bigcontraptions": {
+      "name": "bigcontraptions",
+      "version": "1.0",
+      "description": "Render and hold big contraptions\n"
+    },
+    "minecraft": {
+      "name": "minecraft",
+      "version": "1.21.1",
+      "description": "Minecraft"
+    },
+    "mr_dungeons_andtavernsoceanmonumentreplacement": {
+      "name": "mr_dungeons_andtavernsoceanmonumentreplacement",
+      "version": "1-v1.2",
+      "description": "Coming from Dungeons and Taverns we made a Standalone version of it replacing Ocean Monuments with this much rarer version of them. Be warned, this structure is probably the hardest I created yet"
+    },
+    "dragonlib": {
+      "name": "dragonlib",
+      "version": "1.21.1-beta-3.0.28",
+      "description": "DragonLib is a small and simple Multiloader Minecraft Library Mod based which uses architectury and adds useful tools for all my mods. This mod adds nothing special on its own. New functionality may be added at any time when needed by my mods. If you are developer feel free to use this library in your projects."
+    },
+    "architectury": {
+      "name": "architectury",
+      "version": "13.0.6",
+      "description": "A intermediary api aimed to ease developing multiplatform mods.\n"
+    },
+    "moonlight": {
+      "name": "moonlight",
+      "version": "1.21.1-3.6.5",
+      "description": "A small library with many cool unique features, from dynamic asset generation to dynamic villager schedules, data driven trades and Map Markers, simple multi loader utilities and more"
+    },
+    "fabric_api_base": {
+      "name": "fabric_api_base",
+      "version": "0.4.42+d1308ded19",
+      "description": "Contains the essentials for Fabric API modules."
+    },
+    "reamer": {
+      "name": "reamer",
+      "version": "1.0.0",
+      "description": "Adds a survival-safe reamer: a whitelisted, configurable debug-stick-like tool."
+    },
+    "forgeconfigapiport": {
+      "name": "forgeconfigapiport",
+      "version": "21.1.1",
+      "description": "NeoForge's & Forge's config systems provided to other modding ecosystems. Designed for a multiloader architecture."
+    },
+    "kotlinforforge": {
+      "name": "kotlinforforge",
+      "version": "5.12.0",
+      "description": "Makes Kotlin forge-friendly\n"
+    },
+    "flywheel": {
+      "name": "flywheel",
+      "version": "1.0.6",
+      "description": "An overhauled entity and block entity rendering API."
+    },
+    "ponder": {
+      "name": "ponder",
+      "version": "1.0.82+mc1.21.1",
+      "description": "Visual in-Game Documentation"
+    },
+    "create": {
+      "name": "create",
+      "version": "6.0.11",
+      "description": "Technology that empowers the player."
+    },
+    "sliceanddice": {
+      "name": "sliceanddice",
+      "version": "4.3.3",
+      "description": "Making automation for Farmers Delight more sensible"
+    },
+    "bits_n_bobs": {
+      "name": "bits_n_bobs",
+      "version": "2.3.5",
+      "description": "Decorative and mechanical additions to create!"
+    },
+    "slopium": {
+      "name": "slopium",
+      "version": "0.1.0-alpha.4",
+      "description": "Client performance controls for Create-heavy worlds: dynamic light indexing, visibility-aware updates and Sodium settings."
+    },
+    "create_dragons_plus": {
+      "name": "create_dragons_plus",
+      "version": "1.11.9",
+      "description": "Library mod for DragonsPlusMinecraft Create-addons."
+    },
+    "copycat_roller": {
+      "name": "copycat_roller",
+      "version": "2.0",
+      "description": "Adds precise Copycats+ layer paving and automatic Copycat material filling to Create Mechanical Rollers.\n"
+    },
+    "create_bb": {
+      "name": "create_bb",
+      "version": "1.0.8",
+      "description": "Blocks & Bogies is a Create addon that adds an abundance of different bogie styles to choose from!"
+    },
+    "sable": {
+      "name": "sable",
+      "version": "2.0.5",
+      "description": "Interactive moving block structures with physics."
+    },
+    "sablecompanion": {
+      "name": "sablecompanion",
+      "version": "1.6.0",
+      "description": "A lightweight library for making mods compatible with Sable"
+    },
+    "createpropulsion": {
+      "name": "createpropulsion",
+      "version": "1.1.5",
+      "description": "A mod that adds propulsion and fuel systems to Create with Sable-focused moving structure support."
+    },
+    "xaerominimap": {
+      "name": "xaerominimap",
+      "version": "26.5.0",
+      "description": "The most vanilla-looking minimap for Minecraft."
+    },
+    "climbable_ropes": {
+      "name": "climbable_ropes",
+      "version": "2.1.3",
+      "description": "Addon for Create: Aeronautics (Simulated module). Adds empty-hand climb modes for hanging rope strands and plunger ropes, plus a wrench-zipline mode for plunger ropes. The original Simulated zipline on hanging ropes is left untouched. The mod runs on both client and dedicated server: the server owns climbing config (auto-synced to clients) and tracks rope-riding state; per-tick climb input is handled client-side.\n"
+    },
+    "polymorph": {
+      "name": "polymorph",
+      "version": "1.1.0+1.21.1",
+      "description": "No more recipe conflicts! Adds an option to choose the crafting result if more than one is available."
+    },
+    "createrandomizefilters": {
+      "name": "createrandomizefilters",
+      "version": "1.0.7",
+      "description": "Adds Randomization Filters to deployers or rollers, so you can randomize block placements from trains and contraptions."
+    },
+    "entityculling": {
+      "name": "entityculling",
+      "version": "1.10.5",
+      "description": "This mod uses async path-tracing to hide Tiles/Entities that are not visible.\n"
+    },
+    "betterchunkloading": {
+      "name": "betterchunkloading",
+      "version": "5.4",
+      "description": "betterchunkloading mod\n"
+    },
+    "mr_dungeons_andtavernsstrongholdoverhaul": {
+      "name": "mr_dungeons_andtavernsstrongholdoverhaul",
+      "version": "1-v2.1.f",
+      "description": "This Datapack, the Standalone version of Dungeons and Taverns Overhaul of the Stronghold, Overhauls the Stronghold from the ground up With 417 Different rooms and 5 sub stronghold types\nFair warning, your world will Freeze Upon first Structure generation."
+    },
+    "immediatelyfast": {
+      "name": "immediatelyfast",
+      "version": "1.6.14+1.21.1",
+      "description": "Speed up and optimize immediate mode rendering in Minecraft"
+    },
+    "appleskin": {
+      "name": "appleskin",
+      "version": "3.0.9+mc1.21",
+      "description": "Adds various food-related HUD improvements"
+    },
+    "ferritecore": {
+      "name": "ferritecore",
+      "version": "7.0.3",
+      "description": "Reduces memory usage.\n"
+    },
+    "tracks": {
+      "name": "tracks",
+      "version": "1.0.1",
+      "description": "Addon for Create: Simulated Offroad that adds adjustable suspension keys and Sable-powered track blocks."
+    },
+    "rollingtones": {
+      "name": "rollingtones",
+      "version": "0.2.2",
+      "description": "Terrain-aware rolling and skidding sounds for Create Aeronautics wheels and optional Create: Tracks vehicles."
+    },
+    "create_power_loader": {
+      "name": "create_power_loader",
+      "version": "2.0.5-mc1.21.1",
+      "description": "Mechanical chunk loaders for Create."
+    },
+    "sable_xaero_bridge": {
+      "name": "sable_xaero_bridge",
+      "version": "0.1.11",
+      "description": "Renders Sable sub-level footprints onto Xaero World Map and Xaero Minimap."
+    },
+    "mr_still_life": {
+      "name": "mr_still_life",
+      "version": "0.1.1",
+      "description": "Still Life replaces Minecraft’s default Overworld with a more realistic alternative!"
+    },
+    "create_enchantment_industry": {
+      "name": "create_enchantment_industry",
+      "version": "2.4.2",
+      "description": "Enchantment, Experience, Enhancement and Enlightening - with Create"
+    },
+    "skinrestorer": {
+      "name": "skinrestorer",
+      "version": "2.11.0+1.21-neoforge",
+      "description": "A server-side mod for managing skins."
+    },
+    "mr_dungeons_andtavernsdeserttemplereplacement": {
+      "name": "mr_dungeons_andtavernsdeserttemplereplacement",
+      "version": "1-v1.2",
+      "description": "Comming from Dungeons and Taverns we made a Standalone version of it replacing Vanillas Desert Temples\nTo Stay Compatible with DnT will the structure be a lot more rare.\nDesert Village Maps lead towards them."
+    },
+    "createdynlight": {
+      "name": "createdynlight",
+      "version": "2.3.1-sodium-sable",
+      "description": "Adds dynamic lights to Create contraptions and Sable/Create Aeronautics sub-levels using SodiumDynamicLights."
+    },
+    "createaddition": {
+      "name": "createaddition",
+      "version": "1.6.0",
+      "description": "Create Crafts & Additions extends Create and acts as a bridge between electric and kinetic energy from Create.\nJoin the Discord: https://discord.gg/mRbNnyKTEu\nSpecial thanks to:\nthe Create team, the Forge team, and all contributors on the CC&A discord including:\nAlphaMode, Skippyall, BobDole, legoatoom, gobiidaiah, StockiesLad, THEREDSTONEBRO lawliet__, and Uraxys.\n"
+    }
+  },
+  "threads": [
+    {
+      "name": "Render thread",
+      "sampled_ms": 104768.0,
+      "node_count": 22958,
+      "times": [
+        12536.0,
+        60000.0,
+        32232.0
+      ],
+      "top_inclusive": [
+        {
+          "method": "cpw.mods.bootstraplauncher.BootstrapLauncher.main",
+          "inclusive_ms": 104768.0,
+          "self_ms": 0,
+          "inclusive_pct": 100.0,
+          "self_pct": 0.0
+        },
+        {
+          "method": "cpw.mods.bootstraplauncher.BootstrapLauncher.run",
+          "inclusive_ms": 104768.0,
+          "self_ms": 0,
+          "inclusive_pct": 100.0,
+          "self_pct": 0.0
+        },
+        {
+          "method": "cpw.mods.modlauncher.BootstrapLaunchConsumer.accept",
+          "inclusive_ms": 104768.0,
+          "self_ms": 0,
+          "inclusive_pct": 100.0,
+          "self_pct": 0.0
+        },
+        {
+          "method": "cpw.mods.modlauncher.Launcher.main",
+          "inclusive_ms": 104768.0,
+          "self_ms": 0,
+          "inclusive_pct": 100.0,
+          "self_pct": 0.0
+        },
+        {
+          "method": "cpw.mods.modlauncher.Launcher.run",
+          "inclusive_ms": 104768.0,
+          "self_ms": 0,
+          "inclusive_pct": 100.0,
+          "self_pct": 0.0
+        },
+        {
+          "method": "cpw.mods.modlauncher.LaunchServiceHandler.launch",
+          "inclusive_ms": 104768.0,
+          "self_ms": 0,
+          "inclusive_pct": 100.0,
+          "self_pct": 0.0
+        },
+        {
+          "method": "cpw.mods.modlauncher.LaunchServiceHandlerDecorator.launch",
+          "inclusive_ms": 104768.0,
+          "self_ms": 0,
+          "inclusive_pct": 100.0,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.neoforged.fml.loading.targets.CommonLaunchHandler$$Lambda/0x000000008053fd28.run",
+          "inclusive_ms": 104768.0,
+          "self_ms": 0,
+          "inclusive_pct": 100.0,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.neoforged.fml.loading.targets.CommonLaunchHandler.lambda$launchService$4",
+          "inclusive_ms": 104768.0,
+          "self_ms": 0,
+          "inclusive_pct": 100.0,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.neoforged.fml.loading.targets.CommonClientLaunchHandler.runService",
+          "inclusive_ms": 104768.0,
+          "self_ms": 0,
+          "inclusive_pct": 100.0,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.neoforged.fml.loading.targets.CommonLaunchHandler.clientService",
+          "inclusive_ms": 104768.0,
+          "self_ms": 0,
+          "inclusive_pct": 100.0,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.neoforged.fml.loading.targets.CommonLaunchHandler.runTarget",
+          "inclusive_ms": 104768.0,
+          "self_ms": 0,
+          "inclusive_pct": 100.0,
+          "self_pct": 0.0
+        },
+        {
+          "method": "java.lang.reflect.Method.invoke",
+          "inclusive_ms": 104768.0,
+          "self_ms": 0,
+          "inclusive_pct": 100.0,
+          "self_pct": 0.0
+        },
+        {
+          "method": "jdk.internal.reflect.DirectMethodHandleAccessor.invoke",
+          "inclusive_ms": 104768.0,
+          "self_ms": 0,
+          "inclusive_pct": 100.0,
+          "self_pct": 0.0
+        },
+        {
+          "method": "jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl",
+          "inclusive_ms": 104768.0,
+          "self_ms": 0,
+          "inclusive_pct": 100.0,
+          "self_pct": 0.0
+        },
+        {
+          "method": "java.lang.invoke.Invokers$Holder.invokeExact_MT",
+          "inclusive_ms": 104768.0,
+          "self_ms": 20.0,
+          "inclusive_pct": 100.0,
+          "self_pct": 0.019089798411728774
+        },
+        {
+          "method": "java.lang.invoke.LambdaForm$MH/0x00000000803dbc00.invoke",
+          "inclusive_ms": 104768.0,
+          "self_ms": 0,
+          "inclusive_pct": 100.0,
+          "self_pct": 0.0
+        },
+        {
+          "method": "java.lang.invoke.LambdaForm$DMH/0x000000008010c000.invokeStatic",
+          "inclusive_ms": 104768.0,
+          "self_ms": 108.0,
+          "inclusive_pct": 100.0,
+          "self_pct": 0.10308491142333535
+        },
+        {
+          "method": "net.minecraft.client.main.Main.main",
+          "inclusive_ms": 104768.0,
+          "self_ms": 0,
+          "inclusive_pct": 100.0,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.Minecraft.run",
+          "inclusive_ms": 104768.0,
+          "self_ms": 64.0,
+          "inclusive_pct": 100.0,
+          "self_pct": 0.061087354917532075
+        },
+        {
+          "method": "net.minecraft.client.Minecraft.runTick",
+          "inclusive_ms": 104704.0,
+          "self_ms": 92.0,
+          "inclusive_pct": 99.93891264508247,
+          "self_pct": 0.08781307269395235
+        },
+        {
+          "method": "net.minecraft.client.renderer.GameRenderer.render",
+          "inclusive_ms": 80804.0,
+          "self_ms": 36.0,
+          "inclusive_pct": 77.12660354306658,
+          "self_pct": 0.03436163714111179
+        },
+        {
+          "method": "net.minecraft.client.renderer.GameRenderer.renderLevel",
+          "inclusive_ms": 62704.0,
+          "self_ms": 36.0,
+          "inclusive_pct": 59.85033598045205,
+          "self_pct": 0.03436163714111179
+        },
+        {
+          "method": "net.minecraft.client.renderer.LevelRenderer.renderLevel",
+          "inclusive_ms": 59700.0,
+          "self_ms": 496.0,
+          "inclusive_pct": 56.98304825901038,
+          "self_pct": 0.47342700061087356
+        },
+        {
+          "method": "net.minecraft.client.renderer.LevelRenderer.renderSectionLayer",
+          "inclusive_ms": 32840.0,
+          "self_ms": 4.0,
+          "inclusive_pct": 31.345448992058643,
+          "self_pct": 0.0038179596823457547
+        },
+        {
+          "method": "net.minecraft.client.renderer.LevelRenderer.handler$cim000$distanthorizons$renderChunkLayer",
+          "inclusive_ms": 29528.0,
+          "self_ms": 0,
+          "inclusive_pct": 28.184178375076357,
+          "self_pct": 0.0
+        },
+        {
+          "method": "com.seibel.distanthorizons.core.api.internal.ClientApi.renderLodLayer",
+          "inclusive_ms": 28132.0,
+          "self_ms": 0,
+          "inclusive_pct": 26.851710445937695,
+          "self_pct": 0.0
+        },
+        {
+          "method": "com.seibel.distanthorizons.core.api.internal.ClientApi.renderLods",
+          "inclusive_ms": 28068.0,
+          "self_ms": 0,
+          "inclusive_pct": 26.79062309102016,
+          "self_pct": 0.0
+        },
+        {
+          "method": "com.seibel.distanthorizons.core.render.renderer.LodRenderer.render",
+          "inclusive_ms": 26916.0,
+          "self_ms": 4.0,
+          "inclusive_pct": 25.69105070250458,
+          "self_pct": 0.0038179596823457547
+        },
+        {
+          "method": "com.seibel.distanthorizons.core.render.renderer.LodRenderer.renderTerrain",
+          "inclusive_ms": 26912.0,
+          "self_ms": 24.0,
+          "inclusive_pct": 25.687232742822236,
+          "self_pct": 0.022907758094074526
+        },
+        {
+          "method": "com.seibel.distanthorizons.common.render.openGl.GlDhTerrainRenderer_neoforge.render",
+          "inclusive_ms": 19504.0,
+          "self_ms": 4.0,
+          "inclusive_pct": 18.6163714111179,
+          "self_pct": 0.0038179596823457547
+        },
+        {
+          "method": "com.seibel.distanthorizons.common.render.openGl.terrain.GlDhTerrainShaderProgram_neoforge.render",
+          "inclusive_ms": 19500.0,
+          "self_ms": 24.0,
+          "inclusive_pct": 18.612553451435552,
+          "self_pct": 0.022907758094074526
+        },
+        {
+          "method": "net.minecraft.client.renderer.GameRenderer.wrapOperation$epn000$immediatelyfast$hudBatching",
+          "inclusive_ms": 12976.0,
+          "self_ms": 0,
+          "inclusive_pct": 12.385461209529627,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.raphimc.immediatelyfast.feature.batching.BatchingBuffers.runBatched",
+          "inclusive_ms": 12976.0,
+          "self_ms": 4.0,
+          "inclusive_pct": 12.385461209529627,
+          "self_pct": 0.0038179596823457547
+        },
+        {
+          "method": "net.minecraft.client.renderer.GameRenderer$$Lambda/0x0000000082e42eb0.run",
+          "inclusive_ms": 12952.0,
+          "self_ms": 0,
+          "inclusive_pct": 12.362553451435552,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.renderer.GameRenderer.mda7219d$immediatelyfast$lambda$hudBatching$0$1",
+          "inclusive_ms": 12952.0,
+          "self_ms": 0,
+          "inclusive_pct": 12.362553451435552,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.renderer.GameRenderer$$Lambda/0x0000000082e42ca0.call",
+          "inclusive_ms": 12952.0,
+          "self_ms": 0,
+          "inclusive_pct": 12.362553451435552,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.renderer.GameRenderer.mixinextras$bridge$render$233",
+          "inclusive_ms": 12952.0,
+          "self_ms": 0,
+          "inclusive_pct": 12.362553451435552,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.gui.Gui.render",
+          "inclusive_ms": 12952.0,
+          "self_ms": 0,
+          "inclusive_pct": 12.362553451435552,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.neoforged.neoforge.client.gui.GuiLayerManager.render",
+          "inclusive_ms": 12932.0,
+          "self_ms": 0,
+          "inclusive_pct": 12.343463653023825,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.neoforged.neoforge.client.gui.GuiLayerManager.renderInner",
+          "inclusive_ms": 12192.0,
+          "self_ms": 68.0,
+          "inclusive_pct": 11.63714111178986,
+          "self_pct": 0.06490531459987783
+        },
+        {
+          "method": "net.neoforged.bus.EventBus.post",
+          "inclusive_ms": 11956.0,
+          "self_ms": 456.0,
+          "inclusive_pct": 11.41188149053146,
+          "self_pct": 0.435247403787416
+        },
+        {
+          "method": "org.lwjgl.opengl.GL11C.glDrawElements",
+          "inclusive_ms": 11656.0,
+          "self_ms": 0,
+          "inclusive_pct": 11.125534514355529,
+          "self_pct": 0.0
+        },
+        {
+          "method": "org.lwjgl.opengl.GL11C.nglDrawElements",
+          "inclusive_ms": 11656.0,
+          "self_ms": 11656.0,
+          "inclusive_pct": 11.125534514355529,
+          "self_pct": 11.125534514355529
+        },
+        {
+          "method": "net.neoforged.neoforge.client.gui.GuiLayerManager$$Lambda/0x0000000082398000.render",
+          "inclusive_ms": 9400.0,
+          "self_ms": 0,
+          "inclusive_pct": 8.972205253512524,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.neoforged.neoforge.client.gui.GuiLayerManager.lambda$add$0",
+          "inclusive_ms": 9400.0,
+          "self_ms": 24.0,
+          "inclusive_pct": 8.972205253512524,
+          "self_pct": 0.022907758094074526
+        },
+        {
+          "method": "com.seibel.distanthorizons.lwjgl.lwjgl3.LWJGL3Service.glDrawElements",
+          "inclusive_ms": 9364.0,
+          "self_ms": 0,
+          "inclusive_pct": 8.937843616371412,
+          "self_pct": 0.0
+        },
+        {
+          "method": "com.mojang.blaze3d.platform.Window.updateDisplay",
+          "inclusive_ms": 7740.0,
+          "self_ms": 0,
+          "inclusive_pct": 7.387751985339035,
+          "self_pct": 0.0
+        },
+        {
+          "method": "com.mojang.blaze3d.systems.RenderSystem.flipFrame",
+          "inclusive_ms": 7708.0,
+          "self_ms": 0,
+          "inclusive_pct": 7.357208307880268,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.renderer.MultiBufferSource$BufferSource.endBatch",
+          "inclusive_ms": 7652.0,
+          "self_ms": 28.0,
+          "inclusive_pct": 7.303756872327429,
+          "self_pct": 0.02672571777642028
+        },
+        {
+          "method": "net.minecraft.client.Minecraft.tick",
+          "inclusive_ms": 7332.0,
+          "self_ms": 0,
+          "inclusive_pct": 6.998320097739767,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.gui.Gui$$Lambda/0x00000000823992d8.render",
+          "inclusive_ms": 7148.0,
+          "self_ms": 0,
+          "inclusive_pct": 6.822693952351863,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.gui.Gui.lambda$new$6",
+          "inclusive_ms": 7148.0,
+          "self_ms": 0,
+          "inclusive_pct": 6.822693952351863,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.gui.components.DebugScreenOverlay.render",
+          "inclusive_ms": 7148.0,
+          "self_ms": 0,
+          "inclusive_pct": 6.822693952351863,
+          "self_pct": 0.0
+        },
+        {
+          "method": "com.mojang.blaze3d.vertex.BufferUploader.drawWithShader",
+          "inclusive_ms": 7140.0,
+          "self_ms": 0,
+          "inclusive_pct": 6.815058032987172,
+          "self_pct": 0.0
+        },
+        {
+          "method": "com.mojang.blaze3d.vertex.BufferUploader._drawWithShader",
+          "inclusive_ms": 7140.0,
+          "self_ms": 0,
+          "inclusive_pct": 6.815058032987172,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.gui.GuiGraphics.drawManaged",
+          "inclusive_ms": 7016.0,
+          "self_ms": 0,
+          "inclusive_pct": 6.696701282834454,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.raphimc.immediatelyfast.feature.core.BatchableBufferSource.endBatch",
+          "inclusive_ms": 6996.0,
+          "self_ms": 68.0,
+          "inclusive_pct": 6.677611484422724,
+          "self_pct": 0.06490531459987783
+        },
+        {
+          "method": "net.minecraft.client.renderer.RenderType.draw",
+          "inclusive_ms": 6932.0,
+          "self_ms": 0,
+          "inclusive_pct": 6.616524129505192,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.raphimc.immediatelyfast.feature.core.BatchableBufferSource.drawDirect",
+          "inclusive_ms": 6572.0,
+          "self_ms": 56.0,
+          "inclusive_pct": 6.272907758094075,
+          "self_pct": 0.05345143555284056
+        },
+        {
+          "method": "net.minecraft.client.gui.components.DebugScreenOverlay$$Lambda/0x0000000082fc2848.run",
+          "inclusive_ms": 6248.0,
+          "self_ms": 0,
+          "inclusive_pct": 5.963653023824069,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.gui.components.DebugScreenOverlay.lambda$render$2",
+          "inclusive_ms": 6248.0,
+          "self_ms": 0,
+          "inclusive_pct": 5.963653023824069,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.renderer.LevelRenderer.renderEntity",
+          "inclusive_ms": 6160.0,
+          "self_ms": 12.0,
+          "inclusive_pct": 5.879657910812462,
+          "self_pct": 0.011453879047037263
+        },
+        {
+          "method": "net.minecraft.client.renderer.entity.EntityRenderDispatcher.render",
+          "inclusive_ms": 6116.0,
+          "self_ms": 44.0,
+          "inclusive_pct": 5.837660354306658,
+          "self_pct": 0.0419975565058033
+        },
+        {
+          "method": "java.lang.invoke.LambdaForm$MH/0x0000000080105c00.invokeExact_MT",
+          "inclusive_ms": 6008.0,
+          "self_ms": 0,
+          "inclusive_pct": 5.734575442883323,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.renderer.entity.ItemRenderer.render",
+          "inclusive_ms": 6000.0,
+          "self_ms": 0,
+          "inclusive_pct": 5.726939523518632,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.renderer.entity.ItemRenderer.wrapMethod$epo000$immediatelyfast$renderItem",
+          "inclusive_ms": 6000.0,
+          "self_ms": 0,
+          "inclusive_pct": 5.726939523518632,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.renderer.entity.ItemRenderer$$Lambda/0x00000000828950a0.call",
+          "inclusive_ms": 6000.0,
+          "self_ms": 0,
+          "inclusive_pct": 5.726939523518632,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.renderer.entity.ItemRenderer.mixinextras$bridge$render$mixinextras$wrapped$31$32",
+          "inclusive_ms": 6000.0,
+          "self_ms": 28.0,
+          "inclusive_pct": 5.726939523518632,
+          "self_pct": 0.02672571777642028
+        },
+        {
+          "method": "java.lang.invoke.DirectMethodHandle$Holder.invokeVirtual",
+          "inclusive_ms": 5984.0,
+          "self_ms": 52.0,
+          "inclusive_pct": 5.711667684789249,
+          "self_pct": 0.04963347587049481
+        },
+        {
+          "method": "net.minecraft.client.renderer.entity.ItemRenderer.render$mixinextras$wrapped$31",
+          "inclusive_ms": 5972.0,
+          "self_ms": 128.0,
+          "inclusive_pct": 5.700213805742211,
+          "self_pct": 0.12217470983506415
+        },
+        {
+          "method": "net.minecraft.client.renderer.LevelRenderer.wrapOperation$ebj000$sable$renderEntity",
+          "inclusive_ms": 5820.0,
+          "self_ms": 0,
+          "inclusive_pct": 5.555131337813073,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.renderer.LevelRenderer$$Lambda/0x0000000082effd28.call",
+          "inclusive_ms": 5820.0,
+          "self_ms": 0,
+          "inclusive_pct": 5.555131337813073,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.renderer.LevelRenderer.mixinextras$bridge$render$256",
+          "inclusive_ms": 5820.0,
+          "self_ms": 8.0,
+          "inclusive_pct": 5.555131337813073,
+          "self_pct": 0.007635919364691509
+        },
+        {
+          "method": "org.lwjgl.system.JNI.invokePV",
+          "inclusive_ms": 5816.0,
+          "self_ms": 5816.0,
+          "inclusive_pct": 5.551313378130727,
+          "self_pct": 5.551313378130727
+        },
+        {
+          "method": "org.lwjgl.glfw.GLFW.glfwSwapBuffers",
+          "inclusive_ms": 5804.0,
+          "self_ms": 0,
+          "inclusive_pct": 5.53985949908369,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.renderer.LevelRenderer.handler$dbp000$flywheel$beforeBlockEntities",
+          "inclusive_ms": 5428.0,
+          "self_ms": 0,
+          "inclusive_pct": 5.180971288943189,
+          "self_pct": 0.0
+        },
+        {
+          "method": "dev.engine_room.flywheel.impl.visualization.VisualizationManagerImpl$RenderDispatcherImpl.afterEntities",
+          "inclusive_ms": 5412.0,
+          "self_ms": 0,
+          "inclusive_pct": 5.165699450213806,
+          "self_pct": 0.0
+        },
+        {
+          "method": "dev.engine_room.flywheel.impl.visualization.VisualizationManagerImpl.render",
+          "inclusive_ms": 5412.0,
+          "self_ms": 0,
+          "inclusive_pct": 5.165699450213806,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.renderer.entity.ItemRenderer.renderModelLists",
+          "inclusive_ms": 4852.0,
+          "self_ms": 0,
+          "inclusive_pct": 4.6311850946854,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.renderer.entity.ItemRenderer.wrapOperation$cle000$sodium$renderModelFast",
+          "inclusive_ms": 4848.0,
+          "self_ms": 0,
+          "inclusive_pct": 4.6273671350030545,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.renderer.GameRenderer.wrapOperation$bmd000$konkrete$wrapRenderScreen_Konkrete",
+          "inclusive_ms": 4760.0,
+          "self_ms": 0,
+          "inclusive_pct": 4.5433720219914475,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.renderer.GameRenderer$$Lambda/0x000000008288e698.call",
+          "inclusive_ms": 4760.0,
+          "self_ms": 0,
+          "inclusive_pct": 4.5433720219914475,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.renderer.GameRenderer.mixinextras$bridge$drawScreen$231",
+          "inclusive_ms": 4760.0,
+          "self_ms": 0,
+          "inclusive_pct": 4.5433720219914475,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.neoforged.neoforge.client.ClientHooks.drawScreen",
+          "inclusive_ms": 4760.0,
+          "self_ms": 0,
+          "inclusive_pct": 4.5433720219914475,
+          "self_pct": 0.0
+        },
+        {
+          "method": "com.mojang.blaze3d.vertex.VertexBuffer.drawWithShader",
+          "inclusive_ms": 4748.0,
+          "self_ms": 0,
+          "inclusive_pct": 4.53191814294441,
+          "self_pct": 0.0
+        },
+        {
+          "method": "com.mojang.blaze3d.vertex.VertexBuffer._drawWithShader",
+          "inclusive_ms": 4748.0,
+          "self_ms": 96.0,
+          "inclusive_pct": 4.53191814294441,
+          "self_pct": 0.0916310323762981
+        },
+        {
+          "method": "net.neoforged.neoforge.client.ClientHooks.drawScreenInternal",
+          "inclusive_ms": 4744.0,
+          "self_ms": 4.0,
+          "inclusive_pct": 4.528100183262064,
+          "self_pct": 0.0038179596823457547
+        },
+        {
+          "method": "org.lwjgl.opengl.GL15C.glBindBuffer",
+          "inclusive_ms": 4608.0,
+          "self_ms": 4608.0,
+          "inclusive_pct": 4.398289554062309,
+          "self_pct": 4.398289554062309
+        },
+        {
+          "method": "dev.engine_room.flywheel.backend.engine.EngineImpl.render",
+          "inclusive_ms": 4532.0,
+          "self_ms": 0,
+          "inclusive_pct": 4.32574832009774,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.raphimc.immediatelyfast.feature.core.BatchableBufferSource.endLastBatch",
+          "inclusive_ms": 4524.0,
+          "self_ms": 36.0,
+          "inclusive_pct": 4.318112400733049,
+          "self_pct": 0.03436163714111179
+        },
+        {
+          "method": "org.lwjgl.opengl.GL20C.glUseProgram",
+          "inclusive_ms": 4488.0,
+          "self_ms": 4488.0,
+          "inclusive_pct": 4.283750763591936,
+          "self_pct": 4.283750763591936
+        },
+        {
+          "method": "net.neoforged.neoforge.client.ClientHooks.fireRenderFramePost",
+          "inclusive_ms": 4412.0,
+          "self_ms": 0,
+          "inclusive_pct": 4.211209529627367,
+          "self_pct": 0.0
+        },
+        {
+          "method": "com.seibel.distanthorizons.lwjgl.lwjgl3.LWJGL3Service.glBindBuffer",
+          "inclusive_ms": 4412.0,
+          "self_ms": 0,
+          "inclusive_pct": 4.211209529627367,
+          "self_pct": 0.0
+        },
+        {
+          "method": "xaero.map.events.ClientEvents.handleRenderTick",
+          "inclusive_ms": 4392.0,
+          "self_ms": 4.0,
+          "inclusive_pct": 4.192119731215638,
+          "self_pct": 0.0038179596823457547
+        },
+        {
+          "method": "net.neoforged.bus.EventListenerFactory$renderTickPost/0x00000000812d1400.invoke",
+          "inclusive_ms": 4384.0,
+          "self_ms": 0,
+          "inclusive_pct": 4.184483811850947,
+          "self_pct": 0.0
+        },
+        {
+          "method": "java.lang.invoke.LambdaForm$MH/0x000000008289c000.invoke",
+          "inclusive_ms": 4384.0,
+          "self_ms": 0,
+          "inclusive_pct": 4.184483811850947,
+          "self_pct": 0.0
+        },
+        {
+          "method": "xaero.map.events.ClientEventsNeoForge.renderTickPost",
+          "inclusive_ms": 4384.0,
+          "self_ms": 0,
+          "inclusive_pct": 4.184483811850947,
+          "self_pct": 0.0
+        },
+        {
+          "method": "net.minecraft.client.gui.screens.Screen.renderWithTooltip",
+          "inclusive_ms": 4364.0,
+          "self_ms": 0,
+          "inclusive_pct": 4.165394013439218,
+          "self_pct": 0.0
+        },
+        {
+          "method": "xaero.map.MapProcessor.onRenderProcess",
+          "inclusive_ms": 4328.0,
+          "self_ms": 124.0,
+          "inclusive_pct": 4.131032376298107,
+          "self_pct": 0.11835675015271839
+        }
+      ],
+      "top_self": [
+        {
+          "method": "org.lwjgl.opengl.GL11C.nglDrawElements",
+          "inclusive_ms": 11656.0,
+          "self_ms": 11656.0,
+          "inclusive_pct": 11.125534514355529,
+          "self_pct": 11.125534514355529
+        },
+        {
+          "method": "org.lwjgl.system.JNI.invokePV",
+          "inclusive_ms": 5816.0,
+          "self_ms": 5816.0,
+          "inclusive_pct": 5.551313378130727,
+          "self_pct": 5.551313378130727
+        },
+        {
+          "method": "org.lwjgl.opengl.GL15C.glBindBuffer",
+          "inclusive_ms": 4608.0,
+          "self_ms": 4608.0,
+          "inclusive_pct": 4.398289554062309,
+          "self_pct": 4.398289554062309
+        },
+        {
+          "method": "org.lwjgl.opengl.GL20C.glUseProgram",
+          "inclusive_ms": 4488.0,
+          "self_ms": 4488.0,
+          "inclusive_pct": 4.283750763591936,
+          "self_pct": 4.283750763591936
+        },
+        {
+          "method": "net.caffeinemc.mods.sodium.client.render.immediate.model.BakedModelEncoder.writeQuadVertices",
+          "inclusive_ms": 3508.0,
+          "self_ms": 3504.0,
+          "inclusive_pct": 3.348350641417227,
+          "self_pct": 3.344532681734881
+        },
+        {
+          "method": "org.lwjgl.opengl.GL30C.glBindFramebuffer",
+          "inclusive_ms": 3000.0,
+          "self_ms": 3000.0,
+          "inclusive_pct": 2.863469761759316,
+          "self_pct": 2.863469761759316
+        },
+        {
+          "method": "org.lwjgl.opengl.GL11C.glFinish",
+          "inclusive_ms": 2388.0,
+          "self_ms": 2388.0,
+          "inclusive_pct": 2.2793219303604153,
+          "self_pct": 2.2793219303604153
+        },
+        {
+          "method": "net.minecraft.world.level.Level.getChunk",
+          "inclusive_ms": 2344.0,
+          "self_ms": 2344.0,
+          "inclusive_pct": 2.2373243738546122,
+          "self_pct": 2.2373243738546122
+        },
+        {
+          "method": "org.lwjgl.opengl.GL15C.nglBufferSubData",
+          "inclusive_ms": 2244.0,
+          "self_ms": 2244.0,
+          "inclusive_pct": 2.141875381795968,
+          "self_pct": 2.141875381795968
+        },
+        {
+          "method": "org.lwjgl.system.JNI.invokeV",
+          "inclusive_ms": 1884.0,
+          "self_ms": 1692.0,
+          "inclusive_pct": 1.7982590103848501,
+          "self_pct": 1.6149969456322542
+        },
+        {
+          "method": "com.mojang.blaze3d.font.GlyphInfo.getAdvance",
+          "inclusive_ms": 1484.0,
+          "self_ms": 1484.0,
+          "inclusive_pct": 1.4164630421502749,
+          "self_pct": 1.4164630421502749
+        },
+        {
+          "method": "com.seibel.distanthorizons.api.objects.math.DhApiMat4f.invert",
+          "inclusive_ms": 1232.0,
+          "self_ms": 1232.0,
+          "inclusive_pct": 1.1759315821624923,
+          "self_pct": 1.1759315821624923
+        },
+        {
+          "method": "org.lwjgl.opengl.GL30C.glBindVertexArray",
+          "inclusive_ms": 1208.0,
+          "self_ms": 1208.0,
+          "inclusive_pct": 1.1530238240684179,
+          "self_pct": 1.1530238240684179
+        },
+        {
+          "method": "org.lwjgl.opengl.GL11C.glClear",
+          "inclusive_ms": 1072.0,
+          "self_ms": 1072.0,
+          "inclusive_pct": 1.0232131948686622,
+          "self_pct": 1.0232131948686622
+        },
+        {
+          "method": "org.lwjgl.opengl.GL11C.nglGetIntegerv",
+          "inclusive_ms": 952.0,
+          "self_ms": 952.0,
+          "inclusive_pct": 0.9086744043982896,
+          "self_pct": 0.9086744043982896
+        },
+        {
+          "method": "net.minecraft.world.level.chunk.PalettedContainer.get",
+          "inclusive_ms": 1252.0,
+          "self_ms": 944.0,
+          "inclusive_pct": 1.1950213805742211,
+          "self_pct": 0.9010384850335981
+        },
+        {
+          "method": "org.lwjgl.opengl.GL32C.glFenceSync",
+          "inclusive_ms": 944.0,
+          "self_ms": 944.0,
+          "inclusive_pct": 0.9010384850335981,
+          "self_pct": 0.9010384850335981
+        },
+        {
+          "method": "org.lwjgl.opengl.GL11C.glDrawArrays",
+          "inclusive_ms": 872.0,
+          "self_ms": 872.0,
+          "inclusive_pct": 0.8323152107513745,
+          "self_pct": 0.8323152107513745
+        },
+        {
+          "method": "org.lwjgl.opengl.GL44C.nglBufferStorage",
+          "inclusive_ms": 868.0,
+          "self_ms": 868.0,
+          "inclusive_pct": 0.8284972510690287,
+          "self_pct": 0.8284972510690287
+        },
+        {
+          "method": "net.minecraft.client.gui.Font.renderChar",
+          "inclusive_ms": 1352.0,
+          "self_ms": 860.0,
+          "inclusive_pct": 1.290470372632865,
+          "self_pct": 0.8208613317043373
+        },
+        {
+          "method": "dev.engine_room.flywheel.impl.task.ThreadGroupNotifier.postNotification",
+          "inclusive_ms": 900.0,
+          "self_ms": 840.0,
+          "inclusive_pct": 0.8590409285277947,
+          "self_pct": 0.8017715332926084
+        },
+        {
+          "method": "net.createmod.catnip.render.ShadeSeparatingSuperByteBuffer.reset",
+          "inclusive_ms": 740.0,
+          "self_ms": 728.0,
+          "inclusive_pct": 0.7063225412339645,
+          "self_pct": 0.6948686621869273
+        },
+        {
+          "method": "com.mojang.blaze3d.vertex.VertexConsumer.putBulkData$mixinextras$wrapped$23",
+          "inclusive_ms": 1008.0,
+          "self_ms": 696.0,
+          "inclusive_pct": 0.9621258399511301,
+          "self_pct": 0.6643249847281613
+        },
+        {
+          "method": "java.lang.Thread.yield0",
+          "inclusive_ms": 648.0,
+          "self_ms": 648.0,
+          "inclusive_pct": 0.6185094685400122,
+          "self_pct": 0.6185094685400122
+        },
+        {
+          "method": "org.lwjgl.opengl.GL43C.nglMultiDrawElementsIndirect",
+          "inclusive_ms": 648.0,
+          "self_ms": 648.0,
+          "inclusive_pct": 0.6185094685400122,
+          "self_pct": 0.6185094685400122
+        },
+        {
+          "method": "jdk.internal.misc.Unsafe.allocateInstance",
+          "inclusive_ms": 640.0,
+          "self_ms": 640.0,
+          "inclusive_pct": 0.6108735491753208,
+          "self_pct": 0.6108735491753208
+        },
+        {
+          "method": "org.lwjgl.system.JNI.callPV",
+          "inclusive_ms": 552.0,
+          "self_ms": 552.0,
+          "inclusive_pct": 0.5268784361637141,
+          "self_pct": 0.5268784361637141
+        },
+        {
+          "method": "org.lwjgl.opengl.GL43C.glDispatchCompute",
+          "inclusive_ms": 548.0,
+          "self_ms": 548.0,
+          "inclusive_pct": 0.5230604764813683,
+          "self_pct": 0.5230604764813683
+        },
+        {
+          "method": "org.lwjgl.opengl.GL43C.glBindVertexBuffer",
+          "inclusive_ms": 544.0,
+          "self_ms": 544.0,
+          "inclusive_pct": 0.5192425167990227,
+          "self_pct": 0.5192425167990227
+        },
+        {
+          "method": "dev.engine_room.flywheel.impl.task.WaitGroup.await",
+          "inclusive_ms": 540.0,
+          "self_ms": 540.0,
+          "inclusive_pct": 0.5154245571166769,
+          "self_pct": 0.5154245571166769
+        },
+        {
+          "method": "org.lwjgl.opengl.GL11C.glBindTexture",
+          "inclusive_ms": 528.0,
+          "self_ms": 528.0,
+          "inclusive_pct": 0.5039706780696396,
+          "self_pct": 0.5039706780696396
+        },
+        {
+          "method": "org.lwjgl.opengl.GL31C.nglDrawElementsInstanced",
+          "inclusive_ms": 512.0,
+          "self_ms": 512.0,
+          "inclusive_pct": 0.4886988393402566,
+          "self_pct": 0.4886988393402566
+        },
+        {
+          "method": "java.util.HashMap.hash",
+          "inclusive_ms": 544.0,
+          "self_ms": 504.0,
+          "inclusive_pct": 0.5192425167990227,
+          "self_pct": 0.48106291997556505
+        },
+        {
+          "method": "net.minecraft.client.renderer.LevelRenderer.renderLevel",
+          "inclusive_ms": 59700.0,
+          "self_ms": 496.0,
+          "inclusive_pct": 56.98304825901038,
+          "self_pct": 0.47342700061087356
+        },
+        {
+          "method": "net.minecraft.client.gui.font.glyphs.BakedGlyph.handler$ckp000$sodium$drawFast",
+          "inclusive_ms": 492.0,
+          "self_ms": 492.0,
+          "inclusive_pct": 0.46960904092852773,
+          "self_pct": 0.46960904092852773
+        },
+        {
+          "method": "net.neoforged.bus.EventBus.post",
+          "inclusive_ms": 11956.0,
+          "self_ms": 456.0,
+          "inclusive_pct": 11.41188149053146,
+          "self_pct": 0.435247403787416
+        },
+        {
+          "method": "org.lwjgl.opengl.GL20C.glUniform3f",
+          "inclusive_ms": 452.0,
+          "self_ms": 452.0,
+          "inclusive_pct": 0.4314294441050703,
+          "self_pct": 0.4314294441050703
+        },
+        {
+          "method": "org.lwjgl.opengl.GL30C.glBlitFramebuffer",
+          "inclusive_ms": 416.0,
+          "self_ms": 416.0,
+          "inclusive_pct": 0.3970678069639585,
+          "self_pct": 0.3970678069639585
+        },
+        {
+          "method": "com.seibel.distanthorizons.coreapi.DependencyInjection.ApiEventInjector.fireAllEvents",
+          "inclusive_ms": 432.0,
+          "self_ms": 392.0,
+          "inclusive_pct": 0.4123396456933414,
+          "self_pct": 0.37416004886988397
+        },
+        {
+          "method": "java.util.HashMap.getNode",
+          "inclusive_ms": 628.0,
+          "self_ms": 388.0,
+          "inclusive_pct": 0.5994196701282835,
+          "self_pct": 0.3703420891875382
+        },
+        {
+          "method": "com.seibel.distanthorizons.core.util.objects.SortedArraySet.add",
+          "inclusive_ms": 364.0,
+          "self_ms": 356.0,
+          "inclusive_pct": 0.34743433109346367,
+          "self_pct": 0.3397984117287721
+        },
+        {
+          "method": "net.caffeinemc.mods.sodium.client.render.immediate.model.EntityRenderer.renderCuboid",
+          "inclusive_ms": 372.0,
+          "self_ms": 352.0,
+          "inclusive_pct": 0.35507025045815516,
+          "self_pct": 0.3359804520464264
+        },
+        {
+          "method": "org.joml.Matrix4f.rotate",
+          "inclusive_ms": 344.0,
+          "self_ms": 344.0,
+          "inclusive_pct": 0.32834453268173486,
+          "self_pct": 0.32834453268173486
+        },
+        {
+          "method": "org.lwjgl.opengl.GL32C.nglMultiDrawElementsBaseVertex",
+          "inclusive_ms": 336.0,
+          "self_ms": 336.0,
+          "inclusive_pct": 0.32070861331704337,
+          "self_pct": 0.32070861331704337
+        },
+        {
+          "method": "org.lwjgl.opengl.GL20C.glUniform1i",
+          "inclusive_ms": 332.0,
+          "self_ms": 332.0,
+          "inclusive_pct": 0.31689065363469765,
+          "self_pct": 0.31689065363469765
+        },
+        {
+          "method": "com.mojang.blaze3d.vertex.VertexMultiConsumer$Double.addVertex",
+          "inclusive_ms": 332.0,
+          "self_ms": 332.0,
+          "inclusive_pct": 0.31689065363469765,
+          "self_pct": 0.31689065363469765
+        },
+        {
+          "method": "java.util.Collection.removeIf",
+          "inclusive_ms": 476.0,
+          "self_ms": 324.0,
+          "inclusive_pct": 0.4543372021991448,
+          "self_pct": 0.3092547342700061
+        },
+        {
+          "method": "net.minecraft.util.ZeroBitStorage.get",
+          "inclusive_ms": 308.0,
+          "self_ms": 308.0,
+          "inclusive_pct": 0.29398289554062307,
+          "self_pct": 0.29398289554062307
+        },
+        {
+          "method": "com.mojang.blaze3d.vertex.PoseStack.pushPose",
+          "inclusive_ms": 308.0,
+          "self_ms": 308.0,
+          "inclusive_pct": 0.29398289554062307,
+          "self_pct": 0.29398289554062307
+        },
+        {
+          "method": "net.minecraft.client.renderer.RenderStateShard.clearRenderState",
+          "inclusive_ms": 464.0,
+          "self_ms": 304.0,
+          "inclusive_pct": 0.4428833231521075,
+          "self_pct": 0.29016493585827735
+        },
+        {
+          "method": "org.lwjgl.opengl.GL20C.nglUniformMatrix4fv",
+          "inclusive_ms": 296.0,
+          "self_ms": 296.0,
+          "inclusive_pct": 0.2825290164935858,
+          "self_pct": 0.2825290164935858
+        },
+        {
+          "method": "java.util.concurrent.ConcurrentHashMap$Traverser.advance",
+          "inclusive_ms": 288.0,
+          "self_ms": 288.0,
+          "inclusive_pct": 0.2748930971288943,
+          "self_pct": 0.2748930971288943
+        },
+        {
+          "method": "com.seibel.distanthorizons.common.render.openGl.generic.GlGenericObjectRenderer.getVboRenderDebugMenuString",
+          "inclusive_ms": 392.0,
+          "self_ms": 280.0,
+          "inclusive_pct": 0.37416004886988397,
+          "self_pct": 0.26725717776420277
+        },
+        {
+          "method": "java.util.HashMap.putVal",
+          "inclusive_ms": 300.0,
+          "self_ms": 280.0,
+          "inclusive_pct": 0.2863469761759316,
+          "self_pct": 0.26725717776420277
+        },
+        {
+          "method": "org.lwjgl.opengl.GL11C.glEnable",
+          "inclusive_ms": 276.0,
+          "self_ms": 276.0,
+          "inclusive_pct": 0.26343921808185705,
+          "self_pct": 0.26343921808185705
+        },
+        {
+          "method": "net.minecraft.client.renderer.RenderStateShard$TextureStateShard.lambda$new$0",
+          "inclusive_ms": 520.0,
+          "self_ms": 272.0,
+          "inclusive_pct": 0.4963347587049481,
+          "self_pct": 0.25962125839951133
+        },
+        {
+          "method": "java.util.Objects.equals",
+          "inclusive_ms": 300.0,
+          "self_ms": 268.0,
+          "inclusive_pct": 0.2863469761759316,
+          "self_pct": 0.25580329871716556
+        },
+        {
+          "method": "org.lwjgl.opengl.GL11C.nglTexSubImage2D",
+          "inclusive_ms": 260.0,
+          "self_ms": 260.0,
+          "inclusive_pct": 0.24816737935247404,
+          "self_pct": 0.24816737935247404
+        },
+        {
+          "method": "org.lwjgl.opengl.GL11C.glDisable",
+          "inclusive_ms": 260.0,
+          "self_ms": 260.0,
+          "inclusive_pct": 0.24816737935247404,
+          "self_pct": 0.24816737935247404
+        },
+        {
+          "method": "net.minecraft.client.renderer.RenderStateShard.setupRenderState",
+          "inclusive_ms": 1484.0,
+          "self_ms": 256.0,
+          "inclusive_pct": 1.4164630421502749,
+          "self_pct": 0.2443494196701283
+        }
+      ]
+    }
+  ],
+  "normalization": {
+    "original_thread_times": [
+      12532.0,
+      60000.0,
+      32232.0
+    ],
+    "root_times_used": [
+      12536.0,
+      60000.0,
+      32232.0
+    ],
+    "difference_ms": 4.0
+  },
+  "groups_pct": {
+    "render": 77.12660354306658,
+    "tick": 6.998320097739767,
+    "block_entity_tick": 1.0079413561392792,
+    "create_tick": 0.6605070250458155,
+    "block_entity_render": 3.2567196090409283,
+    "dynamic_light": 0.21380574221136223,
+    "breaking": 0.08017715332926084,
+    "dh_lod": 26.851710445937695,
+    "flywheel_render": 5.165699450213806,
+    "swap": 5.53985949908369,
+    "slopium_tick_check": 0.007635919364691509,
+    "slopium_grid_build": 0.011453879047037263,
+    "slopium_grid_sample": 0.019089798411728774,
+    "Xaero": 5.788026878436163,
+    "Flywheel_all": 6.536346976175931,
+    "EntityCulling": 0.0763591936469151,
+    "Slopium_all": 0.08017715332926084
+  }
+}

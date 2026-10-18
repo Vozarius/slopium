@@ -84,6 +84,9 @@ public final class Slopium {
                     + " | particle calls=" + SlopiumStats.particleCallsSkipped
                     + " | ambient passes=" + SlopiumStats.ambientPassesSkipped
                     + " | frozen Create ticks=" + SlopiumStats.frozenCreateTicks), false);
+                context.getSource().sendSuccess(() -> Component.literal("Render budget | item draws=" + SlopiumStats.itemDrawsSkipped
+                    + " | copies=" + SlopiumStats.itemCopiesSkipped + " | shadows=" + SlopiumStats.shadowsSkipped
+                    + " | Sodium passes=" + SlopiumStats.sodiumPassesSkipped + " | Xaero guards=" + SlopiumStats.xaeroMeasurementGuardsSkipped), false);
                 var timing = SlopiumStats.FRAME_TIMES.snapshot();
                 context.getSource().sendSuccess(() -> Component.literal(timing.samples() == 0
                     ? "Frames | no samples; enable diagnostics and close menus in the world"
