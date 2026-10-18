@@ -7,6 +7,8 @@ public final class SlopiumStats {
     public static final FrameTimeStats FRAME_TIMES = new FrameTimeStats(16_384);
     public static long blockEntityDrawsSkipped, flywheelDrawsSkipped, particleCallsSkipped, ambientPassesSkipped, frozenCreateTicks;
     public static long itemDrawsSkipped, itemCopiesSkipped, shadowsSkipped, sodiumPassesSkipped, xaeroMeasurementGuardsSkipped;
+    public static long itemImpostorsRendered, particleBudgetSkipped, textureInterpolationsSkipped;
+    public static final java.util.concurrent.atomic.LongAdder CREATE_VISUALS_SKIPPED = new java.util.concurrent.atomic.LongAdder();
     public static int indexedSources;
     public static long indexBuildNanos;
     public static long eligibleTicksChecked, tickNotReady, tickVisibleOrExcluded, tickNear, tickSableProtected, hiddenTicksChecked;
@@ -16,6 +18,8 @@ public final class SlopiumStats {
         breakingOverlaysChecked = 0;
         blockEntityDrawsSkipped = flywheelDrawsSkipped = particleCallsSkipped = ambientPassesSkipped = frozenCreateTicks = 0;
         itemDrawsSkipped = itemCopiesSkipped = shadowsSkipped = sodiumPassesSkipped = xaeroMeasurementGuardsSkipped = 0;
+        itemImpostorsRendered = particleBudgetSkipped = textureInterpolationsSkipped = 0;
+        CREATE_VISUALS_SKIPPED.reset();
         FRAME_TIMES.reset();
         indexedSources = 0;
         indexBuildNanos = 0;

@@ -42,6 +42,14 @@ public final class SlopiumConfig {
     public volatile boolean throttleFlywheelDistance = false;
     public volatile int flywheelFullRateDistance = 32;
     public volatile int flywheelFrameInterval = 3;
+    public volatile boolean itemImpostors = false;
+    public int itemImpostorDistance = 24;
+    public volatile boolean throttleCreateVisuals = false;
+    public volatile int createVisualDistance = 24;
+    public volatile int createVisualInterval = 3;
+    public volatile boolean particleBudget = false;
+    public volatile int particlesPerTick = 128;
+    public volatile boolean disableTextureInterpolation = false;
 
     public static SlopiumConfig get() {
         if (instance == null) {
@@ -84,6 +92,10 @@ public final class SlopiumConfig {
     }
 
     private void validate() {
+        itemImpostorDistance = Math.clamp(itemImpostorDistance, 0, 512);
+        createVisualDistance = Math.clamp(createVisualDistance, 0, 512);
+        createVisualInterval = Math.clamp(createVisualInterval, 2, 10);
+        particlesPerTick = Math.clamp(particlesPerTick, 0, 1024);
         flywheelFullRateDistance = Math.clamp(flywheelFullRateDistance, 0, 512);
         flywheelFrameInterval = Math.clamp(flywheelFrameInterval, 2, 8);
         itemLodDistance = Math.clamp(itemLodDistance, 0, 512);

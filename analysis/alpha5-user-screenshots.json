@@ -1,0 +1,32 @@
+{
+  "source": "two user screenshots, 2026-10-19",
+  "rural": {
+    "frames": 10946,
+    "seconds": 96.0,
+    "avg_fps": 114.0,
+    "p50_ms": 8.32,
+    "p95_ms": 14.42,
+    "p99_ms": 17.3,
+    "max_ms": 49.8,
+    "over_16_67_pct": 1.7,
+    "be_draws_skipped": 442991,
+    "item_draws_skipped": 15137,
+    "item_copies_skipped": 79727,
+    "xaero_guards": 35356
+  },
+  "city": {
+    "frames": 4015,
+    "seconds": 111.3,
+    "avg_fps": 36.1,
+    "p50_ms": 27.3,
+    "p95_ms": 46.16,
+    "p99_ms": 60.78,
+    "max_ms": 217.17,
+    "over_16_67_pct": 76.3,
+    "be_draws_skipped": 9042757,
+    "item_draws_skipped": 3182,
+    "item_copies_skipped": 6198,
+    "xaero_guards": 640
+  },
+  "new_spark_profile": false
+}

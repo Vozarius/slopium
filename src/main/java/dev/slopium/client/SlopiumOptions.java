@@ -64,7 +64,18 @@ public final class SlopiumOptions implements ConfigEntryPoint {
                     .addOption(bool(builder, "flywheel_distance", v -> c.throttleFlywheelDistance = v, () -> c.throttleFlywheelDistance, false, Slopium.loaded("flywheel")))
                     .addOption(integer(builder, "flywheel_distance_radius", v -> c.flywheelFullRateDistance = v, () -> c.flywheelFullRateDistance, 32, 0, 512, 1))
                     .addOption(integer(builder, "flywheel_interval", v -> c.flywheelFrameInterval = v, () -> c.flywheelFrameInterval, 3, 2, 8, 1))
-                    .addOption(bool(builder, "disable_shadows", v -> c.disableEntityShadows = v, () -> c.disableEntityShadows, false, true))));
+                    .addOption(bool(builder, "disable_shadows", v -> c.disableEntityShadows = v, () -> c.disableEntityShadows, false, true))))
+            .addPage(builder.createOptionPage().setName(text("page.radical"))
+                .addOptionGroup(builder.createOptionGroup()
+                    .addOption(bool(builder, "item_impostors", v -> c.itemImpostors = v, () -> c.itemImpostors, false, true))
+                    .addOption(integer(builder, "item_impostor_distance", v -> c.itemImpostorDistance = v, () -> c.itemImpostorDistance, 24, 0, 512, 1))
+                    .addOption(bool(builder, "create_visuals", v -> c.throttleCreateVisuals = v, () -> c.throttleCreateVisuals, false, Slopium.loaded("create") && Slopium.loaded("flywheel")))
+                    .addOption(integer(builder, "create_visual_distance", v -> c.createVisualDistance = v, () -> c.createVisualDistance, 24, 0, 512, 1))
+                    .addOption(integer(builder, "create_visual_interval", v -> c.createVisualInterval = v, () -> c.createVisualInterval, 3, 2, 10, 1)))
+                .addOptionGroup(builder.createOptionGroup()
+                    .addOption(bool(builder, "particle_budget", v -> c.particleBudget = v, () -> c.particleBudget, false, true))
+                    .addOption(integer(builder, "particles_per_tick", v -> c.particlesPerTick = v, () -> c.particlesPerTick, 128, 0, 1024, 16))
+                    .addOption(bool(builder, "texture_interpolation", v -> c.disableTextureInterpolation = v, () -> c.disableTextureInterpolation, false, true))));
     }
 
     private BooleanOptionBuilder bool(ConfigBuilder b, String key, Consumer<Boolean> set, Supplier<Boolean> get, boolean defaults, boolean enabled) {

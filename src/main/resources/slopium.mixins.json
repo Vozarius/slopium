@@ -24,7 +24,11 @@
     "EntityShadowCutMixin",
     "SodiumBlockEntityBudgetMixin",
     "FlywheelDistanceBudgetMixin",
-    "FlywheelBandedBudgetMixin"
+    "FlywheelBandedBudgetMixin",
+    "ParticleBudgetMixin",
+    "TextureInterpolationMixin",
+    "CreateVisualFrameMixin",
+    "VisualBlockEntityAccess"
   ],
   "injectors": {
     "defaultRequire": 1

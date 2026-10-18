@@ -23,18 +23,20 @@ public abstract class ItemRenderBudgetMixin {
     private void slopium$worldItem(ItemEntity entity, float yaw, float partial, PoseStack pose,
                                   MultiBufferSource buffers, int light, Operation<Void> original) {
         var c = SlopiumConfig.get();
-        if (!c.enabled || (!c.itemStackLod && !c.limitItemRendering)) {
+        if (!c.enabled || (!c.itemStackLod && !c.limitItemRendering && !c.itemImpostors)) {
             original.call(entity, yaw, partial, pose, buffers, light);
             return;
         }
         boolean single = false;
-        if (c.enabled && (c.itemStackLod || c.limitItemRendering)) {
+        if (c.enabled && (c.itemStackLod || c.limitItemRendering || c.itemImpostors)) {
             var camera = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
             var bounds = entity.getBoundingBox();
             if (c.limitItemRendering && RenderBudget.outside(bounds, camera.x, camera.y, camera.z, RenderBudget.radius(c.itemRenderDistance))) {
                 if (c.diagnostics) SlopiumStats.itemDrawsSkipped++;
                 return;
             }
+            if (c.itemImpostors && RenderBudget.outside(bounds, camera.x, camera.y, camera.z, RenderBudget.radius(c.itemImpostorDistance))
+                    && dev.slopium.visibility.ItemImpostor.render(entity, pose, buffers, light, c.diagnostics)) return;
             single = c.itemStackLod && RenderBudget.outside(bounds, camera.x, camera.y, camera.z, RenderBudget.radius(c.itemLodDistance));
         }
         boolean previous = slopium$single.get();

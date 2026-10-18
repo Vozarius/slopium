@@ -26,6 +26,18 @@ final class SmokeBudgetChecks {
                 @Override public net.minecraft.world.scores.PlayerTeam getTeam() { return null; }
             };
             var renderer = mc.getEntityRenderDispatcher().getRenderer(item);
+            c.itemImpostors = true; c.itemImpostorDistance = 0;
+            long sprites = SlopiumStats.itemImpostorsRendered;
+            renderer.render(item, 0, 0, new PoseStack(), mc.renderBuffers().bufferSource(), 15728880);
+            if (SlopiumStats.itemImpostorsRendered != sprites + 1 || stack.getCount() != 64) throw new AssertionError("Impostor/count failed");
+            item.setCustomName(net.minecraft.network.chat.Component.literal("protected"));
+            renderer.render(item, 0, 0, new PoseStack(), mc.renderBuffers().bufferSource(), 15728880);
+            if (SlopiumStats.itemImpostorsRendered != sprites + 1) throw new AssertionError("Named item replaced");
+            item.setCustomName(null);
+            c.enabled = false;
+            renderer.render(item, 0, 0, new PoseStack(), mc.renderBuffers().bufferSource(), 15728880);
+            if (SlopiumStats.itemImpostorsRendered != sprites + 1) throw new AssertionError("Impostor ignores global off");
+            c.enabled = true; c.itemImpostors = false;
             c.itemStackLod = true; c.itemLodDistance = 0; c.limitItemRendering = false;
             long before = SlopiumStats.itemCopiesSkipped;
             renderer.render(item, 0, 0, new PoseStack(), mc.renderBuffers().bufferSource(), 15728880);

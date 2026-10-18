@@ -59,5 +59,22 @@
   "slopium.flywheel_distance_radius": "Flywheel full-rate radius",
   "slopium.flywheel_distance_radius.tooltip": "Distance in blocks as supplied by the visual to Flywheel. Original Flywheel policy applies inside.",
   "slopium.flywheel_interval": "Flywheel frame interval",
-  "slopium.flywheel_interval.tooltip": "Update distant visuals once every N frames. Higher values make animations less smooth."
+  "slopium.flywheel_interval.tooltip": "Update distant visuals once every N frames. Higher values make animations less smooth.",
+  "slopium.page.radical": "Radical experiments",
+  "slopium.item_impostors": "Distant items: flat sprites",
+  "slopium.item_impostors.tooltip": "Replaces the model with one camera-facing quad using its particle texture. Blocks become flat material samples; rotation and depth are lost. Named, foil and custom-rendered items are excluded. Counts and pickup are unchanged.",
+  "slopium.item_impostor_distance": "Item sprite start distance",
+  "slopium.item_impostor_distance.tooltip": "Blocks from camera. Full models inside, flat sprites outside. Capped at chunk render distance.",
+  "slopium.create_visuals": "Throttle audited Create animations",
+  "slopium.create_visuals.tooltip": "Only Flywheel press, mixer and funnel visuals. Updates distant transforms less frequently. Client ticks, packets, lighting and visual deletion continue. Sable-protected and virtual worlds are excluded. Not universal culling.",
+  "slopium.create_visual_distance": "Create smooth animation radius",
+  "slopium.create_visual_distance.tooltip": "Blocks to machine center, plus a 4-block margin for extending parts. Updates every frame inside.",
+  "slopium.create_visual_interval": "Create visual frame interval",
+  "slopium.create_visual_interval.tooltip": "Updates distant model transforms once every N frames. Motion becomes stepped; approaching refreshes immediately.",
+  "slopium.particle_budget": "New particle budget",
+  "slopium.particle_budget.tooltip": "Caps new standard ParticleEngine particles per client tick. Excess effects are dropped; existing particles age normally. Custom systems may bypass this cap.",
+  "slopium.particles_per_tick": "New particles per tick",
+  "slopium.particles_per_tick.tooltip": "Global standard particle cap. Zero rejects new particles. Does not distinguish decorative from informative effects.",
+  "slopium.texture_interpolation": "Disable texture interpolation",
+  "slopium.texture_interpolation.tooltip": "Skips intermediate blending for standard animated textures. Animation clocks and keyframes continue. Motion becomes stepped; inventory appearance also changes."
 }

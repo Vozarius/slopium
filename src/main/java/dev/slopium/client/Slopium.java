@@ -87,6 +87,10 @@ public final class Slopium {
                 context.getSource().sendSuccess(() -> Component.literal("Render budget | item draws=" + SlopiumStats.itemDrawsSkipped
                     + " | copies=" + SlopiumStats.itemCopiesSkipped + " | shadows=" + SlopiumStats.shadowsSkipped
                     + " | Sodium passes=" + SlopiumStats.sodiumPassesSkipped + " | Xaero guards=" + SlopiumStats.xaeroMeasurementGuardsSkipped), false);
+                context.getSource().sendSuccess(() -> Component.literal("Radical | item sprites=" + SlopiumStats.itemImpostorsRendered
+                    + " | Create visual frames=" + SlopiumStats.CREATE_VISUALS_SKIPPED.sum()
+                    + " | particles rejected=" + SlopiumStats.particleBudgetSkipped
+                    + " | texture blends=" + SlopiumStats.textureInterpolationsSkipped), false);
                 var timing = SlopiumStats.FRAME_TIMES.snapshot();
                 context.getSource().sendSuccess(() -> Component.literal(timing.samples() == 0
                     ? "Frames | no samples; enable diagnostics and close menus in the world"
