@@ -91,6 +91,9 @@ public final class Slopium {
                     + " | Create visual frames=" + SlopiumStats.CREATE_VISUALS_SKIPPED.sum()
                     + " | particles rejected=" + SlopiumStats.particleBudgetSkipped
                     + " | texture blends=" + SlopiumStats.textureInterpolationsSkipped), false);
+                context.getSource().sendSuccess(() -> Component.literal("Targeted | particle light hits=" + SlopiumStats.particleLightHits
+                    + " | particle draws=" + SlopiumStats.particleDrawsSkipped + " | factory paths=" + SlopiumStats.factoryPathsSkipped
+                    + " | factory bulbs=" + SlopiumStats.factoryBulbsSkipped + " | distant Create ticks=" + SlopiumStats.distanceCreateTicksSkipped), false);
                 var timing = SlopiumStats.FRAME_TIMES.snapshot();
                 context.getSource().sendSuccess(() -> Component.literal(timing.samples() == 0
                     ? "Frames | no samples; enable diagnostics and close menus in the world"

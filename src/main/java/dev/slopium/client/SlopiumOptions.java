@@ -20,7 +20,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
         boolean createLight = lights && Slopium.loaded("createdynlight");
         boolean sableLight = createLight && Slopium.loaded("sable") && classPresent("top.leonx.dynlight.sodium.sable.SableDynLightSource");
         String activeVersion = ModList.get().getModContainerById("createdynlight")
-            .map(m -> m.getModInfo().getVersion().toString()).orElse("—");
+            .map(m -> m.getModInfo().getVersion().toString()).orElse("вЂ”");
 
         builder.registerOwnModOptions()
             .setColorTheme(builder.createColorTheme().setBaseThemeRGB(0x72c7a6))
@@ -75,7 +75,21 @@ public final class SlopiumOptions implements ConfigEntryPoint {
                 .addOptionGroup(builder.createOptionGroup()
                     .addOption(bool(builder, "particle_budget", v -> c.particleBudget = v, () -> c.particleBudget, false, true))
                     .addOption(integer(builder, "particles_per_tick", v -> c.particlesPerTick = v, () -> c.particlesPerTick, 128, 0, 1024, 16))
-                    .addOption(bool(builder, "texture_interpolation", v -> c.disableTextureInterpolation = v, () -> c.disableTextureInterpolation, false, true))));
+                    .addOption(bool(builder, "texture_interpolation", v -> c.disableTextureInterpolation = v, () -> c.disableTextureInterpolation, false, true))))
+            .addPage(builder.createOptionPage().setName(text("page.targeted"))
+                .addOptionGroup(builder.createOptionGroup()
+                    .addOption(bool(builder, "factory_connections", v -> c.factoryConnectionRange = v, () -> c.factoryConnectionRange, false, Slopium.loaded("create")))
+                    .addOption(integer(builder, "factory_connection_distance", v -> c.factoryConnectionDistance = v, () -> c.factoryConnectionDistance, 24, 0, 512, 1))
+                    .addOption(bool(builder, "factory_bulbs", v -> c.factoryBulbRange = v, () -> c.factoryBulbRange, false, Slopium.loaded("create")))
+                    .addOption(integer(builder, "factory_bulb_distance", v -> c.factoryBulbDistance = v, () -> c.factoryBulbDistance, 32, 0, 512, 1)))
+                .addOptionGroup(builder.createOptionGroup()
+                    .addOption(bool(builder, "particle_light_cache", v -> c.cacheParticleLight = v, () -> c.cacheParticleLight, false, true))
+                    .addOption(bool(builder, "particle_range", v -> c.particleRange = v, () -> c.particleRange, false, true))
+                    .addOption(integer(builder, "particle_render_distance", v -> c.particleRenderDistance = v, () -> c.particleRenderDistance, 64, 0, 512, 1)))
+                .addOptionGroup(builder.createOptionGroup()
+                    .addOption(bool(builder, "distance_create_ticks", v -> c.distanceCreateTicks = v, () -> c.distanceCreateTicks, false, Slopium.loaded("create")))
+                    .addOption(integer(builder, "create_tick_distance", v -> c.createTickDistance = v, () -> c.createTickDistance, 32, 0, 512, 1))
+                    .addOption(integer(builder, "create_tick_interval", v -> c.createTickInterval = v, () -> c.createTickInterval, 4, 2, 10, 1))));
     }
 
     private BooleanOptionBuilder bool(ConfigBuilder b, String key, Consumer<Boolean> set, Supplier<Boolean> get, boolean defaults, boolean enabled) {

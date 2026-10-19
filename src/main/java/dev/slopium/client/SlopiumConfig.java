@@ -51,6 +51,17 @@ public final class SlopiumConfig {
     public volatile int particlesPerTick = 128;
     public volatile boolean disableTextureInterpolation = false;
 
+    public volatile boolean cacheParticleLight = false;
+    public volatile boolean particleRange = false;
+    public int particleRenderDistance = 64;
+    public volatile boolean factoryConnectionRange = false;
+    public int factoryConnectionDistance = 24;
+    public volatile boolean factoryBulbRange = false;
+    public int factoryBulbDistance = 32;
+    public volatile boolean distanceCreateTicks = false;
+    public int createTickDistance = 32;
+    public int createTickInterval = 4;
+
     public static SlopiumConfig get() {
         if (instance == null) {
             synchronized (SlopiumConfig.class) {
@@ -92,6 +103,11 @@ public final class SlopiumConfig {
     }
 
     private void validate() {
+        particleRenderDistance = Math.clamp(particleRenderDistance, 0, 512);
+        factoryConnectionDistance = Math.clamp(factoryConnectionDistance, 0, 512);
+        factoryBulbDistance = Math.clamp(factoryBulbDistance, 0, 512);
+        createTickDistance = Math.clamp(createTickDistance, 0, 512);
+        createTickInterval = Math.clamp(createTickInterval, 2, 10);
         itemImpostorDistance = Math.clamp(itemImpostorDistance, 0, 512);
         createVisualDistance = Math.clamp(createVisualDistance, 0, 512);
         createVisualInterval = Math.clamp(createVisualInterval, 2, 10);

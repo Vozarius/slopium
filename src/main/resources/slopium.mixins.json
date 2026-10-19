@@ -28,7 +28,10 @@
     "ParticleBudgetMixin",
     "TextureInterpolationMixin",
     "CreateVisualFrameMixin",
-    "VisualBlockEntityAccess"
+    "VisualBlockEntityAccess",
+    "ParticleLightCacheMixin",
+    "ParticleRangeMixin",
+    "FactoryPanelBudgetMixin"
   ],
   "injectors": {
     "defaultRequire": 1
