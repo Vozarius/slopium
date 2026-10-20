@@ -25,6 +25,7 @@ public final class WallOcclusion {
     private static long spent;
     private WallOcclusion() {}
     public static void invalidate() { EPOCH.incrementAndGet(); }
+    public static long epoch() { return EPOCH.get(); }
     public static boolean hidden(AABB bounds, Vec3 camera, boolean anyBlock) {
         var mc = Minecraft.getInstance();
         if (!mc.isSameThread() || mc.level == null || bounds == null) return false;

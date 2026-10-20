@@ -20,7 +20,7 @@ import net.neoforged.neoforge.common.NeoForge;
 /** Not included in the release JAR. Opens the actual Sodium page and exits. */
 @Mod(value = "slopium_smoke", dist = Dist.CLIENT)
 public final class SlopiumSmoke {
-    private int frames;
+    private int frames, pageIndex = 1, capturedPages;
     private boolean opened, captured;
 
     public SlopiumSmoke() {
@@ -33,23 +33,34 @@ public final class SlopiumSmoke {
         if (opened || !(client.screen instanceof TitleScreen)) return;
         var options = ConfigManager.CONFIG.getModOptions().stream()
             .filter(mod -> mod.configId().equals("slopium")).findFirst().orElseThrow();
-        if (options.pages().size() != 8) throw new IllegalStateException("Missing Slopium pages");
+        if (options.pages().size() != 7) throw new IllegalStateException("Missing Slopium pages");
         validateOptionalMixins();
-        client.setScreen(VideoSettingsScreen.createScreen(client.screen, (OptionPage) options.pages().get(7)));
+        showPage(client);
+        opened = true;
+        LogUtils.getLogger().info("SLOPIUM_SMOKE: options registered; actual Sodium page opened");
+    }
+
+    private void showPage(Minecraft client) {
+        var options = ConfigManager.CONFIG.getModOptions().stream()
+            .filter(mod -> mod.configId().equals("slopium")).findFirst().orElseThrow();
+        client.setScreen(VideoSettingsScreen.createScreen(client.screen, (OptionPage) options.pages().get(pageIndex)));
         // Reese replaces createScreen and ignores Sodium's initial-page argument.
         if (Slopium.loaded("reeses_sodium_options")) {
             try {
                 Object frame = client.screen.getClass().getMethod("rso$getTabFrame").invoke(client.screen);
                 var tabs = (java.util.List<?>) frame.getClass().getMethod("getTabs").invoke(frame);
                 Object selected = tabs.stream().filter(tab -> {
-                    try { return tab.getClass().getMethod("getPage").invoke(tab) == options.pages().get(7); }
+                    try { return tab.getClass().getMethod("getPage").invoke(tab) == options.pages().get(pageIndex); }
                     catch (ReflectiveOperationException e) { throw new AssertionError(e); }
                 }).findFirst().orElseThrow();
                 frame.getClass().getMethod("setTab", java.util.Optional.class).invoke(frame, java.util.Optional.of(selected));
             } catch (ReflectiveOperationException e) { throw new AssertionError(e); }
         }
-        opened = true;
-        LogUtils.getLogger().info("SLOPIUM_SMOKE: options registered; actual Sodium page opened");
+        // Preview the longest labels without writing user/config values.
+        SmokeOptionsChecks.value("enabled", true);
+        for (String key : java.util.List.of("disable_particles", "disable_be_render", "disable_flywheel_render", "freeze_create_ticks")) SmokeOptionsChecks.value(key, false);
+        for (String key : java.util.List.of("particle_visibility", "create_visibility", "flywheel_visibility", "animation_visibility", "create_tick_mode"))
+            SmokeOptionsChecks.value(key, SmokeOptionsChecks.enumValue(key, "ANY"));
     }
 
     private static void validateOptionalMixins() {
@@ -61,6 +72,8 @@ public final class SlopiumSmoke {
             SmokeRadicalChecks.run();
             SmokeTargetedChecks.run();
             SmokeWallChecks.run();
+            SmokeParticleOcclusionChecks.run();
+            SmokeOptionsChecks.run();
             if (Slopium.loaded("sodiumdynamiclights")) {
                 Object lights = Class.forName("toni.sodiumdynamiclights.SodiumDynamicLights").getMethod("get").invoke(null);
                 if (!(lights instanceof LightIndexControl)) throw new AssertionError("Light mixin missing");
@@ -100,9 +113,13 @@ public final class SlopiumSmoke {
         if (!opened || captured || Minecraft.getInstance().getOverlay() != null || ++frames < 60) return;
         captured = true;
         Minecraft client = Minecraft.getInstance();
-        Screenshot.grab(client.gameDirectory, "slopium-smoke.png", client.getMainRenderTarget(), message -> {
+        Screenshot.grab(client.gameDirectory, "slopium-alpha10-page-" + pageIndex + ".png", client.getMainRenderTarget(), message -> {
             LogUtils.getLogger().info("SLOPIUM_SMOKE: screenshot saved; success");
-            client.execute(client::stop);
+            client.execute(() -> {
+                if (++capturedPages == 7) { client.stop(); return; }
+                pageIndex = (pageIndex + 1) % 7;
+                showPage(client); frames = 0; captured = false;
+            });
         });
     }
 }

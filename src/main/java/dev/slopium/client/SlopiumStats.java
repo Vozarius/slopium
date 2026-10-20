@@ -12,6 +12,7 @@ public final class SlopiumStats {
     public static long particleLightHits, particleDrawsSkipped, factoryPathsSkipped, factoryBulbsSkipped, distanceCreateTicksSkipped;
     public static long wallParticlesSkipped, wallCreateDrawsSkipped, wallCreateTicksSkipped, wallFlywheelInstancesHidden, occlusionRays, occlusionCacheHits, occlusionBudgetMisses;
     public static long factoryItemPassesSkipped;
+    public static long particleOcclusionChecks, particleOcclusionDeferred, particleOcclusionProtected;
     public static int indexedSources;
     public static long indexBuildNanos;
     public static long eligibleTicksChecked, tickNotReady, tickVisibleOrExcluded, tickNear, tickSableProtected, hiddenTicksChecked;
@@ -26,6 +27,7 @@ public final class SlopiumStats {
         particleLightHits = particleDrawsSkipped = factoryPathsSkipped = factoryBulbsSkipped = distanceCreateTicksSkipped = 0;
         wallParticlesSkipped = wallCreateDrawsSkipped = wallCreateTicksSkipped = wallFlywheelInstancesHidden = occlusionRays = occlusionCacheHits = occlusionBudgetMisses = 0;
         factoryItemPassesSkipped = 0;
+        particleOcclusionChecks = particleOcclusionDeferred = particleOcclusionProtected = 0;
         FRAME_TIMES.reset();
         indexedSources = 0;
         indexBuildNanos = 0;

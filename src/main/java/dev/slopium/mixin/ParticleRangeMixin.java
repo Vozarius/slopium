@@ -23,7 +23,8 @@ public abstract class ParticleRangeMixin {
             RenderBudget.radius(c.particleRenderDistance));
         if (skip && c.diagnostics) SlopiumStats.particleDrawsSkipped++;
         if (skip) return false;
-        if (c.occludeParticles && dev.slopium.visibility.WallOcclusion.hidden(particle.getRenderBoundingBox(partialTick), p, c.opaqueGlassParticles)) {
+        if (c.occludeParticles && dev.slopium.visibility.ParticleOcclusion.hidden(
+                ((dev.slopium.visibility.ParticlePosition)particle).slopium$renderPosition(partialTick), p, c.opaqueGlassParticles)) {
             if (c.diagnostics) SlopiumStats.wallParticlesSkipped++;
             return false;
         }

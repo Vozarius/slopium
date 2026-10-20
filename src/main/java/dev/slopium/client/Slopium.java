@@ -99,6 +99,9 @@ public final class Slopium {
                     + " | Create draws=" + SlopiumStats.wallCreateDrawsSkipped + " | Create ticks=" + SlopiumStats.wallCreateTicksSkipped
                     + " | Flywheel instances=" + SlopiumStats.wallFlywheelInstancesHidden + " | rays=" + SlopiumStats.occlusionRays
                     + " | cache=" + SlopiumStats.occlusionCacheHits + " | budget misses=" + SlopiumStats.occlusionBudgetMisses), false);
+                context.getSource().sendSuccess(() -> Component.literal("Particle visibility | checked=" + SlopiumStats.particleOcclusionChecks
+                    + " | hidden=" + SlopiumStats.wallParticlesSkipped + " | deferred=" + SlopiumStats.particleOcclusionDeferred
+                    + " | Sable protected=" + SlopiumStats.particleOcclusionProtected), false);
                 var timing = SlopiumStats.FRAME_TIMES.snapshot();
                 context.getSource().sendSuccess(() -> Component.literal(timing.samples() == 0
                     ? "Frames | no samples; enable diagnostics and close menus in the world"
