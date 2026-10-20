@@ -20,9 +20,10 @@ public final class SlopiumOptions implements ConfigEntryPoint {
         boolean createLight = lights && Slopium.loaded("createdynlight");
         boolean sableLight = createLight && Slopium.loaded("sable") && classPresent("top.leonx.dynlight.sodium.sable.SableDynLightSource");
         String activeVersion = ModList.get().getModContainerById("createdynlight")
-            .map(m -> m.getModInfo().getVersion().toString()).orElse("вЂ”");
+            .map(m -> m.getModInfo().getVersion().toString()).orElse("Р В Р вЂ Р В РІР‚С™Р Р†Р вЂљРЎСљ");
 
         builder.registerOwnModOptions()
+            .setNonTintedIcon(id("textures/gui/logo.png"))
             .setColorTheme(builder.createColorTheme().setBaseThemeRGB(0x72c7a6))
             .addPage(builder.createOptionPage().setName(text("page.general"))
                 .addOptionGroup(builder.createOptionGroup()
@@ -80,6 +81,8 @@ public final class SlopiumOptions implements ConfigEntryPoint {
                 .addOptionGroup(builder.createOptionGroup()
                     .addOption(bool(builder, "factory_connections", v -> c.factoryConnectionRange = v, () -> c.factoryConnectionRange, false, Slopium.loaded("create")))
                     .addOption(integer(builder, "factory_connection_distance", v -> c.factoryConnectionDistance = v, () -> c.factoryConnectionDistance, 24, 0, 512, 1))
+                    .addOption(bool(builder, "factory_items", v -> c.factoryItemRange = v, () -> c.factoryItemRange, false, Slopium.loaded("create")))
+                    .addOption(integer(builder, "factory_item_distance", v -> c.factoryItemDistance = v, () -> c.factoryItemDistance, 24, 0, 512, 1))
                     .addOption(bool(builder, "factory_bulbs", v -> c.factoryBulbRange = v, () -> c.factoryBulbRange, false, Slopium.loaded("create")))
                     .addOption(integer(builder, "factory_bulb_distance", v -> c.factoryBulbDistance = v, () -> c.factoryBulbDistance, 32, 0, 512, 1)))
                 .addOptionGroup(builder.createOptionGroup()
@@ -89,7 +92,30 @@ public final class SlopiumOptions implements ConfigEntryPoint {
                 .addOptionGroup(builder.createOptionGroup()
                     .addOption(bool(builder, "distance_create_ticks", v -> c.distanceCreateTicks = v, () -> c.distanceCreateTicks, false, Slopium.loaded("create")))
                     .addOption(integer(builder, "create_tick_distance", v -> c.createTickDistance = v, () -> c.createTickDistance, 32, 0, 512, 1))
-                    .addOption(integer(builder, "create_tick_interval", v -> c.createTickInterval = v, () -> c.createTickInterval, 4, 2, 10, 1))));
+                    .addOption(integer(builder, "create_tick_interval", v -> c.createTickInterval = v, () -> c.createTickInterval, 4, 2, 10, 1))))
+            .addPage(builder.createOptionPage().setName(text("page.walls"))
+                .addOptionGroup(builder.createOptionGroup()
+                    .addOption(bool(builder, "occlude_particles", v -> c.occludeParticles = v, () -> c.occludeParticles, false, true))
+                    .addOption(occluders(builder, "particle_occluders", v -> c.opaqueGlassParticles = v, () -> c.opaqueGlassParticles, true)))
+                .addOptionGroup(builder.createOptionGroup()
+                    .addOption(bool(builder, "occlude_create_rendering", v -> c.occludeCreateRendering = v, () -> c.occludeCreateRendering, false, Slopium.loaded("create")))
+                    .addOption(occluders(builder, "create_render_occluders", v -> c.createRenderAnyBlock = v, () -> c.createRenderAnyBlock, Slopium.loaded("create")))
+                    .addOption(bool(builder, "occlude_flywheel", v -> c.occludeFlywheel = v, () -> c.occludeFlywheel, false, Slopium.loaded("create") && Slopium.loaded("flywheel")))
+                    .addOption(occluders(builder, "flywheel_occluders", v -> c.flywheelAnyBlock = v, () -> c.flywheelAnyBlock, Slopium.loaded("create")))
+                    .addOption(bool(builder, "occlude_create_animations", v -> c.occludeCreateAnimations = v, () -> c.occludeCreateAnimations, false, Slopium.loaded("create") && Slopium.loaded("flywheel")))
+                    .addOption(occluders(builder, "animation_occluders", v -> c.animationAnyBlock = v, () -> c.animationAnyBlock, Slopium.loaded("create")))
+                    .addOption(bool(builder, "occlude_create_ticks", v -> c.occludeCreateTicks = v, () -> c.occludeCreateTicks, false, Slopium.loaded("create")))
+                    .addOption(occluders(builder, "tick_occluders", v -> c.tickAnyBlock = v, () -> c.tickAnyBlock, Slopium.loaded("create"))))
+                .addOptionGroup(builder.createOptionGroup()
+                    .addOption(bool(builder, "hide_factory_connections", v -> c.hideFactoryConnections = v, () -> c.hideFactoryConnections, false, Slopium.loaded("create")))));
+    }
+
+    private enum Occluders { OPAQUE, ANY_BLOCK }
+    private EnumOptionBuilder<Occluders> occluders(ConfigBuilder b, String key, Consumer<Boolean> set, Supplier<Boolean> get, boolean enabled) {
+        return b.createEnumOption(id(key), Occluders.class).setName(text(key)).setTooltip(text(key + ".tooltip"))
+            .setStorageHandler(storage).setBinding(value -> set.accept(value == Occluders.ANY_BLOCK), () -> get.get() ? Occluders.ANY_BLOCK : Occluders.OPAQUE)
+            .setDefaultValue(Occluders.OPAQUE).setEnabled(enabled)
+            .setElementNameProvider(value -> text(value == Occluders.ANY_BLOCK ? "occluders.any" : "occluders.opaque"));
     }
 
     private BooleanOptionBuilder bool(ConfigBuilder b, String key, Consumer<Boolean> set, Supplier<Boolean> get, boolean defaults, boolean enabled) {

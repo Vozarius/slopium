@@ -34,6 +34,7 @@ public abstract class BoundTickingBlockEntityMixin {
         SlopiumConfig config = SlopiumConfig.get();
         if (!config.enabled) return true;
         if (slopium$create && config.freezeCreateClientTicks && CreateFreezeControl.skip(blockEntity, config.diagnostics)) return false;
+        if (slopium$create && config.occludeCreateTicks) return !dev.slopium.visibility.CreateWallControl.skipTick(blockEntity, config);
         if (slopium$create && config.distanceCreateTicks) return !dev.slopium.visibility.CreateDistanceControl.skip(blockEntity, config);
         return !slopium$eligible || !config.throttleHiddenCreate || !CreateTickControl.skipEligible(blockEntity, config);
     }

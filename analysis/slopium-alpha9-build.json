@@ -1,0 +1,14 @@
+{
+  "version": "0.1.0-alpha.9",
+  "jar": "build\\libs\\slopium-neoforge-1.21.1-0.1.0-alpha.9.jar",
+  "size": 123897,
+  "sha256": "2edfd12b3fc0b5a7d8bc8014b266e01c88982c1d194c4837bb07c61430f47cd3",
+  "unit_tests_passed": 19,
+  "smoke_profiles": [
+    "full",
+    "legacy",
+    "minimal"
+  ],
+  "full_initial_failure": "Create/Registrate duplicate cardboard_helmet client extension; unchanged retry passed; cause unknown",
+  "world_fps_measured": false
+}

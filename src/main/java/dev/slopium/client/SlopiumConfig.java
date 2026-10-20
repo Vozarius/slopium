@@ -62,6 +62,21 @@ public final class SlopiumConfig {
     public int createTickDistance = 32;
     public int createTickInterval = 4;
 
+    public volatile boolean occludeParticles = false;
+    // Retain the alpha.8 JSON key; true now selects all block shapes, not only full glass cubes.
+    public volatile boolean opaqueGlassParticles = false;
+    public volatile boolean createRenderAnyBlock = false;
+    public volatile boolean flywheelAnyBlock = false;
+    public volatile boolean animationAnyBlock = false;
+    public volatile boolean tickAnyBlock = false;
+    public volatile boolean factoryItemRange = false;
+    public int factoryItemDistance = 24;
+    public volatile boolean occludeCreateRendering = false;
+    public volatile boolean occludeCreateTicks = false;
+    public volatile boolean occludeFlywheel = false;
+    public volatile boolean occludeCreateAnimations = false;
+    public volatile boolean hideFactoryConnections = false;
+
     public static SlopiumConfig get() {
         if (instance == null) {
             synchronized (SlopiumConfig.class) {
@@ -103,6 +118,7 @@ public final class SlopiumConfig {
     }
 
     private void validate() {
+        factoryItemDistance = Math.clamp(factoryItemDistance, 0, 512);
         particleRenderDistance = Math.clamp(particleRenderDistance, 0, 512);
         factoryConnectionDistance = Math.clamp(factoryConnectionDistance, 0, 512);
         factoryBulbDistance = Math.clamp(factoryBulbDistance, 0, 512);

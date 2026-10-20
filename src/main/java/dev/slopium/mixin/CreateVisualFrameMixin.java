@@ -31,7 +31,12 @@ public abstract class CreateVisualFrameMixin {
     @Inject(method = "beginFrame", at = @At("HEAD"), cancellable = true)
     private void slopium$visualFrame(DynamicVisual.Context context, CallbackInfo ci) {
         var c = SlopiumConfig.get();
-        if (!c.enabled || !c.throttleCreateVisuals) return;
+        if (!c.enabled) return;
+        if (c.occludeCreateAnimations && ((dev.slopium.visibility.VisualOcclusionState)this).slopium$isOccluded(Slopium.frame())) {
+            if (c.diagnostics) SlopiumStats.CREATE_VISUALS_SKIPPED.increment();
+            ci.cancel(); return;
+        }
+        if (!c.throttleCreateVisuals) return;
         BlockEntity blockEntity = ((VisualBlockEntityAccess) this).slopium$getBlockEntity();
         long frame = Slopium.frame();
         boolean distant = false;

@@ -40,6 +40,7 @@ public final class Slopium {
     public static void applyOptions() {
         SlopiumConfig.get().save();
         configRevision++;
+        dev.slopium.visibility.WallOcclusion.invalidate();
         SlopiumStats.FRAME_TIMES.reset();
         if (loaded("sodiumdynamiclights")) SodiumLightBridge.clear();
         // Cached chunk light must be rebuilt when a source group is disabled/re-enabled.
@@ -93,7 +94,11 @@ public final class Slopium {
                     + " | texture blends=" + SlopiumStats.textureInterpolationsSkipped), false);
                 context.getSource().sendSuccess(() -> Component.literal("Targeted | particle light hits=" + SlopiumStats.particleLightHits
                     + " | particle draws=" + SlopiumStats.particleDrawsSkipped + " | factory paths=" + SlopiumStats.factoryPathsSkipped
-                    + " | factory bulbs=" + SlopiumStats.factoryBulbsSkipped + " | distant Create ticks=" + SlopiumStats.distanceCreateTicksSkipped), false);
+                    + " | factory items=" + SlopiumStats.factoryItemPassesSkipped + " | factory bulbs=" + SlopiumStats.factoryBulbsSkipped + " | distant Create ticks=" + SlopiumStats.distanceCreateTicksSkipped), false);
+                context.getSource().sendSuccess(() -> Component.literal("Walls | particles=" + SlopiumStats.wallParticlesSkipped
+                    + " | Create draws=" + SlopiumStats.wallCreateDrawsSkipped + " | Create ticks=" + SlopiumStats.wallCreateTicksSkipped
+                    + " | Flywheel instances=" + SlopiumStats.wallFlywheelInstancesHidden + " | rays=" + SlopiumStats.occlusionRays
+                    + " | cache=" + SlopiumStats.occlusionCacheHits + " | budget misses=" + SlopiumStats.occlusionBudgetMisses), false);
                 var timing = SlopiumStats.FRAME_TIMES.snapshot();
                 context.getSource().sendSuccess(() -> Component.literal(timing.samples() == 0
                     ? "Frames | no samples; enable diagnostics and close menus in the world"

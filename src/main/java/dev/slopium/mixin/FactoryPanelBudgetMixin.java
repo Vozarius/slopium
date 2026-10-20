@@ -30,6 +30,10 @@ public abstract class FactoryPanelBudgetMixin {
             float partialTick, com.mojang.blaze3d.vertex.PoseStack pose,
             net.minecraft.client.renderer.MultiBufferSource buffers, int light, int overlay, CallbackInfo ci) {
         var c = SlopiumConfig.get();
+        if (c.enabled && c.hideFactoryConnections) {
+            if (c.diagnostics) SlopiumStats.factoryPathsSkipped++;
+            ci.cancel(); return;
+        }
         if (!c.enabled || !c.factoryConnectionRange || !slopium$far(panel, c.factoryConnectionDistance)) return;
         // Retain a connection if either endpoint is nearby. This is an explicit detail range, not occlusion.
         double radius = RenderBudget.radius(c.factoryConnectionDistance) + 2.0;
@@ -42,7 +46,8 @@ public abstract class FactoryPanelBudgetMixin {
             com.mojang.blaze3d.vertex.PoseStack pose, net.minecraft.client.renderer.MultiBufferSource buffers,
             int light, int overlay, CallbackInfo ci) {
         var c = SlopiumConfig.get();
-        if (c.enabled && c.factoryBulbRange && slopium$far(panel, c.factoryBulbDistance)) {
+        if (c.enabled && c.factoryBulbRange && panel.blockEntity instanceof FactoryPanelBlockEntity board
+                && dev.slopium.visibility.FactoryDetailControl.far(board, c.factoryBulbDistance)) {
             if (c.diagnostics) SlopiumStats.factoryBulbsSkipped++;
             ci.cancel();
         }

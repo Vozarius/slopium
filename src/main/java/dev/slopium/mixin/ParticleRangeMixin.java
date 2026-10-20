@@ -17,11 +17,16 @@ public abstract class ParticleRangeMixin {
         at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;render(Lcom/mojang/blaze3d/vertex/VertexConsumer;Lnet/minecraft/client/Camera;F)V"))
     private boolean slopium$particleRange(Particle particle, VertexConsumer buffer, Camera camera, float partialTick) {
         var c = SlopiumConfig.get();
-        if (!c.enabled || !c.particleRange) return true;
+        if (!c.enabled || (!c.particleRange && !c.occludeParticles)) return true;
         var p = camera.getPosition();
-        boolean skip = RenderBudget.outside(particle.getRenderBoundingBox(partialTick), p.x, p.y, p.z,
+        boolean skip = c.particleRange && RenderBudget.outside(particle.getRenderBoundingBox(partialTick), p.x, p.y, p.z,
             RenderBudget.radius(c.particleRenderDistance));
         if (skip && c.diagnostics) SlopiumStats.particleDrawsSkipped++;
-        return !skip;
+        if (skip) return false;
+        if (c.occludeParticles && dev.slopium.visibility.WallOcclusion.hidden(particle.getRenderBoundingBox(partialTick), p, c.opaqueGlassParticles)) {
+            if (c.diagnostics) SlopiumStats.wallParticlesSkipped++;
+            return false;
+        }
+        return true;
     }
 }

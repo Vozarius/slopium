@@ -6,6 +6,7 @@ license="MIT"
 modId="slopium"
 version="${version}"
 displayName="Slopium"
+logoFile="logoT.png"
 description='''Client performance controls for Create-heavy worlds: dynamic light indexing, visibility-aware updates and Sodium settings.'''
 
 [[dependencies.slopium]]

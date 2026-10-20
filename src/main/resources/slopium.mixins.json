@@ -31,7 +31,11 @@
     "VisualBlockEntityAccess",
     "ParticleLightCacheMixin",
     "ParticleRangeMixin",
-    "FactoryPanelBudgetMixin"
+    "FactoryPanelBudgetMixin",
+    "OcclusionInvalidationMixin",
+    "VisualOcclusionStateMixin",
+    "FlywheelWallMixin",
+    "FactoryItemBudgetMixin"
   ],
   "injectors": {
     "defaultRequire": 1

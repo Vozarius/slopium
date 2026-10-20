@@ -22,6 +22,12 @@ final class SmokeFactoryChecks {
         panel.setLevel(server);
         c.distanceCreateTicks = true;
         if (CreateDistanceControl.skip(panel, c)) throw new AssertionError("Server tick throttled");
+        if (dev.slopium.visibility.CreateWallControl.skipTick(panel,c)) throw new AssertionError("Wall policy altered server tick");
+        c.hideFactoryConnections=true;
+        long skippedPaths=SlopiumStats.factoryPathsSkipped;
+        FactoryPanelRenderer.renderPath(null,null,0,null,null,0,0);
+        c.hideFactoryConnections=false;
+        if(SlopiumStats.factoryPathsSkipped!=skippedPaths+1)throw new AssertionError("Unconditional factory line cut failed");
         if (Slopium.sableAvailable()) return;
         var level = (ClientLevel) SmokeRadicalChecks.allocate(ClientLevel.class);
         var side = Level.class.getDeclaredField("isClientSide"); side.setAccessible(true); side.setBoolean(level, true);
@@ -37,6 +43,20 @@ final class SmokeFactoryChecks {
             FactoryPanelRenderer.renderPath(behaviour, connection, 0, null, null, 0, 0);
             FactoryPanelRenderer.renderBulb(behaviour, 0, null, null, 0, 0);
             if (SlopiumStats.factoryPathsSkipped != paths + 1 || SlopiumStats.factoryBulbsSkipped != bulbs + 1) throw new AssertionError("Factory actual render entry did not skip");
+            c.factoryItemRange=true;c.factoryItemDistance=16;
+            long items=SlopiumStats.factoryItemPassesSkipped;
+            com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringRenderer.renderOnBlockEntity(panel,0,null,null,0,0);
+            if(SlopiumStats.factoryItemPassesSkipped!=items+1)throw new AssertionError("Factory item render was not skipped");
+            var hook=java.util.Arrays.stream(com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringRenderer.class.getDeclaredMethods())
+                .filter(m->m.getName().endsWith("slopium$factoryItems")).findFirst().orElseThrow();hook.setAccessible(true);
+            var near=((EntityBlock)block).newBlockEntity(BlockPos.ZERO,block.defaultBlockState());near.setLevel(level);
+            var ci=new org.spongepowered.asm.mixin.injection.callback.CallbackInfo("near",true);
+            hook.invoke(null,near,0f,null,null,0,0,ci);
+            if(ci.isCancelled())throw new AssertionError("Nearby factory items hidden");
+            c.enabled=false;ci=new org.spongepowered.asm.mixin.injection.callback.CallbackInfo("off",true);
+            hook.invoke(null,panel,0f,null,null,0,0,ci);
+            if(ci.isCancelled())throw new AssertionError("Factory item global off failed");
+            c.enabled=true;
             var player = (net.minecraft.client.player.LocalPlayer) SmokeRadicalChecks.allocate(net.minecraft.client.player.LocalPlayer.class);
             var position = net.minecraft.world.entity.Entity.class.getDeclaredField("position"); position.setAccessible(true); position.set(player, net.minecraft.world.phys.Vec3.ZERO);
             mc.player = player;
