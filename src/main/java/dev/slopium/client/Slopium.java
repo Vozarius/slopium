@@ -22,6 +22,12 @@ public final class Slopium {
     public Slopium() {
         SlopiumConfig.get();
         NeoForge.EVENT_BUS.addListener(Slopium::registerCommands);
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.ChunkEvent.Load event) -> {
+            if(event.getLevel().isClientSide()) dev.slopium.visibility.VisibilityGeometry.chunk(event.getChunk().getPos().x,event.getChunk().getPos().z);
+        });
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.ChunkEvent.Unload event) -> {
+            if(event.getLevel().isClientSide()) dev.slopium.visibility.VisibilityGeometry.chunk(event.getChunk().getPos().x,event.getChunk().getPos().z);
+        });
         NeoForge.EVENT_BUS.addListener((RenderFrameEvent.Pre event) -> {
             frame++;
             Minecraft client = Minecraft.getInstance();
@@ -122,6 +128,8 @@ public final class Slopium {
                     SlopiumStats.visibilityHits,SlopiumStats.visibilityUnknown,SlopiumStats.visibilityRays,
                     SlopiumStats.visibilityPasses==0?0:SlopiumStats.visibilityNanos/(double)SlopiumStats.visibilityPasses/1e6,
                     SlopiumStats.visibilityMaxNanos/1e6)),false);
+                context.getSource().sendSuccess(() -> Component.literal("Visibility reuse | unchanged paths="+SlopiumStats.visibilityPathReuse
+                    +" | blocker proofs="+SlopiumStats.visibilityWitnessReuse+" | cells="+SlopiumStats.visibilityCells+" | shared particle light="+SlopiumStats.particleSharedLightHits),false);
                 var timing = SlopiumStats.FRAME_TIMES.snapshot();
                 context.getSource().sendSuccess(() -> Component.literal(timing.samples() == 0
                     ? "Frames | no samples; enable diagnostics and close menus in the world"

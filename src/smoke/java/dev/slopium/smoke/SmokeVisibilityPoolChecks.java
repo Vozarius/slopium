@@ -40,6 +40,7 @@ final class SmokeVisibilityPoolChecks {
         level.loaded=false;WallOcclusion.invalidate();CreateOcclusion.hidden(target,eye,true);pump(frame,eye);
         if(CreateOcclusion.hidden(target,eye,true))throw new AssertionError("Unloaded geometry hidden");
         level.loaded=true;
+        SmokeVisibilityReuseChecks.run(level,frame);
         // A full particle quota must not consume mechanism capacity or starve its queue.
         VisibilityPool.clear();level.wall=Blocks.GLASS.defaultBlockState();WallOcclusion.invalidate();
         for(int i=0;i<16384;i++) ParticleOcclusion.hidden(new Vec3(5+(i%64)/8.0,(i/64%64)/8.0,(i/4096)/8.0),eye,true);

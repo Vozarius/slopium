@@ -12,6 +12,32 @@ import org.spongepowered.asm.mixin.*;
 /** Only the base light lookup: subclass brightness/age formulas remain outside the cache. */
 @Mixin(Particle.class)
 public abstract class ParticleLightCacheMixin {
+    @Unique private static final it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap slopium$sharedLight=new it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap();
+    @Unique private static java.lang.ref.WeakReference<Object> slopium$sharedWorld=new java.lang.ref.WeakReference<>(null);
+    @Unique private static long slopium$sharedFrame=Long.MIN_VALUE, slopium$sharedEpoch, slopium$sharedConfig;
+    @com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation(method="getLightColor",at=@org.spongepowered.asm.mixin.injection.At(
+        value="INVOKE",target="Lnet/minecraft/client/renderer/LevelRenderer;getLightColor(Lnet/minecraft/world/level/BlockAndTintGetter;Lnet/minecraft/core/BlockPos;)I"))
+    private int slopium$sharedBlockLight(net.minecraft.world.level.BlockAndTintGetter world,BlockPos pos,Operation<Integer> original) {
+        if(!net.minecraft.client.Minecraft.getInstance().isSameThread()) return original.call(world,pos);
+        var c=SlopiumConfig.get();
+        if(!c.enabled||!c.cacheParticleLight) {
+            slopium$sharedFrame=Long.MIN_VALUE;return original.call(world,pos);
+        }
+        long frame=dev.slopium.client.Slopium.frame(), epoch=dev.slopium.visibility.WallOcclusion.epoch(), config=dev.slopium.client.Slopium.configRevision();
+        if(world!=slopium$sharedWorld.get()||frame!=slopium$sharedFrame||epoch!=slopium$sharedEpoch||config!=slopium$sharedConfig) {
+            slopium$sharedLight.clear();slopium$sharedLight.defaultReturnValue(Integer.MIN_VALUE);
+            if(slopium$sharedWorld.get()!=world) slopium$sharedWorld=new java.lang.ref.WeakReference<>(world);
+            slopium$sharedFrame=frame;slopium$sharedEpoch=epoch;slopium$sharedConfig=config;
+        }
+        long key=pos.asLong();int cached=slopium$sharedLight.get(key);
+        if(cached!=Integer.MIN_VALUE) {
+            if(c.diagnostics) SlopiumStats.particleSharedLightHits++;
+            return cached;
+        }
+        int result=original.call(world,pos);
+        if(slopium$sharedLight.size()<4096) slopium$sharedLight.put(key,result);
+        return result;
+    }
     @Shadow protected ClientLevel level;
     @Shadow protected double x;
     @Shadow protected double y;

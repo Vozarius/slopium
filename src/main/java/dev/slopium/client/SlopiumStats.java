@@ -2,6 +2,8 @@ package dev.slopium.client;
 
 public final class SlopiumStats {
     public static long visibilityReads,visibilityHits,visibilityUnknown,visibilityRays,visibilityPasses,visibilityNanos,visibilityMaxNanos;
+    public static long particleSharedLightHits;
+    public static long visibilityPathReuse,visibilityWitnessReuse,visibilityCells;
     public static int visibilityEntries,visibilityPending;
 
     private SlopiumStats() {}
@@ -27,6 +29,8 @@ public final class SlopiumStats {
     public static long eligibleTicksChecked, tickNotReady, tickVisibleOrExcluded, tickNear, tickSableProtected, hiddenTicksChecked;
 
     public static void reset() {
+        particleSharedLightHits=0;
+        visibilityPathReuse=visibilityWitnessReuse=visibilityCells=0;
         visibilityReads=visibilityHits=visibilityUnknown=visibilityRays=visibilityPasses=visibilityNanos=visibilityMaxNanos=0;
         visibilityEntries=visibilityPending=0;
         lightQueries = lightCacheHits = hiddenTicksSkipped = breakingOverlaysSkipped = 0;

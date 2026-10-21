@@ -1,0 +1,32 @@
+{
+  "version": "0.1.0-alpha.16",
+  "jar": "build/libs/slopium-neoforge-1.21.1-0.1.0-alpha.16.jar",
+  "size": 168028,
+  "sha256": "fbcf3096ea1b58820722d76ff30d0be3bf2144c1a1f38370881ae104cc09dc14",
+  "unit_tests_passed": 21,
+  "smoke_profiles": [
+    "full",
+    "legacy",
+    "minimal"
+  ],
+  "logs": [
+    "build/alpha16-full-final.log",
+    "build/alpha16-legacy-final.log",
+    "build/alpha16-minimal.log"
+  ],
+  "shared_pool_budget_ns": 750000,
+  "flywheel_apply_budget_ns": 350000,
+  "cooperative_budgets": true,
+  "new_worker_threads": 0,
+  "new_gpu_passes": 0,
+  "reader_tracing": false,
+  "reuse_test_camera_samples": 32,
+  "reuse_test_cell_reads": 31,
+  "reuse_test_reference_cell_reads": 2112,
+  "shared_light_test_requests": 2000,
+  "shared_light_test_original_lookups": 1,
+  "icon_matches_logoT": true,
+  "smoke_classes_bundled": false,
+  "world_fps_measured": false,
+  "user_scene_flicker_verified": false
+}

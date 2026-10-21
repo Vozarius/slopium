@@ -14,9 +14,14 @@ public final class VisibilityPool {
     private static final class Entry {
         final Key key;
         Vec3 point;
-        Vec3 eye;
+        Vec3 eye, samplePoint;
+        BlockPos witness;
+        long geometryGeneration, traced;
+        long[] columns, versions;
+        int pathCount;
+        boolean pathValid;
         long sampled=-1, epoch=-1, requested;
-        int result;
+        int result, knownMask, wanted;
         boolean known, queued;
         Entry(Key key, Vec3 point) { this.key=key; this.point=point; }
     }
@@ -32,6 +37,7 @@ public final class VisibilityPool {
     private static void world(ClientLevel level) {
         if(world==level) return;
         TABLE.clear(); CREATE.clear(); PARTICLES.clear(); SWEEP.clear();
+        VisibilityGeometry.reset();
         world=level; processed=Long.MIN_VALUE; createEntries=particleEntries=0;
     }
     public static void clear() { world(null); }
@@ -58,15 +64,17 @@ public final class VisibilityPool {
             if(mechanism) createEntries++; else particleEntries++;
         }
         e.point=point; e.requested=now;
-        boolean stale=!e.known||e.epoch!=WallOcclusion.epoch()||!eye.equals(e.eye)||now-e.sampled>=8;
+        int mode=any?2:1; e.wanted|=mode;
+        boolean stale=(e.knownMask&mode)==0||e.epoch!=WallOcclusion.epoch()||!eye.equals(e.eye)
+            ||(!mechanism&&!point.equals(e.samplePoint))||now-e.sampled>=20;
         if(stale) enqueue(e);
         if(SlopiumConfig.get().diagnostics) {
             SlopiumStats.visibilityReads++;
-            if(e.known) SlopiumStats.visibilityHits++;
+            if((e.knownMask&mode)!=0) SlopiumStats.visibilityHits++;
             else SlopiumStats.visibilityUnknown++;
         }
         // Retain the previous answer while a fresh check is queued. No camera/TTL flicker.
-        return e.known ? (e.result & (any?2:1))!=0 : null;
+        return (e.knownMask&mode)!=0 ? (e.result & mode)!=0 : null;
     }
     /** Called once at LevelRenderer entry, after the camera has been positioned. */
     public static void process(Vec3 eye) {
@@ -75,6 +83,7 @@ public final class VisibilityPool {
         world(mc.level);
         if(world==null||!finite(eye)||processed==Slopium.frame()) return;
         processed=Slopium.frame();
+        if(TABLE.isEmpty()) return;
         long start=System.nanoTime(); deadline=start+750_000; steps=32768;
         // Snapshot queue lengths: requests are never processed twice in the same frame.
         int count=Math.min(512,CREATE.size()+PARTICLES.size());
@@ -89,8 +98,8 @@ public final class VisibilityPool {
                 if(processed-e.requested>120) { discard(e); continue; }
                 Integer answer=trace(e,eye);
                 if(answer==null) { enqueue(e); continue; }
-                e.result=answer; e.known=true; e.sampled=processed;
-                e.eye=eye; e.epoch=WallOcclusion.epoch();
+                e.result=answer&3; e.knownMask=answer>>2; e.known=true; e.sampled=processed;
+                e.eye=eye; e.samplePoint=e.point; e.epoch=WallOcclusion.epoch();
             }
             // Incremental reclamation: no periodic full scan or wholesale cache eviction.
             int sweepCount=Math.min(64,SWEEP.size());
@@ -109,30 +118,70 @@ public final class VisibilityPool {
             }
         }
     }
+    private static boolean unchanged(Entry e,Vec3 eye,long generation) {
+        if(!e.pathValid||generation!=e.geometryGeneration||(e.knownMask&e.wanted)!=e.wanted
+            ||processed-e.traced>=20||!eye.equals(e.eye)||!e.point.equals(e.samplePoint)) return false;
+        for(int i=0;i<e.pathCount;i++) if(VisibilityGeometry.version(e.columns[i])!=e.versions[i]) return false;
+        return true;
+    }
     private static Integer trace(Entry e,Vec3 eye) {
         Vec3 point=e.point;
         BlockPos target=BlockPos.containing(point);
         if(point.distanceToSqr(eye)>128*128||SableGuard.protects(world,target)
-                ||SableGuard.protects(world,BlockPos.containing(eye))) return 0;
+                ||SableGuard.protects(world,BlockPos.containing(eye))) return 12;
+        long generation=VisibilityGeometry.generation();
+        if(unchanged(e,eye,generation)) {
+            if(SlopiumConfig.get().diagnostics) SlopiumStats.visibilityPathReuse++;
+            return e.result|(e.knownMask<<2);
+        }
+        // A fresh intersection with one remembered blocker proves occlusion even after camera movement.
+        // Full-cube broad phase is necessary: isSolidRender alone assumes the ray visits this cell.
+        if(e.witness!=null && e.witness.distToCenterSqr(eye)>=16 && (!e.key.mechanism||!e.witness.equals(target)) && world.hasChunkAt(e.witness)
+            && net.minecraft.world.phys.shapes.Shapes.block().clip(eye,point,e.witness)!=null) {
+            if(SlopiumConfig.get().diagnostics) SlopiumStats.visibilityCells++;
+            int mask=OccluderShapes.mask(world.getBlockState(e.witness),world,e.witness,eye,point);
+            if((mask&1)!=0 || (e.wanted==2 && (mask&2)!=0)) {
+                e.pathValid=false; // This proves hiding, not visibility of the rest of the path.
+                if(SlopiumConfig.get().diagnostics) SlopiumStats.visibilityWitnessReuse++;
+                return (mask&1)!=0?15:10;
+            }
+        }
+        e.pathValid=false; e.pathCount=0; e.witness=null;
+        if(e.columns==null) { e.columns=new long[16]; e.versions=new long[16]; }
         if(SlopiumConfig.get().diagnostics) {
             SlopiumStats.visibilityRays++;
             if(e.key.mechanism) SlopiumStats.createOcclusionRays++;
         }
         int[] found={0};
         Integer result=BlockGetter.traverseBlocks(eye,point,e,(entry,pos)->{
-            if(--steps<0) return -1; // Incomplete traversal must not overwrite a known answer.
-            if(!world.hasChunkAt(pos)) return 0;
+            if(--steps<0) return -1;
+            long column=net.minecraft.world.level.ChunkPos.asLong(pos.getX()>>4,pos.getZ()>>4);
+            if(entry.pathCount==0 || entry.columns[entry.pathCount-1]!=column) {
+                if(entry.pathCount>=16) return -1; // Conservative capacity bound, never publish incomplete visibility.
+                entry.columns[entry.pathCount]=column;
+                entry.versions[entry.pathCount++]=VisibilityGeometry.version(column);
+            }
+            if(!world.hasChunkAt(pos)) return 12;
             if(entry.key.mechanism && pos.equals(target)) return null;
-            found[0]|=OccluderShapes.mask(world.getBlockState(pos),world,pos,eye,point);
-            return (found[0]&1)!=0 ? 3 : null;
-        },entry->found[0]);
-        return result<0?null:result;
+            if(SlopiumConfig.get().diagnostics) SlopiumStats.visibilityCells++;
+            int mask=OccluderShapes.mask(world.getBlockState(pos),world,pos,eye,point);
+            found[0]|=mask;
+            if((mask&1)!=0) { entry.witness=pos.immutable(); return 15; }
+            if((mask&2)!=0) {
+                entry.witness=pos.immutable();
+                if(entry.wanted==2) return 10; // Opaque was not requested; do not traverse the factory behind the glass.
+            }
+            return null;
+        },entry->12|found[0]);
+        if(result<0) return null;
+        e.pathValid=true; e.geometryGeneration=generation; e.traced=processed;
+        return result;
     }
     public static String describe(BlockPos pos) {
         Vec3 p=Vec3.atCenterOf(pos);
         Entry e=TABLE.get(new Key((int)Math.floor(p.x*8),(int)Math.floor(p.y*8),(int)Math.floor(p.z*8),true));
-        return e==null?"Pool: not requested": "Pool: opaque="+(e.known?(e.result&1)!=0:"unknown")
-            +" | any="+(e.known?(e.result&2)!=0:"unknown")+" | queued="+e.queued
+        return e==null?"Pool: not requested": "Pool: opaque="+((e.knownMask&1)!=0?(e.result&1)!=0:"unknown")
+            +" | any="+((e.knownMask&2)!=0?(e.result&2)!=0:"unknown")+" | queued="+e.queued
             +" | sample age="+(e.known?Slopium.frame()-e.sampled:"never")+" frames";
     }
 }
