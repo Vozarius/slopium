@@ -17,6 +17,8 @@ public final class SlopiumStats {
     public static long createOcclusionRays, createOcclusionCacheHits;
     public static long flywheelVisualsChecked, flywheelVisualsWrapped, flywheelVisualsUnsupported;
     public static long flywheelCullPasses, flywheelCullNanos, flywheelCullMaxNanos, createTraceNanos;
+    public static long flywheelRegistered, flywheelBudgetYields;
+    public static int flywheelTracked, flywheelSupported, flywheelAltered;
     public static int indexedSources;
     public static long indexBuildNanos;
     public static long eligibleTicksChecked, tickNotReady, tickVisibleOrExcluded, tickNear, tickSableProtected, hiddenTicksChecked;
@@ -36,6 +38,8 @@ public final class SlopiumStats {
         createOcclusionRays = createOcclusionCacheHits = 0;
         flywheelVisualsChecked = flywheelVisualsWrapped = flywheelVisualsUnsupported = 0;
         flywheelCullPasses = flywheelCullNanos = flywheelCullMaxNanos = createTraceNanos = 0;
+        flywheelRegistered=flywheelBudgetYields=0;
+        flywheelTracked=flywheelSupported=flywheelAltered=0;
         FRAME_TIMES.reset();
         indexedSources = 0;
         indexBuildNanos = 0;

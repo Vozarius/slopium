@@ -106,12 +106,15 @@ public final class Slopium {
                     + " | rays=" + SlopiumStats.createOcclusionRays + " | cache=" + SlopiumStats.createOcclusionCacheHits
                     + " | deferred=" + SlopiumStats.createOcclusionDeferred + " | Sable protected=" + SlopiumStats.createOcclusionProtected), false);
                 context.getSource().sendSuccess(() -> Component.literal("Flywheel visibility | checked=" + SlopiumStats.flywheelVisualsChecked
-                    + " | wrapped=" + SlopiumStats.flywheelVisualsWrapped + " | unsupported=" + SlopiumStats.flywheelVisualsUnsupported), false);
+                    + " | registered wrapped=" + SlopiumStats.flywheelVisualsWrapped + " | registered unsupported=" + SlopiumStats.flywheelVisualsUnsupported), false);
                 context.getSource().sendSuccess(() -> Component.literal(String.format(java.util.Locale.ROOT,
                     "Culling cost | Flywheel passes=%d | avg=%.3f ms | max=%.3f ms | Create trace total=%.1f ms",
                     SlopiumStats.flywheelCullPasses,
                     SlopiumStats.flywheelCullPasses == 0 ? 0.0 : SlopiumStats.flywheelCullNanos / (double)SlopiumStats.flywheelCullPasses / 1_000_000.0,
                     SlopiumStats.flywheelCullMaxNanos / 1_000_000.0, SlopiumStats.createTraceNanos / 1_000_000.0)), false);
+                context.getSource().sendSuccess(() -> Component.literal("Culling queue | tracked="+SlopiumStats.flywheelTracked
+                    +" | supported="+SlopiumStats.flywheelSupported+" | altered="+SlopiumStats.flywheelAltered
+                    +" | registered="+SlopiumStats.flywheelRegistered+" | budget yields="+SlopiumStats.flywheelBudgetYields),false);
                 var timing = SlopiumStats.FRAME_TIMES.snapshot();
                 context.getSource().sendSuccess(() -> Component.literal(timing.samples() == 0
                     ? "Frames | no samples; enable diagnostics and close menus in the world"
@@ -121,6 +124,20 @@ public final class Slopium {
                         timing.p95Ms(), timing.p99Ms(), timing.maxMs(), timing.overBudgetPercent())), false);
                 return Command.SINGLE_SUCCESS;
             }))
+            .then(Commands.literal("inspect").executes(context -> {
+                var mc=Minecraft.getInstance();
+                if(mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult hit) {
+                    context.getSource().sendSuccess(() -> Component.literal(dev.slopium.visibility.CullingInspector.describe(hit.getBlockPos())),false);
+                } else context.getSource().sendSuccess(() -> Component.literal("Aim at a block, or use /slopium inspect x y z"),false);
+                return Command.SINGLE_SUCCESS;
+            }).then(Commands.argument("x",com.mojang.brigadier.arguments.IntegerArgumentType.integer(-30000000,30000000))
+                .then(Commands.argument("y",com.mojang.brigadier.arguments.IntegerArgumentType.integer(-2048,2048))
+                .then(Commands.argument("z",com.mojang.brigadier.arguments.IntegerArgumentType.integer(-30000000,30000000)).executes(context -> {
+                    var pos=new net.minecraft.core.BlockPos(com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(context,"x"),
+                        com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(context,"y"),com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(context,"z"));
+                    context.getSource().sendSuccess(() -> Component.literal(dev.slopium.visibility.CullingInspector.describe(pos)),false);
+                    return Command.SINGLE_SUCCESS;
+                })))))
             .then(Commands.literal("reset").executes(context -> {
                 SlopiumStats.reset();
                 context.getSource().sendSuccess(() -> Component.literal("Slopium: counters reset"), false);

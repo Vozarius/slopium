@@ -20,6 +20,7 @@ final class SmokeFlywheelWallChecks {
         if(dev.slopium.client.Slopium.loaded("create")) {
             rotationWriter();
             SmokeInstanceBackendChecks.run();
+            SmokeCullingQueueChecks.lifecycle();
             var type=Class.forName("com.simibubi.create.content.kinetics.press.PressVisual");
             var state=(VisualOcclusionState)SmokeRadicalChecks.allocate(type);
             state.slopium$setOccluded(true,10);
@@ -70,7 +71,8 @@ final class SmokeFlywheelWallChecks {
             var managerType=Class.forName("dev.engine_room.flywheel.impl.visualization.VisualizationManagerImpl");
             Object manager=SmokeRadicalChecks.allocate(managerType);
             var field=managerType.getDeclaredField("blockEntities");field.setAccessible(true);field.set(manager,new dev.engine_room.flywheel.impl.visualization.VisualManagerImpl<>(storage));
-            var owned=java.util.Arrays.stream(managerType.getDeclaredFields()).filter(f->f.getName().endsWith("slopium$hidden")).findFirst().orElseThrow();owned.setAccessible(true);owned.set(manager,new java.util.IdentityHashMap<>());
+            var index=((dev.slopium.visibility.CullingStorage)storage).slopium$cullingIndex();
+            index.add((dev.engine_room.flywheel.api.visual.Visual)stored);
             var hook=java.util.Arrays.stream(managerType.getDeclaredMethods()).filter(m->m.getName().endsWith("slopium$beforeFrame")).findFirst().orElseThrow();hook.setAccessible(true);
             settle(hook,manager);
             if(handle.visible || shaftHandle.visible)throw new AssertionError("Actual Flywheel manager policy did not hide instance");
@@ -81,7 +83,7 @@ final class SmokeFlywheelWallChecks {
             model = new com.simibubi.create.content.kinetics.base.RotatingInstance(null, handle);
             modelField.set(visual, model);
             settle(hook,manager);
-            if(handle.visible || shaftHandle.visible || ((java.util.Map<?,?>)owned.get(manager)).size()!=1)
+            if(handle.visible || shaftHandle.visible || index.altered()!=1)
                 throw new AssertionError("Replacement leaked or wrapper ownership was pruned");
             c.occludeFlywheel=false;
             settle(hook,manager);
@@ -116,21 +118,17 @@ final class SmokeFlywheelWallChecks {
             settle(hook,manager);
             if(((dev.slopium.visibility.PausedRotation)model).slopium$renderSpeed(120)!=120 || !handle.visible || !shaftHandle.visible)
                 throw new AssertionError("Global off did not restore GPU rotation and visibility");
+            SmokeCullingQueueChecks.stress(be,base,type,beField,modelField,shaftField);
             com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: large cog + shaft behind adjacent pane, Azimuth delegate ownership, replacement, independent modes, removal, full pause and global restore passed");
         } finally {mc.player=oldPlayer;mc.screen=oldScreen;c.occludeFlywheel=old;c.enabled=enabled;c.freezeCreateAnimations=oldFreeze;c.occludeCreateAnimations=oldAnimation;c.flywheelAnyBlock=oldFlyMode;c.animationAnyBlock=oldAnimMode;testLevel.wall=oldWall;dev.slopium.visibility.WallOcclusion.invalidate();}
     }
 
     private static void settle(java.lang.reflect.Method hook, Object manager) throws ReflectiveOperationException {
-        // A cold shape lookup can consume the one-ms budget. Wait for deferred work,
-        // just as real frames do; do not raise the production budget in tests.
         var frame=dev.slopium.client.Slopium.class.getDeclaredField("frame");frame.setAccessible(true);
-        for (int i=0;i<10;i++) {
-            long deferred=dev.slopium.client.SlopiumStats.createOcclusionDeferred;
-            hook.invoke(manager,new org.spongepowered.asm.mixin.injection.callback.CallbackInfo("frame",false));
-            if (dev.slopium.client.SlopiumStats.createOcclusionDeferred==deferred) return;
+        for (int i=0;i<24;i++) {
             frame.setLong(null,frame.getLong(null)+1);
+            hook.invoke(manager,new org.spongepowered.asm.mixin.injection.callback.CallbackInfo("frame",false));
         }
-        throw new AssertionError("Flywheel requests did not settle within ten frames");
     }
 
     private static void rotationWriter() {

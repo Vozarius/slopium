@@ -36,6 +36,7 @@
     "OcclusionInvalidationMixin",
     "VisualOcclusionStateMixin",
     "FlywheelWallMixin",
+    "FlywheelStorageMixin",
     "AzimuthVisualAccessor",
     "FactoryItemBudgetMixin",
     "RotatingInstancePauseMixin",

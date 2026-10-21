@@ -22,9 +22,14 @@ public final class CreateOcclusion {
     private static Vec3 camera = Vec3.ZERO;
     private static long epoch = Long.MIN_VALUE, frame = Long.MIN_VALUE, spent;
     private static int rays, steps;
+    private static long deadline=Long.MAX_VALUE, queueFrame=Long.MIN_VALUE;
+    public static void limitUntil(long value) { deadline=value; }
     private CreateOcclusion() {}
 
     public static boolean hidden(BlockPos target, Vec3 eye, boolean any) {
+        return Boolean.TRUE.equals(decision(target,eye,any,true));
+    }
+    public static Boolean decision(BlockPos target, Vec3 eye, boolean any, boolean queued) {
         Vec3 point = Vec3.atCenterOf(target);
         var mc = Minecraft.getInstance();
         if (!mc.isSameThread() || mc.level == null || !finite(point) || !finite(eye)) return false;
@@ -40,6 +45,9 @@ public final class CreateOcclusion {
         }
         if (now != frame) {
             frame = now; rays = 1024; steps = 32768; spent = 0;
+        }
+        if(queued && queueFrame!=now) {
+            queueFrame=now;
             var iterator = PENDING.entrySet().iterator();
             while (iterator.hasNext() && budget()) {
                 var request = iterator.next();
@@ -70,8 +78,8 @@ public final class CreateOcclusion {
             }
         }
         if (SlopiumConfig.get().diagnostics) SlopiumStats.createOcclusionDeferred++;
-        if (PENDING.size() < 4096) PENDING.putIfAbsent(key, point);
-        return false;
+        if (queued && PENDING.size() < 4096) PENDING.putIfAbsent(key, point);
+        return null;
     }
 
     private static boolean finite(Vec3 p) { return Double.isFinite(p.x) && Double.isFinite(p.y) && Double.isFinite(p.z); }
@@ -79,7 +87,7 @@ public final class CreateOcclusion {
         if (CACHE.size() >= 16384) CACHE.clear();
         CACHE.put(key, new Entry(hidden, now));
     }
-    private static boolean budget() { return rays > 0 && steps >= 256 && spent < 1_000_000; }
+    private static boolean budget() { return rays > 0 && steps >= 256 && spent < 1_000_000 && System.nanoTime()<deadline; }
     private static Boolean trace(Vec3 point, boolean any) {
         --rays;
         if (SlopiumConfig.get().diagnostics) SlopiumStats.createOcclusionRays++;

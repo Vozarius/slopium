@@ -5,6 +5,8 @@ import org.spongepowered.asm.mixin.*;
 public abstract class VisualOcclusionStateMixin implements VisualOcclusionState {
     @Unique private volatile boolean slopium$hidden;
     @Unique private volatile long slopium$hiddenFrame = Long.MIN_VALUE;
-    public void slopium$setOccluded(boolean hidden, long frame) { slopium$hidden = hidden; slopium$hiddenFrame = frame; }
-    public boolean slopium$isOccluded(long frame) { return slopium$hiddenFrame == frame && slopium$hidden; }
+    @Unique private volatile long slopium$until = Long.MIN_VALUE;
+    public void slopium$setOccluded(boolean hidden, long frame) { slopium$hidden = hidden; slopium$hiddenFrame = frame; slopium$until = frame; }
+    public void slopium$setOccludedUntil(boolean hidden, long frame, long until) { slopium$hidden=hidden; slopium$hiddenFrame=frame; slopium$until=until; }
+    public boolean slopium$isOccluded(long frame) { return frame >= slopium$hiddenFrame && frame <= slopium$until && slopium$hidden; }
 }
