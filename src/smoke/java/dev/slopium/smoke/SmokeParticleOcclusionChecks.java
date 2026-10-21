@@ -46,6 +46,8 @@ final class SmokeParticleOcclusionChecks {
             // Old code ignores the window because it intersects inflated particle bounds.
             if(WallOcclusion.hidden(particle.getRenderBoundingBox(0),camera.getPosition(),true))throw new AssertionError("Fixture must reproduce old nearby-pane miss");
             render(mc,camera);if(particle.draws!=1)throw new AssertionError("Actual ParticleEngine rendered particle behind nearby pane");
+            ParticleOcclusion.hidden(particle.getPos(),new Vec3(5.2,.5,.5),true);
+            frame.setLong(null,frame.getLong(null)+1);VisibilityPool.process(new Vec3(5.2,.5,.5));
             if(ParticleOcclusion.hidden(particle.getPos(),new Vec3(5.2,.5,.5),true))throw new AssertionError("Moving through window reused hidden result");
             level.wall=Blocks.IRON_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.EAST);next(frame);
             render(mc,camera);if(particle.draws!=1)throw new AssertionError("Closed door leaked particle");
@@ -61,25 +63,30 @@ final class SmokeParticleOcclusionChecks {
             c.enabled=true;level.loaded=false;next(frame);render(mc,camera);
             if(particle.draws!=5)throw new AssertionError("Unknown chunks hidden");
             level.loaded=true;next(frame);
-            // Queue a missed request, then service it before later requests on the next frame.
-            ParticleOcclusion.hidden(new Vec3(2,.5,.5),camera.getPosition(),true);
-            var rays=ParticleOcclusion.class.getDeclaredField("rays");rays.setAccessible(true);rays.setInt(null,0);
+            VisibilityPool.clear();
             if(ParticleOcclusion.hidden(particle.getPos(),camera.getPosition(),true))throw new AssertionError("Unverified request hidden");
-            frame.setLong(null,frame.getLong(null)+1);
+            for(int i=0;i<8;i++){frame.setLong(null,frame.getLong(null)+1);VisibilityPool.process(camera.getPosition());}
             if(!ParticleOcclusion.hidden(particle.getPos(),camera.getPosition(),true))throw new AssertionError("Deferred particle check never serviced");
             // Interpolation follows the rendered centre, not just current-tick coordinates.
             var px=Particle.class.getDeclaredField("x");px.setAccessible(true);px.setDouble(particle,7.1);
             if(Math.abs(((ParticlePosition)(Object)particle).slopium$renderPosition(.5f).x-6.1)>1e-6)throw new AssertionError("Particle interpolation incorrect");
             level.wall=Blocks.AIR.defaultBlockState();next(frame);render(mc,camera);
             if(particle.draws!=6)throw new AssertionError("Removing window did not restore particle");
-            com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: actual particle render near pane, closed/open door, independent budget, deferred queue, interpolation, invalidation and off switches passed");
+            com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: actual particle render near pane, closed/open door, shared pool, deferred queue, interpolation, invalidation and off switches passed");
         } finally {
             mc.level=oldLevel;map.clear();map.putAll(oldParticles);
             for(var e:saved.entrySet())e.getKey().set(c,e.getValue());
             frame.setLong(null,oldFrame);WallOcclusion.invalidate();SlopiumStats.reset();
         }
     }
-    private static void render(Minecraft mc,Camera camera) {
+    private static void render(Minecraft mc,Camera camera) throws ReflectiveOperationException {
+        // Model the normal frame boundary before entering the actual ParticleEngine renderer.
+        var field=ParticleEngine.class.getDeclaredField("particles");field.setAccessible(true);
+        var all=(Map<ParticleRenderType,Queue<Particle>>)field.get(mc.particleEngine);
+        for(var group:all.values()) for(var p:group) ParticleOcclusion.hidden(((ParticlePosition)p).slopium$renderPosition(0),camera.getPosition(),true);
+        var frame=Slopium.class.getDeclaredField("frame");frame.setAccessible(true);
+        for(int i=0;i<8;i++){frame.setLong(null,frame.getLong(null)+1);VisibilityPool.process(camera.getPosition());}
+
         mc.particleEngine.render(mc.gameRenderer.lightTexture(),camera,0f,null,type->true);
     }
     private static void next(java.lang.reflect.Field frame)throws IllegalAccessException {

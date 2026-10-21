@@ -5,7 +5,6 @@ import dev.slopium.client.*;
 import dev.slopium.mixin.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.phys.Vec3;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -23,7 +22,7 @@ public final class FlywheelCullingIndex {
         "com.simibubi.create.content.kinetics.press.PressVisual",
         "com.simibubi.create.content.kinetics.mixer.MixerVisual",
         "com.simibubi.create.content.logistics.funnel.FunnelVisual");
-    private static final CullingWorkBudget BUDGET = new CullingWorkBudget(750_000,512,System::nanoTime);
+    private static final CullingWorkBudget BUDGET = new CullingWorkBudget(350_000,512,System::nanoTime);
     private record Change(Visual visual, boolean add) {}
     private final ConcurrentLinkedQueue<Change> changes = new ConcurrentLinkedQueue<>();
     private final IdentityHashMap<Visual,Entry> entries = new IdentityHashMap<>();
@@ -31,8 +30,7 @@ public final class FlywheelCullingIndex {
     private final Set<Entry> altered = Collections.newSetFromMap(new IdentityHashMap<>());
     private final NavigableSet<Entry> due = new TreeSet<>(Comparator.<Entry>comparingLong(e->e.next).thenComparingLong(e->e.order));
     private Iterator<Entry> restoring;
-    private long order, viewChanged;
-    private Vec3 camera;
+    private long order;
     private Object world;
     private int policy=-1;
     private BlockEntity aimed;
@@ -103,7 +101,7 @@ public final class FlywheelCullingIndex {
         });
         e.paused=false;
         if(e.state!=null) e.state.slopium$setOccluded(false,Slopium.frame());
-        e.reason="restored after camera/settings change";
+        e.reason="restored after world/settings change";
     }
     public void frame() {
         var c=SlopiumConfig.get();
@@ -111,18 +109,16 @@ public final class FlywheelCullingIndex {
         if(!active && altered.isEmpty() && changes.isEmpty()) return;
         long started=System.nanoTime(), frame=Slopium.frame();
         BUDGET.begin(frame);
-        CreateOcclusion.limitUntil(BUDGET.deadline());
         var mc=Minecraft.getInstance();
         float seconds=(((LevelRendererAccessor)mc.levelRenderer).slopium$ticks()+mc.getTimer().getGameTimeDeltaPartialTick(true))/20f;
         int nextPolicy=(c.enabled?1:0)|(c.occludeFlywheel?2:0)|(c.occludeCreateAnimations?4:0)|(c.freezeCreateAnimations?8:0)
-            |(c.flywheelAnyBlock?16:0)|(c.animationAnyBlock?32:0)|(mc.screen!=null?64:0);
-        Vec3 eye=mc.gameRenderer.getMainCamera().getPosition();
+            |(c.flywheelAnyBlock?16:0)|(c.animationAnyBlock?32:0);
         try {
-            if(policy!=nextPolicy || world!=mc.level || !eye.equals(camera)) {
-                policy=nextPolicy;world=mc.level;camera=eye;viewChanged=frame;
+            if(policy!=nextPolicy || world!=mc.level) {
+                policy=nextPolicy;world=mc.level;
                 if(restoring==null && !altered.isEmpty()) restoring=altered.iterator();
             }
-            // Restoration takes priority, including global off. Work remains bounded during movement.
+            // Only settings/world changes restore all instances. Camera movement is handled by the shared pool.
             while(restoring!=null && restoring.hasNext() && BUDGET.take()) {
                 restore(restoring.next(),seconds); restoring.remove();
             }
@@ -137,7 +133,7 @@ public final class FlywheelCullingIndex {
                     entries.clear();byBlock.clear();altered.clear();due.clear();supported=0;
                 } else if(change.add) register(change.visual); else unregister(change.visual);
             }
-            if(!active || frame-viewChanged<2) return;
+            if(!active) return;
             // Immediately prioritize the mechanism under the crosshair without scanning the index.
             BlockEntity target=mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult hit && mc.level!=null
                 ? mc.level.getBlockEntity(hit.getBlockPos()) : null;
@@ -156,7 +152,6 @@ public final class FlywheelCullingIndex {
                 schedule(e,frame+(e.reason.equals("deferred")?1:e.visibility!=null||e.paused?8:20));
             }
         } finally {
-            CreateOcclusion.limitUntil(Long.MAX_VALUE);
             BUDGET.end();
             if(c.diagnostics) {
                 long elapsed=System.nanoTime()-started;
@@ -185,7 +180,6 @@ public final class FlywheelCullingIndex {
         } else { paused=Boolean.FALSE; }
         e.checked=frame;
         if(hidden==null || paused==null) {
-            if(frame-e.validated>20) { restore(e,seconds);altered.remove(e); }
             e.reason="deferred";return;
         }
         e.validated=frame;
@@ -194,8 +188,8 @@ public final class FlywheelCullingIndex {
             if(instance instanceof PausedRotation rotation) rotation.slopium$pauseRotation(paused,seconds);
         });
         e.paused=paused;
-        // CPU pause expires if the scheduler cannot revisit this entry in time.
-        e.state.slopium$setOccludedUntil(paused,frame,frame+8);
+        // Stable worker snapshot; explicitly restored when policy or visibility changes.
+        e.state.slopium$setOccludedUntil(paused,frame,Long.MAX_VALUE);
         if(hidden) {
             if(e.visibility==null) e.visibility=new InstanceVisibility();
             int count=e.visibility.hide(e.visual);

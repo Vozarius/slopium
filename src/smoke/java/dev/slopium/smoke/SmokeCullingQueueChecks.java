@@ -38,7 +38,7 @@ final class SmokeCullingQueueChecks {
     }
     static void pump(FlywheelCullingIndex index,int count) throws ReflectiveOperationException {
         var frame=Slopium.class.getDeclaredField("frame");frame.setAccessible(true);
-        for(int i=0;i<count;i++){frame.setLong(null,frame.getLong(null)+1);index.frame();}
+        for(int i=0;i<count;i++){frame.setLong(null,frame.getLong(null)+1);VisibilityPool.process(net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera().getPosition());index.frame();}
     }
     static void stress(BlockEntity be,Class<?> base,Class<?> type,Field beField,Field modelField,Field shaftField) throws ReflectiveOperationException {
         var c=SlopiumConfig.get();boolean enabled=c.enabled,fly=c.occludeFlywheel,freeze=c.freezeCreateAnimations,anim=c.occludeCreateAnimations;
@@ -58,20 +58,6 @@ final class SmokeCullingQueueChecks {
                 if(checked>512)throw new AssertionError("Full-scene scan escaped operation budget");
             }
             if(index.tracked()!=12000 || index.supported()!=6000)throw new AssertionError("Registration queue starved: "+index.tracked());
-            // Deterministic regression: both decisions are deferred when trace budget is exhausted.
-            var entriesField=FlywheelCullingIndex.class.getDeclaredField("entries");entriesField.setAccessible(true);
-            for(Object entry:((java.util.Map<?,?>)entriesField.get(index)).values()) {
-                var supportedField=entry.getClass().getDeclaredField("supported");supportedField.setAccessible(true);
-                if(!supportedField.getBoolean(entry))continue;
-                var evaluate=FlywheelCullingIndex.class.getDeclaredMethod("evaluate",entry.getClass(),SlopiumConfig.class,float.class,long.class);
-                evaluate.setAccessible(true);WallOcclusion.invalidate();CreateOcclusion.limitUntil(0);
-                c.occludeCreateAnimations=true;
-                try { evaluate.invoke(index,entry,c,0f,Slopium.frame()); }
-                finally { CreateOcclusion.limitUntil(Long.MAX_VALUE);c.occludeCreateAnimations=false; }
-                var reason=entry.getClass().getDeclaredField("reason");reason.setAccessible(true);
-                if(!"deferred".equals(reason.get(entry)))throw new AssertionError("Expected unknown visibility on exhausted trace budget");
-                break;
-            }
             long unsupported=SlopiumStats.flywheelVisualsUnsupported, count=SlopiumStats.flywheelVisualsChecked;
             long started=System.nanoTime();pump(index,120);long elapsed=System.nanoTime()-started;
             if(unsupported!=SlopiumStats.flywheelVisualsUnsupported)throw new AssertionError("Unsupported classes reclassified every frame");

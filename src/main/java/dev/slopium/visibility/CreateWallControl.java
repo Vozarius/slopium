@@ -16,7 +16,7 @@ public final class CreateWallControl {
         var mc = Minecraft.getInstance();
         if (!mc.isSameThread() || !(be instanceof SmartBlockEntity smart) || smart.isVirtual()
                 || be.getLevel() == null || !be.getLevel().isClientSide || be.getLevel() != mc.level
-                || mc.screen != null || mc.player == null) return false;
+                || mc.player == null) return false;
         var pos = be.getBlockPos();
         if (mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult hit && hit.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK && hit.getBlockPos().equals(pos)) return false;
         return CreateOcclusion.decision(pos, mc.gameRenderer.getMainCamera().getPosition(), anyBlock, queued);

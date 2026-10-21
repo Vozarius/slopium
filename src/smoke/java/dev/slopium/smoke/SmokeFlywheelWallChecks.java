@@ -77,6 +77,18 @@ final class SmokeFlywheelWallChecks {
             settle(hook,manager);
             if(handle.visible || shaftHandle.visible)throw new AssertionError("Actual Flywheel manager policy did not hide instance");
             if(!extensionHandle.visible)throw new AssertionError("Unbounded BnB behaviour geometry was hidden with the delegate");
+            // Opening chat and tiny movements must not reveal hidden shafts between scheduled checks.
+            var camera=mc.gameRenderer.getMainCamera(); var eye=camera.getPosition();
+            var cameraPosition=net.minecraft.client.Camera.class.getDeclaredMethod("setPosition",double.class,double.class,double.class);
+            cameraPosition.setAccessible(true);
+            mc.screen=new net.minecraft.client.gui.screens.ChatScreen("");
+            for(int i=0;i<32;i++) {
+                cameraPosition.invoke(camera,eye.x+(i%2)*.001,eye.y,eye.z);
+                step(hook,manager);
+                if(handle.visible||shaftHandle.visible)throw new AssertionError("Chat or camera jitter revealed hidden shaft");
+            }
+            cameraPosition.invoke(camera,eye.x,eye.y,eye.z);mc.screen=null;
+
             // BnB material changes replace this field. The new instance must not leak through a wall.
             var retiredHandle = handle;
             handle = new Handle(true);
@@ -110,6 +122,10 @@ final class SmokeFlywheelWallChecks {
             testLevel.wall=net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();nextFrame();
             settle(hook,manager);
             if(!handle.visible || !shaftHandle.visible)throw new AssertionError("Removed window did not restore large cog and shaft");
+            if(((dev.slopium.visibility.PausedRotation)model).slopium$renderSpeed(120)!=120
+                || ((dev.slopium.visibility.PausedRotation)shaft).slopium$renderSpeed(60)!=60)
+                throw new AssertionError("Removed window left animations paused");
+
             c.occludeCreateAnimations=false;c.freezeCreateAnimations=true;model.rotationalSpeed=120;shaft.rotationalSpeed=60;
             settle(hook,manager);
             if(((dev.slopium.visibility.PausedRotation)model).slopium$renderSpeed(120)!=0 || ((dev.slopium.visibility.PausedRotation)shaft).slopium$renderSpeed(60)!=0)
@@ -123,12 +139,14 @@ final class SmokeFlywheelWallChecks {
         } finally {mc.player=oldPlayer;mc.screen=oldScreen;c.occludeFlywheel=old;c.enabled=enabled;c.freezeCreateAnimations=oldFreeze;c.occludeCreateAnimations=oldAnimation;c.flywheelAnyBlock=oldFlyMode;c.animationAnyBlock=oldAnimMode;testLevel.wall=oldWall;dev.slopium.visibility.WallOcclusion.invalidate();}
     }
 
-    private static void settle(java.lang.reflect.Method hook, Object manager) throws ReflectiveOperationException {
+    private static void settle(java.lang.reflect.Method hook,Object manager) throws ReflectiveOperationException {
+        for(int i=0;i<24;i++) step(hook,manager);
+    }
+    private static void step(java.lang.reflect.Method hook,Object manager) throws ReflectiveOperationException {
         var frame=dev.slopium.client.Slopium.class.getDeclaredField("frame");frame.setAccessible(true);
-        for (int i=0;i<24;i++) {
-            frame.setLong(null,frame.getLong(null)+1);
-            hook.invoke(manager,new org.spongepowered.asm.mixin.injection.callback.CallbackInfo("frame",false));
-        }
+        frame.setLong(null,frame.getLong(null)+1);
+        dev.slopium.visibility.VisibilityPool.process(net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera().getPosition());
+        hook.invoke(manager,new org.spongepowered.asm.mixin.injection.callback.CallbackInfo("frame",false));
     }
 
     private static void rotationWriter() {

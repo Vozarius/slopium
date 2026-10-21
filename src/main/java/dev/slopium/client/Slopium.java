@@ -30,6 +30,7 @@ public final class Slopium {
                 && client.screen == null && !client.isPaused();
             SlopiumStats.FRAME_TIMES.frameStart(recordFrames ? System.nanoTime() : 0, recordFrames);
             if (hadLevel && !hasLevel && loaded("sodiumdynamiclights")) SodiumLightBridge.clear();
+            if(hadLevel && !hasLevel) dev.slopium.visibility.VisibilityPool.clear();
             hadLevel = hasLevel;
         });
     }
@@ -115,6 +116,12 @@ public final class Slopium {
                 context.getSource().sendSuccess(() -> Component.literal("Culling queue | tracked="+SlopiumStats.flywheelTracked
                     +" | supported="+SlopiumStats.flywheelSupported+" | altered="+SlopiumStats.flywheelAltered
                     +" | registered="+SlopiumStats.flywheelRegistered+" | budget yields="+SlopiumStats.flywheelBudgetYields),false);
+                context.getSource().sendSuccess(() -> Component.literal(String.format(java.util.Locale.ROOT,
+                    "Visibility pool | entries=%d | pending=%d | reads=%d | hits=%d | unknown=%d | rays=%d | avg=%.3f ms | max=%.3f ms",
+                    SlopiumStats.visibilityEntries,SlopiumStats.visibilityPending,SlopiumStats.visibilityReads,
+                    SlopiumStats.visibilityHits,SlopiumStats.visibilityUnknown,SlopiumStats.visibilityRays,
+                    SlopiumStats.visibilityPasses==0?0:SlopiumStats.visibilityNanos/(double)SlopiumStats.visibilityPasses/1e6,
+                    SlopiumStats.visibilityMaxNanos/1e6)),false);
                 var timing = SlopiumStats.FRAME_TIMES.snapshot();
                 context.getSource().sendSuccess(() -> Component.literal(timing.samples() == 0
                     ? "Frames | no samples; enable diagnostics and close menus in the world"

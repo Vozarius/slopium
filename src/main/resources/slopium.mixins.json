@@ -34,6 +34,7 @@
     "ParticlePositionMixin",
     "FactoryPanelBudgetMixin",
     "OcclusionInvalidationMixin",
+    "VisibilityFrameMixin",
     "VisualOcclusionStateMixin",
     "FlywheelWallMixin",
     "FlywheelStorageMixin",

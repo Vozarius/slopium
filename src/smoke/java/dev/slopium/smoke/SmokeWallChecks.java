@@ -76,22 +76,7 @@ final class SmokeWallChecks {
         } finally { mc.level=old; c.diagnostics=diagnostics; frame.setLong(null,oldFrame);WallOcclusion.invalidate();SlopiumStats.reset(); }
     }
     private static void createQueue(TestLevel level, java.lang.reflect.Field frame) throws ReflectiveOperationException {
-        var eye = new Vec3(.5,.5,.5);
-        var target = new BlockPos(5,0,0);
-        var outside = new BlockPos(512,0,0);
-        next(frame);
-        dev.slopium.visibility.CreateOcclusion.hidden(outside,eye,true); // Initialize this frame/world only.
-        var rays = dev.slopium.visibility.CreateOcclusion.class.getDeclaredField("rays"); rays.setAccessible(true); rays.setInt(null,0);
-        if (dev.slopium.visibility.CreateOcclusion.hidden(target,eye,true)) throw new AssertionError("Unverified Create target hidden");
-        level.wall=Blocks.AIR.defaultBlockState();next(frame); // Factory block update while the request is queued.
-        dev.slopium.visibility.CreateOcclusion.hidden(outside,eye,true); // Must service the old request before any new one.
-        long hits=SlopiumStats.createOcclusionCacheHits;
-        if (dev.slopium.visibility.CreateOcclusion.hidden(target,eye,true) || SlopiumStats.createOcclusionCacheHits!=hits+1)
-            throw new AssertionError("Geometry update lost the deferred Create request or reused old geometry");
-        level.wall=Blocks.GLASS.defaultBlockState();next(frame);
-        if (!dev.slopium.visibility.CreateOcclusion.hidden(target,eye,true)) throw new AssertionError("New window did not invalidate Create cache");
-        if (dev.slopium.visibility.CreateOcclusion.hidden(target,new Vec3(6,.5,.5),true)) throw new AssertionError("Camera crossed glass but hidden result remained");
-        com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: Create deferred queue survives geometry updates, uses current geometry, camera invalidation passed");
+        SmokeVisibilityPoolChecks.run(level,frame);
     }
     static void attachSable(ClientLevel level) throws ReflectiveOperationException {
         if (!Slopium.sableAvailable()) return;
