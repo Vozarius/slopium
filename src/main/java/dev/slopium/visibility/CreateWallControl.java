@@ -4,7 +4,6 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import dev.slopium.client.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.phys.AABB;
 
 public final class CreateWallControl {
     private CreateWallControl() {}
@@ -15,12 +14,8 @@ public final class CreateWallControl {
                 || be.getLevel() == null || !be.getLevel().isClientSide || be.getLevel() != mc.level
                 || mc.screen != null || mc.player == null) return false;
         var pos = be.getBlockPos();
-        if (mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult hit && hit.getBlockPos().equals(pos)) return false;
-        var renderer = mc.getBlockEntityRenderDispatcher().getRenderer(be);
-        if (renderer == null) return false;
-        // Renderer bounds matter: pipes, belts and panel connections can extend beyond a block.
-        AABB bounds = renderer.getRenderBoundingBox(be).inflate(.25);
-        return WallOcclusion.hidden(bounds, mc.gameRenderer.getMainCamera().getPosition(), anyBlock);
+        if (mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult hit && hit.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK && hit.getBlockPos().equals(pos)) return false;
+        return CreateOcclusion.hidden(pos, mc.gameRenderer.getMainCamera().getPosition(), anyBlock);
     }
     public static boolean skipTick(BlockEntity be, SlopiumConfig c) {
         var level = be.getLevel();

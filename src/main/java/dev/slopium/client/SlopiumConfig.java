@@ -75,6 +75,8 @@ public final class SlopiumConfig {
     public volatile boolean occludeCreateTicks = false;
     public volatile boolean occludeFlywheel = false;
     public volatile boolean occludeCreateAnimations = false;
+    public volatile boolean freezeCreateAnimations = false;
+    public volatile boolean hideAllCreateModels = false;
     public volatile boolean hideFactoryConnections = false;
 
     public static SlopiumConfig get() {

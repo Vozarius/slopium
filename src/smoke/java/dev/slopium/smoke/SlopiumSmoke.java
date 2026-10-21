@@ -33,7 +33,7 @@ public final class SlopiumSmoke {
         if (opened || !(client.screen instanceof TitleScreen)) return;
         var options = ConfigManager.CONFIG.getModOptions().stream()
             .filter(mod -> mod.configId().equals("slopium")).findFirst().orElseThrow();
-        if (options.pages().size() != 7) throw new IllegalStateException("Missing Slopium pages");
+        if (options.pages().size() != 6) throw new IllegalStateException("Missing Slopium pages");
         validateOptionalMixins();
         showPage(client);
         opened = true;
@@ -58,9 +58,11 @@ public final class SlopiumSmoke {
         }
         // Preview the longest labels without writing user/config values.
         SmokeOptionsChecks.value("enabled", true);
-        for (String key : java.util.List.of("disable_particles", "disable_be_render", "disable_flywheel_render", "freeze_create_ticks")) SmokeOptionsChecks.value(key, false);
+        SmokeOptionsChecks.value("block_models", SmokeOptionsChecks.enumValue("block_models", "SHOW"));
         for (String key : java.util.List.of("particle_visibility", "create_visibility", "flywheel_visibility", "animation_visibility", "create_tick_mode"))
             SmokeOptionsChecks.value(key, SmokeOptionsChecks.enumValue(key, "ANY"));
+        if (pageIndex == 2) for (String key : java.util.List.of("create_visibility", "flywheel_visibility", "animation_visibility"))
+            SmokeOptionsChecks.value(key, SmokeOptionsChecks.enumValue(key, "ALL"));
     }
 
     private static void validateOptionalMixins() {
@@ -113,11 +115,11 @@ public final class SlopiumSmoke {
         if (!opened || captured || Minecraft.getInstance().getOverlay() != null || ++frames < 60) return;
         captured = true;
         Minecraft client = Minecraft.getInstance();
-        Screenshot.grab(client.gameDirectory, "slopium-alpha10-page-" + pageIndex + ".png", client.getMainRenderTarget(), message -> {
+        Screenshot.grab(client.gameDirectory, "slopium-alpha13-page-" + pageIndex + ".png", client.getMainRenderTarget(), message -> {
             LogUtils.getLogger().info("SLOPIUM_SMOKE: screenshot saved; success");
             client.execute(() -> {
-                if (++capturedPages == 7) { client.stop(); return; }
-                pageIndex = (pageIndex + 1) % 7;
+                if (++capturedPages == 6) { client.stop(); return; }
+                pageIndex = (pageIndex + 1) % 6;
                 showPage(client); frames = 0; captured = false;
             });
         });

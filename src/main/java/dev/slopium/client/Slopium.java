@@ -97,11 +97,21 @@ public final class Slopium {
                     + " | factory items=" + SlopiumStats.factoryItemPassesSkipped + " | factory bulbs=" + SlopiumStats.factoryBulbsSkipped + " | distant Create ticks=" + SlopiumStats.distanceCreateTicksSkipped), false);
                 context.getSource().sendSuccess(() -> Component.literal("Walls | particles=" + SlopiumStats.wallParticlesSkipped
                     + " | Create draws=" + SlopiumStats.wallCreateDrawsSkipped + " | Create ticks=" + SlopiumStats.wallCreateTicksSkipped
-                    + " | Flywheel instances=" + SlopiumStats.wallFlywheelInstancesHidden + " | rays=" + SlopiumStats.occlusionRays
+                    + " | Flywheel instances=" + SlopiumStats.wallFlywheelInstancesHidden + " | shared rays=" + SlopiumStats.occlusionRays
                     + " | cache=" + SlopiumStats.occlusionCacheHits + " | budget misses=" + SlopiumStats.occlusionBudgetMisses), false);
                 context.getSource().sendSuccess(() -> Component.literal("Particle visibility | checked=" + SlopiumStats.particleOcclusionChecks
                     + " | hidden=" + SlopiumStats.wallParticlesSkipped + " | deferred=" + SlopiumStats.particleOcclusionDeferred
                     + " | Sable protected=" + SlopiumStats.particleOcclusionProtected), false);
+                context.getSource().sendSuccess(() -> Component.literal("Create visibility | checked=" + SlopiumStats.createOcclusionChecks
+                    + " | rays=" + SlopiumStats.createOcclusionRays + " | cache=" + SlopiumStats.createOcclusionCacheHits
+                    + " | deferred=" + SlopiumStats.createOcclusionDeferred + " | Sable protected=" + SlopiumStats.createOcclusionProtected), false);
+                context.getSource().sendSuccess(() -> Component.literal("Flywheel visibility | checked=" + SlopiumStats.flywheelVisualsChecked
+                    + " | wrapped=" + SlopiumStats.flywheelVisualsWrapped + " | unsupported=" + SlopiumStats.flywheelVisualsUnsupported), false);
+                context.getSource().sendSuccess(() -> Component.literal(String.format(java.util.Locale.ROOT,
+                    "Culling cost | Flywheel passes=%d | avg=%.3f ms | max=%.3f ms | Create trace total=%.1f ms",
+                    SlopiumStats.flywheelCullPasses,
+                    SlopiumStats.flywheelCullPasses == 0 ? 0.0 : SlopiumStats.flywheelCullNanos / (double)SlopiumStats.flywheelCullPasses / 1_000_000.0,
+                    SlopiumStats.flywheelCullMaxNanos / 1_000_000.0, SlopiumStats.createTraceNanos / 1_000_000.0)), false);
                 var timing = SlopiumStats.FRAME_TIMES.snapshot();
                 context.getSource().sendSuccess(() -> Component.literal(timing.samples() == 0
                     ? "Frames | no samples; enable diagnostics and close menus in the world"

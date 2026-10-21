@@ -72,7 +72,8 @@ final class SmokeExperimentChecks {
             for (int mode = 0; mode < 3; mode++) {
                 c.enabled = mode != 2; field.setBoolean(c, mode != 1);
                 var ci = new CallbackInfo("smoke", true);
-                method.invoke(target, ci);
+                if (method.getParameterCount() == 1) method.invoke(target, ci);
+                else method.invoke(target, ci, null);
                 if (ci.isCancelled() != (mode == 0)) throw new AssertionError("Cut guard failed: " + flag + "/" + mode);
             }
         }

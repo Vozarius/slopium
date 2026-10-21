@@ -32,7 +32,7 @@ public abstract class CreateVisualFrameMixin {
     private void slopium$visualFrame(DynamicVisual.Context context, CallbackInfo ci) {
         var c = SlopiumConfig.get();
         if (!c.enabled) return;
-        if (c.occludeCreateAnimations && ((dev.slopium.visibility.VisualOcclusionState)this).slopium$isOccluded(Slopium.frame())) {
+        if ((c.occludeCreateAnimations || c.freezeCreateAnimations) && ((dev.slopium.visibility.VisualOcclusionState)this).slopium$isOccluded(Slopium.frame())) {
             if (c.diagnostics) SlopiumStats.CREATE_VISUALS_SKIPPED.increment();
             ci.cancel(); return;
         }

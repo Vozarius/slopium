@@ -1,0 +1,28 @@
+{
+  "version": "0.1.0-alpha.12",
+  "jar": "build\\libs\\slopium-neoforge-1.21.1-0.1.0-alpha.12.jar",
+  "size": 150653,
+  "sha256": "a4574af7ff0e753b0d63896dcb0efcc179b9cdc8fedca0f6b07bcf7e1c538879",
+  "unit_tests_passed": 19,
+  "smoke_profiles": [
+    "full",
+    "legacy",
+    "minimal"
+  ],
+  "world_occlusion_fixture_profiles": [
+    "full",
+    "legacy",
+    "minimal"
+  ],
+  "azimuth_bnb_wrapper_regression": "full",
+  "real_flywheel_handle_compaction": [
+    "full",
+    "legacy"
+  ],
+  "sable_empty_container_fixture": "full",
+  "icon_matches_logoT": true,
+  "smoke_classes_bundled": false,
+  "registered_options": 46,
+  "pages": 6,
+  "world_fps_measured": false
+}

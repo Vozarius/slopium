@@ -1,0 +1,23 @@
+{
+  "version": "0.1.0-alpha.11",
+  "jar": "build\\libs\\slopium-neoforge-1.21.1-0.1.0-alpha.11.jar",
+  "size": 148698,
+  "sha256": "16fc505d58fdeddffbe1846d9ae8657120f2a17805bf4827049b20076829951d",
+  "unit_tests_passed": 19,
+  "smoke_profiles": [
+    "legacy",
+    "full",
+    "minimal"
+  ],
+  "world_occlusion_fixture_profile": "legacy",
+  "gpu_writer_checked_in": [
+    "legacy",
+    "full"
+  ],
+  "final_translation_check": "legacy",
+  "registered_options": 46,
+  "pages": 6,
+  "icon_matches_logoT": true,
+  "world_fps_measured": false,
+  "final_code_smoke": "legacy"
+}

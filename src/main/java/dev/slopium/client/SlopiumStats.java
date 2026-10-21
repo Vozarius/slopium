@@ -13,6 +13,10 @@ public final class SlopiumStats {
     public static long wallParticlesSkipped, wallCreateDrawsSkipped, wallCreateTicksSkipped, wallFlywheelInstancesHidden, occlusionRays, occlusionCacheHits, occlusionBudgetMisses;
     public static long factoryItemPassesSkipped;
     public static long particleOcclusionChecks, particleOcclusionDeferred, particleOcclusionProtected;
+    public static long createOcclusionChecks, createOcclusionDeferred, createOcclusionProtected;
+    public static long createOcclusionRays, createOcclusionCacheHits;
+    public static long flywheelVisualsChecked, flywheelVisualsWrapped, flywheelVisualsUnsupported;
+    public static long flywheelCullPasses, flywheelCullNanos, flywheelCullMaxNanos, createTraceNanos;
     public static int indexedSources;
     public static long indexBuildNanos;
     public static long eligibleTicksChecked, tickNotReady, tickVisibleOrExcluded, tickNear, tickSableProtected, hiddenTicksChecked;
@@ -28,6 +32,10 @@ public final class SlopiumStats {
         wallParticlesSkipped = wallCreateDrawsSkipped = wallCreateTicksSkipped = wallFlywheelInstancesHidden = occlusionRays = occlusionCacheHits = occlusionBudgetMisses = 0;
         factoryItemPassesSkipped = 0;
         particleOcclusionChecks = particleOcclusionDeferred = particleOcclusionProtected = 0;
+        createOcclusionChecks = createOcclusionDeferred = createOcclusionProtected = 0;
+        createOcclusionRays = createOcclusionCacheHits = 0;
+        flywheelVisualsChecked = flywheelVisualsWrapped = flywheelVisualsUnsupported = 0;
+        flywheelCullPasses = flywheelCullNanos = flywheelCullMaxNanos = createTraceNanos = 0;
         FRAME_TIMES.reset();
         indexedSources = 0;
         indexBuildNanos = 0;

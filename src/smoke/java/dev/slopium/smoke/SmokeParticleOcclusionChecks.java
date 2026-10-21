@@ -23,7 +23,6 @@ final class SmokeParticleOcclusionChecks {
     }
     @SuppressWarnings("unchecked")
     static void run() throws ReflectiveOperationException {
-        if (Slopium.sableAvailable()) return; // No ready Sable container in this artificial level.
         var mc=Minecraft.getInstance(); var oldLevel=mc.level;
         var c=SlopiumConfig.get(); var saved=new HashMap<java.lang.reflect.Field,Object>();
         for(var f:SlopiumConfig.class.getFields())saved.put(f,f.get(c));
@@ -33,7 +32,7 @@ final class SmokeParticleOcclusionChecks {
         var oldParticles=new HashMap<>(map);
         try {
             var level=(SmokeWallChecks.TestLevel)SmokeRadicalChecks.allocate(SmokeWallChecks.TestLevel.class);
-            level.loaded=true;mc.level=level;
+            level.loaded=true;SmokeWallChecks.attachSable(level);mc.level=level;
             var particle=(Dot)SmokeRadicalChecks.allocate(Dot.class);particle.at(5.1,.5,.5);
             var camera=new Camera();
             var position=Camera.class.getDeclaredMethod("setPosition",double.class,double.class,double.class);position.setAccessible(true);

@@ -8,5 +8,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(LevelRenderer.class)
 public interface LevelRendererAccessor {
     @Accessor("cullingFrustum") Frustum slopium$frustum();
+    @Accessor("ticks") int slopium$ticks();
 }
 

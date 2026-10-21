@@ -35,7 +35,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
                     .addOption(bool(builder, "sable_light", v -> c.sableLight = v, () -> c.sableLight, true, sableLight))))
             .addPage(builder.createOptionPage().setName(text("page.particles"))
                 .addOptionGroup(builder.createOptionGroup().setName(text("group.particle_visibility"))
-                    .addOption(wall(builder, "particle_visibility", v -> c.occludeParticles = v, () -> c.occludeParticles, v -> c.opaqueGlassParticles = v, () -> c.opaqueGlassParticles, true))
+                    .addOption(wall(builder, "particle_visibility", v -> c.occludeParticles = v, () -> c.occludeParticles, v -> c.opaqueGlassParticles = v, () -> c.opaqueGlassParticles, v -> c.disableParticles = v, () -> c.disableParticles, true))
                     .addOption(bool(builder, "particle_range", v -> c.particleRange = v, () -> c.particleRange, false, true))
                     .addOption(integer(builder, "particle_render_distance", v -> c.particleRenderDistance = v, () -> c.particleRenderDistance, 64, 0, 512, 1)))
                 .addOptionGroup(builder.createOptionGroup().setName(text("group.particle_cost"))
@@ -44,10 +44,10 @@ public final class SlopiumOptions implements ConfigEntryPoint {
                     .addOption(integer(builder, "particles_per_tick", v -> c.particlesPerTick = v, () -> c.particlesPerTick, 128, 0, 1024, 16))))
             .addPage(builder.createOptionPage().setName(text("page.create_render"))
                 .addOptionGroup(builder.createOptionGroup().setName(text("group.create_visibility"))
-                    .addOption(wall(builder, "create_visibility", v -> c.occludeCreateRendering = v, () -> c.occludeCreateRendering, v -> c.createRenderAnyBlock = v, () -> c.createRenderAnyBlock, Slopium.loaded("create")))
-                    .addOption(wall(builder, "flywheel_visibility", v -> c.occludeFlywheel = v, () -> c.occludeFlywheel, v -> c.flywheelAnyBlock = v, () -> c.flywheelAnyBlock, Slopium.loaded("flywheel"))))
+                    .addOption(wall(builder, "create_visibility", v -> c.occludeCreateRendering = v, () -> c.occludeCreateRendering, v -> c.createRenderAnyBlock = v, () -> c.createRenderAnyBlock, v -> c.hideAllCreateModels = v, () -> c.hideAllCreateModels, Slopium.loaded("create")))
+                    .addOption(wall(builder, "flywheel_visibility", v -> c.occludeFlywheel = v, () -> c.occludeFlywheel, v -> c.flywheelAnyBlock = v, () -> c.flywheelAnyBlock, v -> c.disableFlywheelRendering = v, () -> c.disableFlywheelRendering, Slopium.loaded("flywheel"))))
                 .addOptionGroup(builder.createOptionGroup().setName(text("group.create_animation"))
-                    .addOption(wall(builder, "animation_visibility", v -> c.occludeCreateAnimations = v, () -> c.occludeCreateAnimations, v -> c.animationAnyBlock = v, () -> c.animationAnyBlock, Slopium.loaded("create") && Slopium.loaded("flywheel")))
+                    .addOption(wall(builder, "animation_visibility", v -> c.occludeCreateAnimations = v, () -> c.occludeCreateAnimations, v -> c.animationAnyBlock = v, () -> c.animationAnyBlock, v -> c.freezeCreateAnimations = v, () -> c.freezeCreateAnimations, Slopium.loaded("create") && Slopium.loaded("flywheel")))
                     .addOption(bool(builder, "create_visuals", v -> c.throttleCreateVisuals = v, () -> c.throttleCreateVisuals, false, Slopium.loaded("create") && Slopium.loaded("flywheel")))
                     .addOption(integer(builder, "create_visual_distance", v -> c.createVisualDistance = v, () -> c.createVisualDistance, 24, 0, 512, 1))
                     .addOption(integer(builder, "create_visual_interval", v -> c.createVisualInterval = v, () -> c.createVisualInterval, 3, 2, 10, 1)))
@@ -83,39 +83,37 @@ public final class SlopiumOptions implements ConfigEntryPoint {
                     .addOption(bool(builder, "item_impostors", v -> c.itemImpostors = v, () -> c.itemImpostors, false, true))
                     .addOption(integer(builder, "item_impostor_distance", v -> c.itemImpostorDistance = v, () -> c.itemImpostorDistance, 24, 0, 512, 1)))
                 .addOptionGroup(builder.createOptionGroup().setName(text("group.world_detail"))
-                    .addOption(bool(builder, "be_range", v -> c.limitBlockEntityRendering = v, () -> c.limitBlockEntityRendering, false, true))
+                    .addOption(mode(builder, "block_models", BlockModels.class, v -> { c.disableBlockEntityRendering = v == BlockModels.HIDE; c.limitBlockEntityRendering = v == BlockModels.NEAR; }, () -> c.disableBlockEntityRendering ? BlockModels.HIDE : c.limitBlockEntityRendering ? BlockModels.NEAR : BlockModels.SHOW, BlockModels.SHOW, true))
                     .addOption(integer(builder, "be_render_distance", v -> c.blockEntityRenderDistance = v, () -> c.blockEntityRenderDistance, 64, 0, 512, 1))
                     .addOption(bool(builder, "disable_shadows", v -> c.disableEntityShadows = v, () -> c.disableEntityShadows, false, true))
-                    .addOption(bool(builder, "texture_interpolation", v -> c.disableTextureInterpolation = v, () -> c.disableTextureInterpolation, false, true))))
-            .addPage(builder.createOptionPage().setName(text("page.tests"))
-                .addOptionGroup(builder.createOptionGroup().setName(text("group.test_warning"))
-                    .addOption(bool(builder, "disable_be_render", v -> c.disableBlockEntityRendering = v, () -> c.disableBlockEntityRendering, false, true))
-                    .addOption(bool(builder, "disable_flywheel_render", v -> c.disableFlywheelRendering = v, () -> c.disableFlywheelRendering, false, Slopium.loaded("flywheel")))
-                    .addOption(bool(builder, "disable_particles", v -> c.disableParticles = v, () -> c.disableParticles, false, true))
-                    .addOption(bool(builder, "disable_ambient", v -> c.disableAmbientEffects = v, () -> c.disableAmbientEffects, false, true))
-                    .addOption(bool(builder, "freeze_create_ticks", v -> c.freezeCreateClientTicks = v, () -> c.freezeCreateClientTicks, false, Slopium.loaded("create")))));
+                    .addOption(bool(builder, "texture_interpolation", v -> c.disableTextureInterpolation = v, () -> c.disableTextureInterpolation, false, true))
+                    .addOption(bool(builder, "disable_ambient", v -> c.disableAmbientEffects = v, () -> c.disableAmbientEffects, false, true))));
+
     }
 
     // One control owns each pair/set of legacy flags; saved alpha configurations remain readable.
-    private enum Visibility { OFF, OPAQUE, ANY }
-    private enum TickMode { OFF, OPAQUE, ANY, DISTANCE, ENTITY_CULLING }
+    private enum Visibility { OFF, OPAQUE, ANY, ALL }
+    private enum BlockModels { SHOW, NEAR, HIDE }
+    private enum TickMode { OFF, OPAQUE, ANY, DISTANCE, ENTITY_CULLING, ALL }
     private enum Connections { SHOW, NEAR, HIDE }
 
     private static TickMode tickMode(SlopiumConfig c) {
+        if (c.freezeCreateClientTicks) return TickMode.ALL;
         if (c.occludeCreateTicks) return c.tickAnyBlock ? TickMode.ANY : TickMode.OPAQUE;
         if (c.distanceCreateTicks) return TickMode.DISTANCE;
         return c.throttleHiddenCreate && Slopium.loaded("entityculling") ? TickMode.ENTITY_CULLING : TickMode.OFF;
     }
     private static void setTickMode(SlopiumConfig c, TickMode mode) {
+        c.freezeCreateClientTicks = mode == TickMode.ALL;
         c.occludeCreateTicks = mode == TickMode.OPAQUE || mode == TickMode.ANY;
         c.tickAnyBlock = mode == TickMode.ANY;
         c.distanceCreateTicks = mode == TickMode.DISTANCE;
         c.throttleHiddenCreate = mode == TickMode.ENTITY_CULLING;
     }
     private EnumOptionBuilder<Visibility> wall(ConfigBuilder b, String key, Consumer<Boolean> activeSet, Supplier<Boolean> active,
-            Consumer<Boolean> anySet, Supplier<Boolean> any, boolean available) {
-        return mode(b, key, Visibility.class, v -> { activeSet.accept(v != Visibility.OFF); anySet.accept(v == Visibility.ANY); },
-            () -> !active.get() ? Visibility.OFF : any.get() ? Visibility.ANY : Visibility.OPAQUE, Visibility.OFF, available);
+            Consumer<Boolean> anySet, Supplier<Boolean> any, Consumer<Boolean> allSet, Supplier<Boolean> all, boolean available) {
+        return mode(b, key, Visibility.class, v -> { allSet.accept(v == Visibility.ALL); activeSet.accept(v == Visibility.OPAQUE || v == Visibility.ANY); anySet.accept(v == Visibility.ANY); },
+            () -> all.get() ? Visibility.ALL : !active.get() ? Visibility.OFF : any.get() ? Visibility.ANY : Visibility.OPAQUE, Visibility.OFF, available);
     }
     private <E extends Enum<E>> EnumOptionBuilder<E> mode(ConfigBuilder b, String key, Class<E> type, Consumer<E> set, Supplier<E> get, E defaults, boolean available) {
         var values = java.util.EnumSet.allOf(type);
@@ -124,7 +122,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
             .setStorageHandler(storage).setBinding(set, get).setDefaultValue(defaults)
             .setAllowedValues(values)
             .setEnabledProvider(state -> available && allowed(key, state), dependencies(key))
-            .setElementNameProvider(value -> text("value." + type.getSimpleName() + "." + value.name()));
+            .setElementNameProvider(value -> text(value.name().equals("ALL") ? key + ".all" : "value." + type.getSimpleName() + "." + value.name()));
     }
     private BooleanOptionBuilder bool(ConfigBuilder b, String key, Consumer<Boolean> set, Supplier<Boolean> get, boolean defaults, boolean available) {
         return b.createBooleanOption(id(key)).setName(text(key)).setTooltip(tooltip(key))
@@ -141,15 +139,13 @@ public final class SlopiumOptions implements ConfigEntryPoint {
         java.util.Map.entry("particle_render_distance", "particle_range"), java.util.Map.entry("particles_per_tick", "particle_budget"),
         java.util.Map.entry("factory_item_distance", "factory_items"), java.util.Map.entry("factory_bulb_distance", "factory_bulbs"),
         java.util.Map.entry("item_render_distance", "item_range"), java.util.Map.entry("item_lod_distance", "item_lod"),
-        java.util.Map.entry("item_impostor_distance", "item_impostors"), java.util.Map.entry("be_render_distance", "be_range"),
+        java.util.Map.entry("item_impostor_distance", "item_impostors"),
         java.util.Map.entry("create_visual_distance", "create_visuals"), java.util.Map.entry("create_visual_interval", "create_visuals"),
         java.util.Map.entry("flywheel_distance_radius", "flywheel_distance"), java.util.Map.entry("flywheel_interval", "flywheel_distance"),
         java.util.Map.entry("light_cache", "indexed_lighting"), java.util.Map.entry("sable_light", "create_light"));
     private static String override(String key) {
-        if (key.startsWith("particle") && !key.equals("disable_particles")) return "disable_particles";
-        if (key.equals("create_visibility") || key.equals("be_range") || key.equals("be_render_distance") || key.startsWith("factory_")) return "disable_be_render";
-        if (key.equals("flywheel_visibility")) return "disable_flywheel_render";
-        if (key.equals("create_tick_mode") || key.equals("tick_interval") || key.equals("hidden_grace") || key.equals("protected_distance") || key.startsWith("create_tick_")) return "freeze_create_ticks";
+        if (key.startsWith("particle") && !key.equals("particle_visibility")) return "particle_visibility";
+        if (key.startsWith("create_visual")) return "animation_visibility";
         return null;
     }
     private static ResourceLocation[] dependencies(String key) {
@@ -158,6 +154,8 @@ public final class SlopiumOptions implements ConfigEntryPoint {
         String parent = PARENTS.get(key), override = override(key);
         if (parent != null) result.add(id(parent));
         if (override != null) result.add(id(override));
+        if (key.equals("create_visibility") || key.startsWith("factory_") || key.equals("be_render_distance")) result.add(id("block_models"));
+        if (key.startsWith("factory_")) result.add(id("create_visibility"));
         if (key.equals("factory_connection_distance")) result.add(id("factory_connection_mode"));
         if (key.equals("tick_interval") || key.equals("hidden_grace") || key.equals("protected_distance") || key.equals("create_tick_distance") || key.equals("create_tick_interval")) result.add(id("create_tick_mode"));
         return result.toArray(ResourceLocation[]::new);
@@ -167,7 +165,10 @@ public final class SlopiumOptions implements ConfigEntryPoint {
         if (!state.readBooleanOption(id("enabled"))) return false;
         String parent = PARENTS.get(key), override = override(key);
         if (parent != null && !state.readBooleanOption(id(parent))) return false;
-        if (override != null && state.readBooleanOption(id(override))) return false;
+        if (override != null && state.readEnumOption(id(override), Visibility.class) == Visibility.ALL) return false;
+        if ((key.equals("create_visibility") || key.startsWith("factory_")) && state.readEnumOption(id("block_models"), BlockModels.class) == BlockModels.HIDE) return false;
+        if (key.startsWith("factory_") && state.readEnumOption(id("create_visibility"), Visibility.class) == Visibility.ALL) return false;
+        if (key.equals("be_render_distance")) return state.readEnumOption(id("block_models"), BlockModels.class) == BlockModels.NEAR;
         if (key.startsWith("factory_") && !Slopium.loaded("create")) return false;
         if (key.startsWith("create_visual_") && (!Slopium.loaded("create") || !Slopium.loaded("flywheel"))) return false;
         if ((key.equals("flywheel_distance_radius") || key.equals("flywheel_interval")) && !Slopium.loaded("flywheel")) return false;
@@ -186,6 +187,10 @@ public final class SlopiumOptions implements ConfigEntryPoint {
         String parent = PARENTS.get(key), fullCut = override(key);
         if (parent != null) result.append(Component.translatable("slopium.hint.parent", text(parent)));
         if (fullCut != null) result.append(Component.translatable("slopium.hint.override", text(fullCut)));
+        if (key.equals("create_visibility") || key.startsWith("factory_"))
+            result.append(Component.translatable("slopium.hint.override", text("block_models")));
+        if (key.startsWith("factory_")) result.append(Component.translatable("slopium.hint.override", text("create_visibility")));
+        if (key.equals("be_render_distance")) result.append(text("hint.block_radius"));
         return result;
     }
     private static boolean classPresent(String name) {

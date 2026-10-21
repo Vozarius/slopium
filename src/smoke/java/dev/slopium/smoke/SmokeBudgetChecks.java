@@ -63,6 +63,30 @@ final class SmokeBudgetChecks {
             before = SlopiumStats.sodiumPassesSkipped;
             pass.invoke(allocate(sodiumClass), null, null, null, null, 0f, null);
             if (SlopiumStats.sodiumPassesSkipped != before + 1) throw new AssertionError("Sodium early pass not cut");
+            if (Slopium.createAvailable()) {
+                var block = net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("create", "shaft"));
+                var mechanism = ((net.minecraft.world.level.block.EntityBlock)block).newBlockEntity(net.minecraft.core.BlockPos.ZERO, block.defaultBlockState());
+                c.disableBlockEntityRendering = false; c.hideAllCreateModels = true;
+                before = SlopiumStats.blockEntityDrawsSkipped;
+                mc.getBlockEntityRenderDispatcher().render(mechanism, 0, null, null);
+                if (SlopiumStats.blockEntityDrawsSkipped != before + 1) throw new AssertionError("Create-only dispatcher cut not reached");
+                var renderCreate = Arrays.stream(sodiumClass.getDeclaredMethods()).filter(m -> m.getName().equals("renderBlockEntity")).findFirst().orElseThrow();
+                renderCreate.setAccessible(true);
+                before = SlopiumStats.wallCreateDrawsSkipped;
+                renderCreate.invoke(null, null, null, null, 0f, null, 0d, 0d, 0d, mc.getBlockEntityRenderDispatcher(), mechanism, null, null);
+                if (SlopiumStats.wallCreateDrawsSkipped != before + 1) throw new AssertionError("Create-only Sodium cut not reached");
+                var dispatcher = mc.getBlockEntityRenderDispatcher();
+                var guard = Arrays.stream(dispatcher.getClass().getDeclaredMethods()).filter(m -> m.getName().endsWith("slopium$cut")).findFirst().orElseThrow();guard.setAccessible(true);
+                var chest = new net.minecraft.world.level.block.entity.ChestBlockEntity(net.minecraft.core.BlockPos.ZERO, net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState());
+                var ci = new org.spongepowered.asm.mixin.injection.callback.CallbackInfo("chest", true);
+                guard.invoke(dispatcher, ci, chest);
+                if (ci.isCancelled()) throw new AssertionError("Create-only mode also hid a vanilla chest");
+                c.enabled = false; ci = new org.spongepowered.asm.mixin.injection.callback.CallbackInfo("off", true);
+                guard.invoke(dispatcher, ci, mechanism);
+                if (ci.isCancelled()) throw new AssertionError("Create-only cut ignored global off");
+                c.enabled = true; c.hideAllCreateModels = false;
+                LogUtils.getLogger().info("SLOPIUM_SMOKE: Create-only cuts reached actual vanilla and Sodium entries; vanilla chest and global off preserved");
+            }
             if (!Slopium.sableAvailable()) {
                 var be = new net.minecraft.world.level.block.entity.ChestBlockEntity(net.minecraft.core.BlockPos.ZERO, net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState());
                 be.setLevel((net.minecraft.client.multiplayer.ClientLevel) allocate(net.minecraft.client.multiplayer.ClientLevel.class));

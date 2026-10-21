@@ -29,8 +29,9 @@ public abstract class SodiumBlockEntityBudgetMixin {
             @Local(argsOnly = true, ordinal = 1) double y,
             @Local(argsOnly = true, ordinal = 2) double z) {
         var c = SlopiumConfig.get();
-        if (c.enabled && c.occludeCreateRendering && dev.slopium.client.Slopium.createAvailable()
-                && dev.slopium.visibility.CreateWallControl.hidden(be, c.createRenderAnyBlock)) {
+        if (c.enabled && dev.slopium.client.Slopium.createAvailable()
+                && ((c.hideAllCreateModels && be.getType().builtInRegistryHolder().key().location().getNamespace().equals("create"))
+                || (c.occludeCreateRendering && dev.slopium.visibility.CreateWallControl.hidden(be, c.createRenderAnyBlock)))) {
             if (c.diagnostics) SlopiumStats.wallCreateDrawsSkipped++;
             ci.cancel(); return;
         }

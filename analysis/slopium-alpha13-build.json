@@ -1,0 +1,19 @@
+{
+  "version": "0.1.0-alpha.13",
+  "jar": "build\\libs\\slopium-neoforge-1.21.1-0.1.0-alpha.13.jar",
+  "size": 151653,
+  "sha256": "6d00cbe222175bfee675f4704c8d2d6dade0876c9779035397626b59c9a6345f",
+  "unit_tests_passed": 19,
+  "smoke_profiles": [
+    "full",
+    "minimal"
+  ],
+  "real_instance_backends_tested": [
+    "instancing",
+    "indirect"
+  ],
+  "regression_failure_log": "build/alpha13-repro-indirect.log",
+  "icon_matches_logoT": true,
+  "smoke_classes_bundled": false,
+  "world_fps_measured": false
+}

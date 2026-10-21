@@ -36,7 +36,10 @@
     "OcclusionInvalidationMixin",
     "VisualOcclusionStateMixin",
     "FlywheelWallMixin",
-    "FactoryItemBudgetMixin"
+    "AzimuthVisualAccessor",
+    "FactoryItemBudgetMixin",
+    "RotatingInstancePauseMixin",
+    "RotatingWriterPauseMixin"
   ],
   "injectors": {
     "defaultRequire": 1
