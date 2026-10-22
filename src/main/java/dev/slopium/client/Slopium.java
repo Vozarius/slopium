@@ -22,6 +22,9 @@ public final class Slopium {
     public Slopium() {
         SlopiumConfig.get();
         NeoForge.EVENT_BUS.addListener(Slopium::registerCommands);
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) -> {
+            if(loaded("flywheel")) dev.slopium.visibility.GpuGlassDepth.release();
+        });
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.ChunkEvent.Load event) -> {
             if(event.getLevel().isClientSide()) dev.slopium.visibility.VisibilityGeometry.chunk(event.getChunk().getPos().x,event.getChunk().getPos().z);
         });
@@ -47,6 +50,8 @@ public final class Slopium {
     public static void applyOptions() {
         SlopiumConfig.get().save();
         configRevision++;
+        if(loaded("flywheel")&&(!SlopiumConfig.get().enabled||!SlopiumConfig.get().gpuGlassCulling))
+            dev.slopium.visibility.GpuGlassDepth.release();
         dev.slopium.visibility.WallOcclusion.invalidate();
         SlopiumStats.FRAME_TIMES.reset();
         if (loaded("sodiumdynamiclights")) SodiumLightBridge.clear();
@@ -130,6 +135,11 @@ public final class Slopium {
                     SlopiumStats.visibilityMaxNanos/1e6)),false);
                 context.getSource().sendSuccess(() -> Component.literal("Visibility reuse | unchanged paths="+SlopiumStats.visibilityPathReuse
                     +" | blocker proofs="+SlopiumStats.visibilityWitnessReuse+" | cells="+SlopiumStats.visibilityCells+" | shared particle light="+SlopiumStats.particleSharedLightHits),false);
+                context.getSource().sendSuccess(() -> Component.literal("Flywheel path | native GPU depth="+SlopiumStats.flywheelNativeDepth
+                    +" | models delegated="+SlopiumStats.flywheelGpuModels+" | animations/ticks=CPU"),false);
+                context.getSource().sendSuccess(() -> Component.literal("Camera culling | checks="+SlopiumStats.cameraChecks+" | rejected="+SlopiumStats.cameraRejects),false);
+                if(loaded("flywheel")) context.getSource().sendSuccess(() -> Component.literal("GPU glass | "+dev.slopium.visibility.GpuGlassDepth.state
+                    +" | passes="+dev.slopium.visibility.GpuGlassDepth.passes+" | CPU submit total ms="+dev.slopium.visibility.GpuGlassDepth.submitNanos/1_000_000.0),false);
                 var timing = SlopiumStats.FRAME_TIMES.snapshot();
                 context.getSource().sendSuccess(() -> Component.literal(timing.samples() == 0
                     ? "Frames | no samples; enable diagnostics and close menus in the world"
@@ -155,6 +165,7 @@ public final class Slopium {
                 })))))
             .then(Commands.literal("reset").executes(context -> {
                 SlopiumStats.reset();
+                if(loaded("flywheel")) {dev.slopium.visibility.GpuGlassDepth.passes=0;dev.slopium.visibility.GpuGlassDepth.submitNanos=0;}
                 context.getSource().sendSuccess(() -> Component.literal("Slopium: counters reset"), false);
                 return Command.SINGLE_SUCCESS;
             })));

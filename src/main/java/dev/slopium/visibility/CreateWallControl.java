@@ -19,7 +19,15 @@ public final class CreateWallControl {
                 || mc.player == null) return false;
         var pos = be.getBlockPos();
         if (mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult hit && hit.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK && hit.getBlockPos().equals(pos)) return false;
+        if(outsideCamera(be)) return true;
         return CreateOcclusion.decision(pos, mc.gameRenderer.getMainCamera().getPosition(), anyBlock, queued);
+    }
+    public static boolean outsideCamera(BlockEntity be) {
+        var mc=Minecraft.getInstance();
+        if(!SlopiumConfig.get().cameraCulling||!mc.isSameThread()||be.getLevel()!=mc.level||mc.level==null
+            ||SableGuard.protects(mc.level,be.getBlockPos())) return false;
+        var renderer=mc.getBlockEntityRenderDispatcher().getRenderer(be);
+        return renderer!=null && VisibilityPool.outsideCamera(net.minecraft.world.phys.Vec3.atCenterOf(be.getBlockPos()),true,renderer.getRenderBoundingBox(be).inflate(.25));
     }
     public static boolean skipTick(BlockEntity be, SlopiumConfig c) {
         var level = be.getLevel();

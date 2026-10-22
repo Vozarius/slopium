@@ -23,11 +23,16 @@ public final class VisibilityPool {
         long sampled=-1, epoch=-1, requested;
         int result, knownMask, wanted;
         boolean known, queued;
+        long cameraFrame=Long.MIN_VALUE;
+        net.minecraft.world.phys.AABB bounds;
+        boolean outside;
         Entry(Key key, Vec3 point) { this.key=key; this.point=point; }
     }
     private static final Map<Key,Entry> TABLE=new HashMap<>();
     private static final ArrayDeque<Entry> CREATE=new ArrayDeque<>(), PARTICLES=new ArrayDeque<>(), SWEEP=new ArrayDeque<>();
     private static ClientLevel world;
+    private static net.minecraft.client.renderer.culling.Frustum cameraFrustum;
+    private static long cameraFrame=Long.MIN_VALUE, cameraRevision;
     private static long processed=Long.MIN_VALUE;
     private static boolean particleTurn;
     private static int steps, createEntries, particleEntries;
@@ -38,6 +43,7 @@ public final class VisibilityPool {
         if(world==level) return;
         TABLE.clear(); CREATE.clear(); PARTICLES.clear(); SWEEP.clear();
         VisibilityGeometry.reset();
+        cameraFrustum=null;cameraFrame=Long.MIN_VALUE;
         world=level; processed=Long.MIN_VALUE; createEntries=particleEntries=0;
     }
     public static void clear() { world(null); }
@@ -49,6 +55,40 @@ public final class VisibilityPool {
         if(e.queued) return;
         e.queued=true; (e.key.mechanism?CREATE:PARTICLES).addLast(e);
     }
+    public static void captureCamera(org.joml.Matrix4f view,org.joml.Matrix4f projection,Vec3 eye) {
+        world(Minecraft.getInstance().level);
+        cameraFrame=Slopium.frame();cameraRevision++;
+        cameraFrustum=null;
+        if(!SlopiumConfig.get().enabled||!SlopiumConfig.get().cameraCulling) return;
+        cameraFrustum=new net.minecraft.client.renderer.culling.Frustum(view,projection);
+        cameraFrustum.prepare(eye.x,eye.y,eye.z);
+    }
+    /** Camera and wall results occupy the same entry, but have independent lifetimes. */
+    public static boolean outsideCamera(Vec3 point,boolean mechanism,net.minecraft.world.phys.AABB bounds) {
+        var mc=Minecraft.getInstance();var c=SlopiumConfig.get();
+        if(!c.enabled||!c.cameraCulling||!mc.isSameThread()||mc.level==null||bounds==null||!finite(point)
+            ||cameraFrustum==null||cameraFrame!=Slopium.frame()||world!=mc.level
+            ||!Double.isFinite(bounds.minX+bounds.minY+bounds.minZ+bounds.maxX+bounds.maxY+bounds.maxZ)) return false;
+        if(SableGuard.protects(mc.level,BlockPos.containing(point))) return false;
+        Entry e=entry(point,mechanism);
+        if(e==null) return false;
+        if(e.cameraFrame!=cameraRevision||!bounds.equals(e.bounds)) {
+            e.outside=!cameraFrustum.isVisible(bounds);e.bounds=bounds;e.cameraFrame=cameraRevision;
+            if(c.diagnostics) SlopiumStats.cameraChecks++;
+        }
+        if(e.outside&&c.diagnostics) SlopiumStats.cameraRejects++;
+        return e.outside;
+    }
+    private static Entry entry(Vec3 point,boolean mechanism) {
+        Key key=new Key((int)Math.floor(point.x*8),(int)Math.floor(point.y*8),(int)Math.floor(point.z*8),mechanism);
+        Entry e=TABLE.get(key);
+        if(e==null) {
+            if((mechanism?createEntries:particleEntries)>=16384) return null;
+            e=new Entry(key,point);TABLE.put(key,e);SWEEP.addLast(e);
+            if(mechanism) createEntries++;else particleEntries++;
+        }
+        e.point=point;e.requested=Slopium.frame();return e;
+    }
     /** null means not sampled yet. Budget pressure never replaces a known answer with unknown. */
     public static Boolean read(Vec3 point,Vec3 eye,boolean mechanism,boolean any) {
         var mc=Minecraft.getInstance();
@@ -56,14 +96,8 @@ public final class VisibilityPool {
         world(mc.level);
         if(point.distanceToSqr(eye)<.0001||point.distanceToSqr(eye)>128*128) return false;
         long now=Slopium.frame();
-        Key key=new Key((int)Math.floor(point.x*8),(int)Math.floor(point.y*8),(int)Math.floor(point.z*8),mechanism);
-        Entry e=TABLE.get(key);
-        if(e==null) {
-            if((mechanism?createEntries:particleEntries)>=16384) return false;
-            e=new Entry(key,point); TABLE.put(key,e); SWEEP.addLast(e);
-            if(mechanism) createEntries++; else particleEntries++;
-        }
-        e.point=point; e.requested=now;
+        Entry e=entry(point,mechanism);
+        if(e==null) return false;
         int mode=any?2:1; e.wanted|=mode;
         boolean stale=(e.knownMask&mode)==0||e.epoch!=WallOcclusion.epoch()||!eye.equals(e.eye)
             ||(!mechanism&&!point.equals(e.samplePoint))||now-e.sampled>=20;

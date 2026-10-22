@@ -104,7 +104,7 @@
   "slopium.occlude_create_rendering": "Create renderer occlusion (test)",
   "slopium.occlude_create_rendering.tooltip": "Culls normal Create SmartBlockEntity rendering using renderer bounds and selected occluders. Flywheel is separate. Large/infinite bounds and Sable are excluded.",
   "slopium.occlude_flywheel": "Flywheel instances behind walls (test)",
-  "slopium.occlude_flywheel.tooltip": "Hides audited SingleAxisRotatingVisual, ShaftVisual, PressVisual, MixerVisual and FunnelVisual instances through Flywheel API. Restores on visibility or disabling. Not all machines or contraptions are covered.",
+  "slopium.occlude_flywheel.tooltip": "Hides audited SingleAxisRotatingVisual, ShaftVisual, PressVisual, MixerVisual and FunnelVisual instances through Flywheel API. Restores on visibility or disabling. Not all machines or contraptions are covered. On indirect, opaque model culling uses native Flywheel GPU depth without Slopium CPU model rays. Any-block mode and other backends retain the limited Slopium CPU path. Animation pauses and ticks are checked independently.",
   "slopium.occlude_create_animations": "Create animations behind walls (test)",
   "slopium.occlude_create_animations.tooltip": "Skips hidden press, mixer and funnel beginFrame transforms. Geometry is controlled separately by Flywheel occlusion. Workers only read visibility results; no world traversal.",
   "slopium.occlude_create_ticks": "Hidden Create tick cadence (test)",
@@ -152,7 +152,7 @@
   "slopium.create_visibility": "Hide regular Create models",
   "slopium.create_visibility.tooltip": "Behind obstacles: hide special models using a ray to the mechanism block centre, including adjacent glass. Hide all: disable ordinary Create BlockEntityRenderers regardless of visibility. Chunk geometry stays; Flywheel is separate. Partly visible models may disappear near window edges. The targeted block is protected. The shared visibility queue retains the last result until rechecked; camera or wall changes may appear with a delay. Chat does not disable hiding.",
   "slopium.flywheel_visibility": "Hide Flywheel models",
-  "slopium.flywheel_visibility.tooltip": "Behind obstacles: hide audited shafts, large and small cogs, encased cogs, gearboxes, fans, split shafts, presses, mixers and funnels using the block centre ray. Adjacent glass counts. Not all visuals are covered; Sable is protected. Hide all: suppress ALL Flywheel rendering, including other mods. Chunk geometry stays. Animations are separate. The shared visibility queue retains the last result until rechecked; camera or wall changes may appear with a delay. Chat does not disable hiding.",
+  "slopium.flywheel_visibility.tooltip": "Behind obstacles: hide audited shafts, large and small cogs, encased cogs, gearboxes, fans, split shafts, presses, mixers and funnels using the block centre ray. Adjacent glass counts. Not all visuals are covered; Sable is protected. Hide all: suppress ALL Flywheel rendering, including other mods. Chunk geometry stays. Animations are separate. The shared visibility queue retains the last result until rechecked; camera or wall changes may appear with a delay. Chat does not disable hiding. On indirect, opaque model culling uses native Flywheel GPU depth without Slopium CPU model rays. Any-block mode and other backends retain the limited Slopium CPU path. Animation pauses and ticks are checked independently. GPU glass mode is enabled separately under General and lighting.",
   "slopium.animation_visibility": "Pause Create animations",
   "slopium.animation_visibility.tooltip": "Off: normal animations. Behind obstacles: pause supported models behind the selected blocks. Pause everywhere: ignore visibility. Covers rotating shafts, cogs, gearboxes, fans and split shafts, plus frame updates of presses, mixers and funnels. Requires an active Flywheel backend. Models remain visible; mechanism speed and client ticks are unchanged. Other animations are not covered. The shared visibility queue retains the last result until rechecked; camera or wall changes may appear with a delay. Chat does not disable hiding.",
   "slopium.create_tick_mode": "Reduce client mechanism updates",
@@ -182,5 +182,9 @@
   "slopium.value.BlockModels.SHOW": "Show all",
   "slopium.value.BlockModels.NEAR": "Within radius",
   "slopium.value.BlockModels.HIDE": "Hide all",
-  "slopium.hint.block_radius": " Available only with Special block models → Within radius."
+  "slopium.hint.block_radius": " Available only with Special block models → Within radius.",
+  "slopium.camera_culling": "Cull outside the camera frustum",
+  "slopium.camera_culling.tooltip": "Tests model/particle bounds before wall checks: visible inside camera AND not behind obstacles. Shares the wall table; camera results refresh each frame. Particles, ordinary Create models and supported Flywheel visuals. Native Flywheel/Sodium culling remains independent. Does not remove blocks or stop server simulation.",
+  "slopium.gpu_glass_culling": "GPU Flywheel culling behind glass (test)",
+  "slopium.gpu_glass_culling.tooltip": "Any-block Flywheel model mode on indirect: redraws existing Sodium translucent terrain into separate depth, then uses native GPU culling. Includes glass/water; rendered holes remain open. Special-renderer obstacles are not included. Costs an extra GPU pass and memory; may not improve FPS. Iris/Oculus and Fabulous use CPU fallback. Ticks and animation pausing stay on CPU."
 }

@@ -72,6 +72,16 @@ final class SmokeParticleOcclusionChecks {
             if(Math.abs(((ParticlePosition)(Object)particle).slopium$renderPosition(.5f).x-6.1)>1e-6)throw new AssertionError("Particle interpolation incorrect");
             level.wall=Blocks.AIR.defaultBlockState();next(frame);render(mc,camera);
             if(particle.draws!=6)throw new AssertionError("Removing window did not restore particle");
+            c.cameraCulling=true;c.occludeParticles=false;particle.at(0,0,-5);position.invoke(camera,0.,0.,0.);
+            var projection=new org.joml.Matrix4f().perspective((float)Math.toRadians(90),1,.1f,100);
+            var nativeFrustum=new net.minecraft.client.renderer.culling.Frustum(new org.joml.Matrix4f(),projection);nativeFrustum.prepare(0,0,0);
+            VisibilityPool.captureCamera(new org.joml.Matrix4f().rotateY((float)Math.PI),projection,Vec3.ZERO);
+            long cameraChecks=SlopiumStats.cameraChecks;int draws=particle.draws;
+            mc.particleEngine.render(mc.gameRenderer.lightTexture(),camera,0f,nativeFrustum,type->true);
+            if(particle.draws!=draws+1||SlopiumStats.cameraChecks!=cameraChecks)throw new AssertionError("Native particle frustum was redundantly tested");
+            mc.particleEngine.render(mc.gameRenderer.lightTexture(),camera,0f,null,type->true);
+            if(particle.draws!=draws+1||SlopiumStats.cameraChecks<=cameraChecks)throw new AssertionError("Missing particle frustum did not use shared camera fallback");
+            com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: native particle frustum reused without duplicate tests; missing-frustum fallback culled correctly");
             com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: actual particle render near pane, closed/open door, shared pool, deferred queue, interpolation, invalidation and off switches passed");
         } finally {
             mc.level=oldLevel;map.clear();map.putAll(oldParticles);

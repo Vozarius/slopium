@@ -13,6 +13,8 @@ public abstract class FlywheelWallMixin {
     @Shadow @Final private VisualManagerImpl<BlockEntity,BlockEntityStorage> blockEntities;
     @Inject(method="beginFrame",at=@At(value="INVOKE",target="Ldev/engine_room/flywheel/impl/task/Flag;lower()V"))
     private void slopium$beforeFrame(CallbackInfo ci) {
-        ((CullingStorage)blockEntities.getStorage()).slopium$cullingIndex().frame();
+        var engine=((dev.engine_room.flywheel.impl.visualization.VisualizationManagerImpl)(Object)this).getEngineImpl();
+        boolean nativeDepth=engine!=null && engine.drawManager() instanceof dev.engine_room.flywheel.backend.engine.indirect.IndirectDrawManager;
+        ((CullingStorage)blockEntities.getStorage()).slopium$cullingIndex().frame(nativeDepth);
     }
 }

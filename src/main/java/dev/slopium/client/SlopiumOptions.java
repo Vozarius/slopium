@@ -25,6 +25,8 @@ public final class SlopiumOptions implements ConfigEntryPoint {
             .addPage(builder.createOptionPage().setName(text("page.general"))
                 .addOptionGroup(builder.createOptionGroup().setName(text("group.general"))
                     .addOption(bool(builder, "enabled", v -> c.enabled = v, () -> c.enabled, true, true))
+                    .addOption(bool(builder, "camera_culling", v -> c.cameraCulling = v, () -> c.cameraCulling, false, true))
+                    .addOption(bool(builder, "gpu_glass_culling", v -> c.gpuGlassCulling = v, () -> c.gpuGlassCulling, false, Slopium.loaded("flywheel")))
                     .addOption(bool(builder, "diagnostics", v -> c.diagnostics = v, () -> c.diagnostics, false, true))
                     .addOption(bool(builder, "cull_breaking", v -> c.cullBreakingOverlays = v, () -> c.cullBreakingOverlays, true, true))
                     .addOption(bool(builder, "pause_xaero_benchmark", v -> c.pauseXaeroBenchmark = v, () -> c.pauseXaeroBenchmark, false, Slopium.loaded("xaeroworldmap"))))

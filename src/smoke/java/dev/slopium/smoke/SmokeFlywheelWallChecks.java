@@ -18,6 +18,7 @@ final class SmokeFlywheelWallChecks {
         var manager=Class.forName("dev.engine_room.flywheel.impl.visualization.VisualizationManagerImpl");
         if(java.util.Arrays.stream(manager.getDeclaredMethods()).noneMatch(m->m.getName().endsWith("slopium$beforeFrame")))throw new AssertionError("Flywheel hook missing");
         if(dev.slopium.client.Slopium.loaded("create")) {
+            SmokeGpuDepthChecks.run();
             rotationWriter();
             SmokeInstanceBackendChecks.run();
             SmokeCullingQueueChecks.lifecycle();
@@ -32,11 +33,11 @@ final class SmokeFlywheelWallChecks {
     static void world() throws ReflectiveOperationException {
         var mc=net.minecraft.client.Minecraft.getInstance(); var c=dev.slopium.client.SlopiumConfig.get();
         var oldPlayer=mc.player;var oldScreen=mc.screen;boolean old=c.occludeFlywheel;boolean enabled=c.enabled;
-        boolean oldFreeze=c.freezeCreateAnimations;
+        boolean oldFreeze=c.freezeCreateAnimations;boolean oldGpu=c.gpuGlassCulling;
         boolean oldAnimation=c.occludeCreateAnimations, oldFlyMode=c.flywheelAnyBlock, oldAnimMode=c.animationAnyBlock;
         var testLevel=(SmokeWallChecks.TestLevel)mc.level;var oldWall=testLevel.wall;
         try {
-            c.enabled=true;c.occludeFlywheel=true;mc.screen=null;
+            c.enabled=true;c.occludeFlywheel=true;c.gpuGlassCulling=false;mc.screen=null;
             mc.player=(net.minecraft.client.player.LocalPlayer)SmokeRadicalChecks.allocate(net.minecraft.client.player.LocalPlayer.class);
             var position=net.minecraft.world.entity.Entity.class.getDeclaredField("position");position.setAccessible(true);position.set(mc.player,net.minecraft.world.phys.Vec3.ZERO);
             var side=net.minecraft.world.level.Level.class.getDeclaredField("isClientSide");side.setAccessible(true);side.setBoolean(mc.level,true);
@@ -134,9 +135,55 @@ final class SmokeFlywheelWallChecks {
             settle(hook,manager);
             if(((dev.slopium.visibility.PausedRotation)model).slopium$renderSpeed(120)!=120 || !handle.visible || !shaftHandle.visible)
                 throw new AssertionError("Global off did not restore GPU rotation and visibility");
+            // Exercise the real manager hook with an actual indirect manager type, without submitting GL draws.
+            c.enabled=c.occludeFlywheel=true;c.freezeCreateAnimations=c.occludeCreateAnimations=false;c.flywheelAnyBlock=true;
+            testLevel.wall=net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();nextFrame();settle(hook,manager);
+            if(handle.visible || shaftHandle.visible)throw new AssertionError("GPU handoff precondition not hidden");
+            var engineType=dev.engine_room.flywheel.backend.engine.EngineImpl.class;
+            var engine=SmokeRadicalChecks.allocate(engineType);
+            var drawField=engineType.getDeclaredField("drawManager");drawField.setAccessible(true);
+            drawField.set(engine,SmokeRadicalChecks.allocate(dev.engine_room.flywheel.backend.engine.indirect.IndirectDrawManager.class));
+            var lateType=Class.forName("dev.engine_room.flywheel.impl.visualization.VisualizationManagerImpl$LateInit");
+            var late=SmokeRadicalChecks.allocate(lateType);
+            var engineField=lateType.getDeclaredField("engine");engineField.setAccessible(true);engineField.set(late,engine);
+            var lateField=managerType.getDeclaredField("lateInit");lateField.setAccessible(true);lateField.set(manager,late);
+            c.flywheelAnyBlock=false;
+            settle(hook,manager);
+            if(!handle.visible||!shaftHandle.visible||index.altered()!=0)
+                throw new AssertionError("CPU-hidden handles were not handed back to GPU culling");
+            boolean diagnostics=c.diagnostics;c.diagnostics=true;
+            try {
+                long reads=dev.slopium.client.SlopiumStats.visibilityReads, checks=dev.slopium.client.SlopiumStats.flywheelVisualsChecked;
+                settle(hook,manager);
+                if(dev.slopium.client.SlopiumStats.visibilityReads!=reads||dev.slopium.client.SlopiumStats.flywheelVisualsChecked!=checks)
+                    throw new AssertionError("Native GPU model-only policy still walks CPU visual queue");
+            } finally {c.diagnostics=diagnostics;}
+            if(!dev.slopium.client.SlopiumStats.flywheelGpuModels||!index.describe(be).contains("native GPU"))
+                throw new AssertionError("Actual backend routing not reported");
+            c.occludeCreateAnimations=true;c.animationAnyBlock=false;settle(hook,manager);
+            if(!handle.visible||!((VisualOcclusionState)visual).slopium$isOccluded(dev.slopium.client.Slopium.frame()))
+                throw new AssertionError("GPU model delegation disabled CPU animation occlusion");
+            c.occludeCreateAnimations=false;c.flywheelAnyBlock=true;settle(hook,manager);
+            if(handle.visible||shaftHandle.visible)throw new AssertionError("Any-block mode lost CPU hiding on indirect");
+            c.gpuGlassCulling=true;
+            if(dev.slopium.visibility.GpuGlassDepth.available()) {
+                settle(hook,manager);
+                if(!handle.visible||!shaftHandle.visible||!dev.slopium.client.SlopiumStats.flywheelGpuModels)
+                    throw new AssertionError("Any-block GPU toggle did not delegate model visibility");
+                c.gpuGlassCulling=false;settle(hook,manager);
+                if(handle.visible||shaftHandle.visible)throw new AssertionError("GPU glass off did not restore CPU mode");
+            }
+            c.gpuGlassCulling=false;
+            c.flywheelAnyBlock=false;settle(hook,manager);
+            lateField.set(manager,null);settle(hook,manager);
+            if(handle.visible||shaftHandle.visible||dev.slopium.client.SlopiumStats.flywheelGpuModels)
+                throw new AssertionError("Backend fallback did not restore CPU opaque policy");
+            c.enabled=false;settle(hook,manager);
+            if(!handle.visible||!shaftHandle.visible)throw new AssertionError("Routing test left hidden instances");
+            com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: actual indirect hook handoff: zero CPU visibility reads/evaluations in 24 steady frames; animations, any-block mode and backend fallback passed");
             SmokeCullingQueueChecks.stress(be,base,type,beField,modelField,shaftField);
             com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: large cog + shaft behind adjacent pane, Azimuth delegate ownership, replacement, independent modes, removal, full pause and global restore passed");
-        } finally {mc.player=oldPlayer;mc.screen=oldScreen;c.occludeFlywheel=old;c.enabled=enabled;c.freezeCreateAnimations=oldFreeze;c.occludeCreateAnimations=oldAnimation;c.flywheelAnyBlock=oldFlyMode;c.animationAnyBlock=oldAnimMode;testLevel.wall=oldWall;dev.slopium.visibility.WallOcclusion.invalidate();}
+        } finally {mc.player=oldPlayer;mc.screen=oldScreen;c.occludeFlywheel=old;c.enabled=enabled;c.freezeCreateAnimations=oldFreeze;c.gpuGlassCulling=oldGpu;c.occludeCreateAnimations=oldAnimation;c.flywheelAnyBlock=oldFlyMode;c.animationAnyBlock=oldAnimMode;testLevel.wall=oldWall;dev.slopium.visibility.WallOcclusion.invalidate();}
     }
 
     private static void settle(java.lang.reflect.Method hook,Object manager) throws ReflectiveOperationException {

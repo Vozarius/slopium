@@ -14,6 +14,8 @@ public final class SlopiumConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static volatile SlopiumConfig instance;
     public volatile boolean enabled = true;
+    public volatile boolean cameraCulling = false;
+    public volatile boolean gpuGlassCulling = false;
     public volatile boolean indexedLighting = true;
     public volatile boolean lightQueryCache = true;
     public volatile boolean createLight = true;

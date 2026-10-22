@@ -1,0 +1,33 @@
+{
+  "version": "0.1.0-alpha.18",
+  "jar": "build/libs/slopium-neoforge-1.21.1-0.1.0-alpha.18.jar",
+  "size": 178743,
+  "sha256": "418750a9c377b8dfb00e11542b3b6a52a953e941101a2c09aaa63352e5e1d291",
+  "unit_tests_passed": 21,
+  "smoke_profiles": [
+    "full",
+    "legacy",
+    "minimal"
+  ],
+  "logs": [
+    "build/alpha18-full-verified.log",
+    "build/alpha18-legacy-verified.log",
+    "build/alpha18-minimal.log"
+  ],
+  "options_count": 48,
+  "mixins_count": 39,
+  "camera_wall_shared_entry_tested": true,
+  "camera_partial_bounds_tested": true,
+  "camera_rotation_same_frame_tested": true,
+  "native_particle_frustum_reuse_tested": true,
+  "gpu_depth_raster_tested": true,
+  "gpu_depth_test_result": 0.25,
+  "gpu_depth_source_preserved": 0.75,
+  "gpu_framebuffer_exception_restore_tested": true,
+  "gpu_glass_culling_implemented": true,
+  "gpu_readback_in_production": false,
+  "gpu_full_sodium_factory_scene_verified": false,
+  "world_fps_measured": false,
+  "icon_matches_logoT": true,
+  "smoke_classes_bundled": false
+}

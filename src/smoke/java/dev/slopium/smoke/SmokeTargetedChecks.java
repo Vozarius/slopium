@@ -59,9 +59,9 @@ final class SmokeTargetedChecks {
             var engine = Minecraft.getInstance().particleEngine;
             var range = Arrays.stream(engine.getClass().getDeclaredMethods()).filter(m -> m.getName().endsWith("slopium$particleRange")).findFirst().orElseThrow(); range.setAccessible(true);
             c.particleRange = true; c.particleRenderDistance = 16;
-            if ((boolean) range.invoke(engine, particle, null, Minecraft.getInstance().gameRenderer.getMainCamera(), 0f)) throw new AssertionError("Distant particle drawn");
+            if ((boolean) range.invoke(engine, particle, null, Minecraft.getInstance().gameRenderer.getMainCamera(), 0f, null)) throw new AssertionError("Distant particle drawn");
             c.enabled = false;
-            if (!(boolean) range.invoke(engine, particle, null, Minecraft.getInstance().gameRenderer.getMainCamera(), 0f)) throw new AssertionError("Particle global off failed");
+            if (!(boolean) range.invoke(engine, particle, null, Minecraft.getInstance().gameRenderer.getMainCamera(), 0f, null)) throw new AssertionError("Particle global off failed");
             c.enabled = true;
             if (Slopium.loaded("create")) {
                 var type = Class.forName("com.simibubi.create.content.logistics.factoryBoard.FactoryPanelRenderer");

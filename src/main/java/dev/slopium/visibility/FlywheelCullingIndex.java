@@ -35,6 +35,7 @@ public final class FlywheelCullingIndex {
     private int policy=-1;
     private BlockEntity aimed;
     private int supported;
+    private boolean nativeDepth, gpuModels;
 
     private static final class Entry {
         Visual stored;
@@ -103,16 +104,21 @@ public final class FlywheelCullingIndex {
         if(e.state!=null) e.state.slopium$setOccluded(false,Slopium.frame());
         e.reason="restored after world/settings change";
     }
-    public void frame() {
+    public void frame() { frame(false); }
+    public void frame(boolean nativeDepth) {
         var c=SlopiumConfig.get();
-        boolean active=c.enabled&&(c.occludeFlywheel||c.occludeCreateAnimations||c.freezeCreateAnimations);
+        this.nativeDepth=nativeDepth;
+        gpuModels=c.enabled && c.occludeFlywheel && nativeDepth && (!c.flywheelAnyBlock||GpuGlassDepth.available());
+        SlopiumStats.flywheelNativeDepth=nativeDepth;
+        SlopiumStats.flywheelGpuModels=gpuModels;
+        boolean active=c.enabled&&((c.occludeFlywheel&&!gpuModels)||c.occludeCreateAnimations||c.freezeCreateAnimations||(c.cameraCulling&&!nativeDepth));
         if(!active && altered.isEmpty() && changes.isEmpty()) return;
         long started=System.nanoTime(), frame=Slopium.frame();
         BUDGET.begin(frame);
         var mc=Minecraft.getInstance();
         float seconds=(((LevelRendererAccessor)mc.levelRenderer).slopium$ticks()+mc.getTimer().getGameTimeDeltaPartialTick(true))/20f;
         int nextPolicy=(c.enabled?1:0)|(c.occludeFlywheel?2:0)|(c.occludeCreateAnimations?4:0)|(c.freezeCreateAnimations?8:0)
-            |(c.flywheelAnyBlock?16:0)|(c.animationAnyBlock?32:0);
+            |(c.flywheelAnyBlock?16:0)|(c.animationAnyBlock?32:0)|(nativeDepth?64:0)|(gpuModels?128:0)|(c.cameraCulling?256:0);
         try {
             if(policy!=nextPolicy || world!=mc.level) {
                 policy=nextPolicy;world=mc.level;
@@ -167,7 +173,7 @@ public final class FlywheelCullingIndex {
     private void evaluate(Entry e,SlopiumConfig c,float seconds,long frame) {
         if(c.diagnostics) SlopiumStats.flywheelVisualsChecked++;
         var mc=Minecraft.getInstance();
-        Boolean hidden=c.occludeFlywheel?CreateWallControl.decision(e.block,c.flywheelAnyBlock):Boolean.FALSE;
+        Boolean hidden=c.cameraCulling&&!nativeDepth&&CreateWallControl.outsideCamera(e.block)?Boolean.TRUE:c.occludeFlywheel&&!gpuModels?CreateWallControl.decision(e.block,c.flywheelAnyBlock):Boolean.FALSE;
         final Boolean paused;
         if(c.freezeCreateAnimations) {
             paused=e.block.getLevel()==mc.level && mc.level!=null
@@ -175,7 +181,7 @@ public final class FlywheelCullingIndex {
                 && !SableGuard.protects(mc.level,e.block.getBlockPos());
         } else if(c.occludeCreateAnimations) {
             // Preserve null (deferred). Mixing primitive boolean and Boolean in a ternary unboxes it.
-            paused=c.occludeFlywheel&&c.animationAnyBlock==c.flywheelAnyBlock
+            paused=c.occludeFlywheel&&!gpuModels&&c.animationAnyBlock==c.flywheelAnyBlock
                 ?hidden:CreateWallControl.decision(e.block,c.animationAnyBlock);
         } else { paused=Boolean.FALSE; }
         e.checked=frame;
@@ -200,8 +206,10 @@ public final class FlywheelCullingIndex {
     public String describe(BlockEntity block) {
         Entry e=byBlock.get(block);
         if(e==null) return "Flywheel: not registered yet / no visual";
+        String renderer=nativeDepth?"indirect (native GPU depth)":"CPU fallback";
+        String modelPolicy=gpuModels?"native GPU; GPU result not read back":"Slopium CPU / settings";
         Visual inner=unwrap(e.stored);
-        return "Flywheel: "+(inner==null?"unknown wrapper":inner.getClass().getName())+" | supported="+e.supported
+        return "Flywheel: backend="+renderer+" | models="+modelPolicy+" | "+(inner==null?"unknown wrapper":inner.getClass().getName())+" | supported="+e.supported
             +" | state="+e.reason+" | age="+(e.checked<0?"never":Slopium.frame()-e.checked)+" frames";
     }
 }

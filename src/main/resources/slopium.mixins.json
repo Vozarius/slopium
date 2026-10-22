@@ -41,7 +41,9 @@
     "AzimuthVisualAccessor",
     "FactoryItemBudgetMixin",
     "RotatingInstancePauseMixin",
-    "RotatingWriterPauseMixin"
+    "RotatingWriterPauseMixin",
+    "FlywheelGpuContextMixin",
+    "FlywheelDepthSourceMixin"
   ],
   "injectors": {
     "defaultRequire": 1

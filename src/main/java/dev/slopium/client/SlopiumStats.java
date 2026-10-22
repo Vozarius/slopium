@@ -28,7 +28,11 @@ public final class SlopiumStats {
     public static long indexBuildNanos;
     public static long eligibleTicksChecked, tickNotReady, tickVisibleOrExcluded, tickNear, tickSableProtected, hiddenTicksChecked;
 
+    public static long cameraChecks, cameraRejects;
+    public static boolean flywheelNativeDepth, flywheelGpuModels;
+
     public static void reset() {
+        cameraChecks=cameraRejects=0;
         particleSharedLightHits=0;
         visibilityPathReuse=visibilityWitnessReuse=visibilityCells=0;
         visibilityReads=visibilityHits=visibilityUnknown=visibilityRays=visibilityPasses=visibilityNanos=visibilityMaxNanos=0;
