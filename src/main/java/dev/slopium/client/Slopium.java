@@ -22,7 +22,9 @@ public final class Slopium {
     public Slopium() {
         SlopiumConfig.get();
         NeoForge.EVENT_BUS.addListener(Slopium::registerCommands);
+        NeoForge.EVENT_BUS.addListener(dev.slopium.framegen.FrameGeneration::overlay);
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) -> {
+            dev.slopium.framegen.FrameGeneration.release();
             if(loaded("flywheel")) dev.slopium.visibility.GpuGlassDepth.release();
         });
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.ChunkEvent.Load event) -> {
@@ -50,6 +52,8 @@ public final class Slopium {
     public static void applyOptions() {
         SlopiumConfig.get().save();
         configRevision++;
+        dev.slopium.framegen.FrameGeneration.release();
+        dev.slopium.framegen.FrameGeneration.resetCounters();
         if(loaded("flywheel")&&(!SlopiumConfig.get().enabled||!SlopiumConfig.get().gpuGlassCulling))
             dev.slopium.visibility.GpuGlassDepth.release();
         dev.slopium.visibility.WallOcclusion.invalidate();
@@ -141,6 +145,7 @@ public final class Slopium {
                 if(loaded("flywheel")) context.getSource().sendSuccess(() -> Component.literal("GPU glass | "+dev.slopium.visibility.GpuGlassDepth.state
                     +" | passes="+dev.slopium.visibility.GpuGlassDepth.passes+" | CPU submit total ms="+dev.slopium.visibility.GpuGlassDepth.submitNanos/1_000_000.0),false);
                 var timing = SlopiumStats.FRAME_TIMES.snapshot();
+                context.getSource().sendSuccess(()->Component.literal(dev.slopium.framegen.FrameGeneration.status()),false);
                 context.getSource().sendSuccess(() -> Component.literal(timing.samples() == 0
                     ? "Frames | no samples; enable diagnostics and close menus in the world"
                     : String.format(java.util.Locale.ROOT,

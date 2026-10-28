@@ -38,6 +38,7 @@ neoForge {
             sourceSet = sourceSets.smoke
             gameDirectory = smokeDir
             jvmArgument '-Xmx4G'
+            if (project.hasProperty('worldSmoke')) jvmArgument '-Dslopium.worldSmoke=true'
             programArguments.addAll('--width', '1280', '--height', '720')
         }
     }
@@ -104,12 +105,40 @@ tasks.named('compileJava') { dependsOn extractCompat }
 tasks.named('compileSmokeJava') { dependsOn extractCompat }
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 tasks.named('processResources') {
+    from('build/native/Release') { include 'slopium_fsr.dll'; into 'native/windows-x64' }
+    from('build/fsr-sdk/Kits/FidelityFX/signedbin') {
+        include 'amd_fidelityfx_loader_dx12.dll','amd_fidelityfx_framegeneration_dx12.dll'
+        into 'native/windows-x64'
+    }
+    from('build/fsr-sdk/Kits/FidelityFX/docs/license.md') { rename { 'LICENSE-AMD-FidelityFX.md' } }
     inputs.property 'version', project.version
     filesMatching('META-INF/neoforge.mods.toml') { expand version: project.version }
 }
 tasks.named('test') { useJUnitPlatform() }
+
+// Native compilation is explicit and reproducible; no downloads occur in a normal Gradle build.
+def nativeFsr = tasks.register('buildNativeFsr', Exec) {
+    inputs.files(fileTree('native'))
+    inputs.files(fileTree('build/fsr-sdk/Kits/FidelityFX'))
+    outputs.file('build/native/Release/slopium_fsr.dll')
+    commandLine 'pwsh.exe','-NoProfile','-ExecutionPolicy','Bypass','-File',file('native/build.ps1').absolutePath,'-Offline'
+}
+tasks.named('processResources') { dependsOn nativeFsr }
 tasks.named('jar') {
+    archiveVersion = 'beta-2'
     from('LICENSE') { rename { 'LICENSE-slopium' } }
+    from('licenses') { into 'licenses' }
+    from('src/main/java/dev/slopium/framegen/reference') { into 'sources/dev/slopium/framegen/reference' }
     manifest { attributes 'Implementation-Title': 'Slopium', 'Implementation-Version': project.version }
+}
+
+java.withSourcesJar()
+tasks.named('sourcesJar') {
+    archiveVersion = 'beta-2'
+    from('LICENSE'); from('README.md')
+    from('licenses') { into 'licenses' }
+    from('native') { into 'native' }
+    from('build.gradle'); from('settings.gradle'); from('gradle.properties')
+    from('gradle') { into 'gradle' }; from('gradlew'); from('gradlew.bat')
 }
 

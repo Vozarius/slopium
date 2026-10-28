@@ -43,7 +43,9 @@
     "RotatingInstancePauseMixin",
     "RotatingWriterPauseMixin",
     "FlywheelGpuContextMixin",
-    "FlywheelDepthSourceMixin"
+    "FlywheelDepthSourceMixin",
+    "FrameGenerationMixin",
+    "FrameGenerationLimitMixin"
   ],
   "injectors": {
     "defaultRequire": 1

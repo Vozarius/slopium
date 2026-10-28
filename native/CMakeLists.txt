@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.20)
+project(slopium_fsr LANGUAGES CXX)
+find_package(JNI REQUIRED)
+add_library(slopium_fsr SHARED slopium_fsr.cpp)
+target_compile_features(slopium_fsr PRIVATE cxx_std_17)
+target_include_directories(slopium_fsr PRIVATE ${JNI_INCLUDE_DIRS} ${FSR_SDK}/api/include ${FSR_SDK}/framegeneration/include)
+target_link_libraries(slopium_fsr PRIVATE d3d12 dxgi)
+set_property(TARGET slopium_fsr PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

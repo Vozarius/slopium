@@ -1,13 +1,13 @@
 modLoader="javafml"
 loaderVersion="[4,)"
-license="MIT"
+license="MIT (Slopium); LGPL-3.0-or-later (FrameGen adaptation); AMD runtime: LICENSE-AMD-FidelityFX.md"
 
 [[mods]]
 modId="slopium"
 version="${version}"
 displayName="Slopium"
 logoFile="logoT.png"
-description='''Client performance controls for Create-heavy worlds: dynamic light indexing, visibility-aware updates and Sodium settings.'''
+description='''Client performance controls for Create-heavy worlds: lighting, visibility-aware updates, Sodium settings and experimental simple/FSR frame generation.'''
 
 [[dependencies.slopium]]
 modId="neoforge"

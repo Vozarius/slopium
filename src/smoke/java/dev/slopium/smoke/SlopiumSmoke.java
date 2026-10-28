@@ -24,6 +24,7 @@ public final class SlopiumSmoke {
     private boolean opened, captured;
 
     public SlopiumSmoke() {
+        if(Boolean.getBoolean("slopium.worldSmoke")){new SmokeWorldFrames();return;}
         NeoForge.EVENT_BUS.addListener(this::tick);
         NeoForge.EVENT_BUS.addListener(this::frame);
     }
@@ -33,7 +34,7 @@ public final class SlopiumSmoke {
         if (opened || !(client.screen instanceof TitleScreen)) return;
         var options = ConfigManager.CONFIG.getModOptions().stream()
             .filter(mod -> mod.configId().equals("slopium")).findFirst().orElseThrow();
-        if (options.pages().size() != 6) throw new IllegalStateException("Missing Slopium pages");
+        if (options.pages().size() != 7) throw new IllegalStateException("Missing Slopium pages");
         validateOptionalMixins();
         showPage(client);
         opened = true;
@@ -61,7 +62,12 @@ public final class SlopiumSmoke {
         SmokeOptionsChecks.value("block_models", SmokeOptionsChecks.enumValue("block_models", "SHOW"));
         for (String key : java.util.List.of("particle_visibility", "create_visibility", "flywheel_visibility", "animation_visibility", "create_tick_mode"))
             SmokeOptionsChecks.value(key, SmokeOptionsChecks.enumValue(key, "ANY"));
-        if (pageIndex == 2) for (String key : java.util.List.of("create_visibility", "flywheel_visibility", "animation_visibility"))
+        if (pageIndex == 1) {
+            SmokeOptionsChecks.value("frame_generation_mode",dev.slopium.framegen.FrameGenerationMode.FSR);
+            SmokeOptionsChecks.value("frame_generation_multiplier",32);
+            SmokeOptionsChecks.value("frame_generation_mark",true);
+        }
+        if (pageIndex == 3) for (String key : java.util.List.of("create_visibility", "flywheel_visibility", "animation_visibility"))
             SmokeOptionsChecks.value(key, SmokeOptionsChecks.enumValue(key, "ALL"));
     }
 
@@ -76,6 +82,8 @@ public final class SlopiumSmoke {
             SmokeWallChecks.run();
             SmokeParticleOcclusionChecks.run();
             SmokeOptionsChecks.run();
+            SmokeFrameGenerationChecks.run();
+            SmokeFrameLifecycleChecks.run();
             if (Slopium.loaded("sodiumdynamiclights")) {
                 Object lights = Class.forName("toni.sodiumdynamiclights.SodiumDynamicLights").getMethod("get").invoke(null);
                 if (!(lights instanceof LightIndexControl)) throw new AssertionError("Light mixin missing");
@@ -115,11 +123,11 @@ public final class SlopiumSmoke {
         if (!opened || captured || Minecraft.getInstance().getOverlay() != null || ++frames < 60) return;
         captured = true;
         Minecraft client = Minecraft.getInstance();
-        Screenshot.grab(client.gameDirectory, "slopium-alpha18-page-" + pageIndex + ".png", client.getMainRenderTarget(), message -> {
+        Screenshot.grab(client.gameDirectory, "slopium-beta2-page-" + pageIndex + ".png", client.getMainRenderTarget(), message -> {
             LogUtils.getLogger().info("SLOPIUM_SMOKE: screenshot saved; success");
             client.execute(() -> {
-                if (++capturedPages == 6) { client.stop(); return; }
-                pageIndex = (pageIndex + 1) % 6;
+                if (++capturedPages == 7) { client.stop(); return; }
+                pageIndex = (pageIndex + 1) % 7;
                 showPage(client); frames = 0; captured = false;
             });
         });

@@ -14,6 +14,16 @@ public final class SlopiumConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static volatile SlopiumConfig instance;
     public volatile boolean enabled = true;
+    public volatile dev.slopium.framegen.FrameGenerationMode frameGenerationMode = dev.slopium.framegen.FrameGenerationMode.OFF;
+    public int frameGenerationTargetFps = 0;
+    public int frameGenerationMultiplier = 2;
+    public boolean frameGenerationMarkFrames = false;
+    public boolean frameGenerationCounter = true;
+    public int frameGenerationGridStep = 4;
+    public int frameGenerationFlowCell = 8;
+    public int frameGenerationSearchPixels = 16;
+    public int frameGenerationRejectionPixels = 4;
+    public boolean frameGenerationFsrDebug = false;
     public volatile boolean cameraCulling = false;
     public volatile boolean gpuGlassCulling = false;
     public volatile boolean indexedLighting = true;
@@ -122,6 +132,13 @@ public final class SlopiumConfig {
     }
 
     private void validate() {
+        if(frameGenerationMode==null)frameGenerationMode=dev.slopium.framegen.FrameGenerationMode.OFF;
+        frameGenerationTargetFps=Math.clamp(frameGenerationTargetFps,0,240);
+        frameGenerationMultiplier=Math.clamp(frameGenerationMultiplier,2,32);
+        frameGenerationGridStep=Math.clamp(frameGenerationGridStep,1,16);
+        frameGenerationFlowCell=Math.clamp(frameGenerationFlowCell,4,16);
+        frameGenerationSearchPixels=Math.clamp(frameGenerationSearchPixels,4,32);
+        frameGenerationRejectionPixels=Math.clamp(frameGenerationRejectionPixels,1,16);
         factoryItemDistance = Math.clamp(factoryItemDistance, 0, 512);
         particleRenderDistance = Math.clamp(particleRenderDistance, 0, 512);
         factoryConnectionDistance = Math.clamp(factoryConnectionDistance, 0, 512);

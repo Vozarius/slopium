@@ -1,0 +1,34 @@
+{
+  "version": "1-beta.2",
+  "displayVersion": "Бета 2",
+  "jar": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-2.jar",
+  "sha256": "be99560fb25e91c019f8f49981752a23c3d11e13d74b040c57ab725e5d1d0909",
+  "bytes": 30778944,
+  "sources": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-2-sources.jar",
+  "sourcesSha256": "861b20e0286b5e1689f47c553fdbbc21ae56cfa2905bf5c3d7ef7462204f39e0",
+  "tests": {
+    "tests": 24,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "verifiedLogs": [
+    "build/beta2-full.log",
+    "build/beta2-world2.log",
+    "build/beta2-world-full2.log"
+  ],
+  "options": 58,
+  "simpleBackend": "FrameGen depth reprojection; LGPL-3.0-or-later",
+  "fsrBackend": "AMD FSR 3.1.6; multipliers above 2 use Slopium interpolation",
+  "userModsModified": false,
+  "performanceLimitation": "Functional tests and short sequential world runs; no controlled FPS benchmark of user factories.",
+  "excludedWorldLog": "build/beta2-world-full.log (worldgen replaced assumed surface; player in lava)",
+  "fullWorldSmokeOutputFps": {
+    "off": 143.4,
+    "simpleX2": 274.5,
+    "simpleX4": 341.1,
+    "fsrX2": 305.4,
+    "fsrX4": 517.1
+  },
+  "fullWorldSmokeCaveat": "Short sequential runs; DH background work changing. Not a controlled factories benchmark."
+}

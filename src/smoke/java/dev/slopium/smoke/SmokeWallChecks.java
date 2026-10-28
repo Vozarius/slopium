@@ -14,6 +14,7 @@ final class SmokeWallChecks {
         BlockState wall;
         boolean loaded;
         TestLevel() { super(null,null,null,null,0,0,null,null,false,0); }
+        @Override public net.minecraft.client.renderer.DimensionSpecialEffects effects(){return new net.minecraft.client.renderer.DimensionSpecialEffects.OverworldEffects();}
         @Override public boolean hasChunkAt(BlockPos pos) { return loaded; }
         @Override public BlockState getBlockState(BlockPos pos) { return pos.getX()==4 ? wall : Blocks.AIR.defaultBlockState(); }
     }

@@ -27,6 +27,18 @@ final class SmokeOptionsChecks {
                 if(o.getName().getString().startsWith("slopium.") || o.getTooltip().getString().startsWith("slopium."))throw new AssertionError("Missing translation "+id.get(o));
             }
             value("enabled",true);value("particle_visibility",enumValue("particle_visibility","OFF"));value("particle_range",false);
+            value("frame_generation_mode",enumValue("frame_generation_mode","OFF"));
+            if(option("frame_generation_target").isEnabled())throw new AssertionError("Inactive FG target enabled");
+            value("frame_generation_mode",enumValue("frame_generation_mode","SIMPLE"));
+            if(!option("frame_generation_grid").isEnabled()||option("frame_generation_cell").isEnabled()||option("frame_generation_fsr_debug").isEnabled())throw new AssertionError("Simple FG controls conflict");
+            value("frame_generation_mode",enumValue("frame_generation_mode","FSR"));
+            value("frame_generation_multiplier",2);
+            if(option("frame_generation_cell").isEnabled()||!option("frame_generation_fsr_debug").isEnabled())throw new AssertionError("FSR controls conflict");
+            value("frame_generation_multiplier",32);
+            if(!option("frame_generation_cell").isEnabled()||!option("frame_generation_multiplier").isEnabled())throw new AssertionError("FSR hybrid controls disabled");
+            value("frame_generation_multiplier",2);
+            value("frame_generation_mode",enumValue("frame_generation_mode","OFF"));
+            if(option("frame_generation_multiplier").isEnabled()||option("frame_generation_mark").isEnabled())throw new AssertionError("Inactive FG multiplier/marker enabled");
             if(option("particle_render_distance").isEnabled())throw new AssertionError("Inactive radius enabled");
             value("particle_range",true);
             if(!option("particle_render_distance").isEnabled())throw new AssertionError("Radius did not react to unsaved toggle");

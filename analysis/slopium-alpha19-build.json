@@ -1,0 +1,89 @@
+{
+  "version": "0.1.0-alpha.19",
+  "date": "2026-10-27",
+  "jar": "build/libs/slopium-neoforge-1.21.1-0.1.0-alpha.19.jar",
+  "size": 30736301,
+  "sha256": "a35184fbf9469cfd8e52ae3383e2234a7e9dcfbf47614667206bf9a9dc47c4ed",
+  "unit_tests_passed": 23,
+  "smoke_profiles": [
+    "full",
+    "legacy",
+    "minimal"
+  ],
+  "logs": [
+    "build/alpha19-full-final.log",
+    "build/alpha19-legacy-release.log",
+    "build/alpha19-minimal-final.log"
+  ],
+  "release_log": "build/alpha19-release.log",
+  "options_count": 54,
+  "pages_count": 7,
+  "mixins_count": 41,
+  "simple_motion_interpolation_verified": true,
+  "fsr_provider": "3.1.6",
+  "fsr_sdk": "v2.3.0",
+  "fsr_runtime_sha256": "02297beedd285e822d3a64f314cf00faf378dcec0edc47ff0c4dd71b3a8c2f18",
+  "shared_gpu_textures_verified": true,
+  "gpu_fence_interop_verified": true,
+  "production_gate_outputs": 5,
+  "production_gate_world_renders": 3,
+  "menu_resource_reuse_and_history_reset_verified": true,
+  "frame_image_readback_in_production": false,
+  "optional_diagnostic_timestamp_readback": true,
+  "gpu": "NVIDIA GeForce RTX 4060 Ti",
+  "gpu_synthetic_width": 1280,
+  "gpu_synthetic_height": 720,
+  "gpu_timing_samples": [
+    {
+      "log": "build/alpha19-full-final.log",
+      "simple_ms": 0.234048,
+      "fsr_ms": 3.580544
+    },
+    {
+      "log": "build/alpha19-full-verified.log",
+      "simple_ms": 0.21152,
+      "fsr_ms": 23.611008
+    },
+    {
+      "log": "build/alpha19-full3.log",
+      "simple_ms": 0.23936,
+      "fsr_ms": 1.106688
+    },
+    {
+      "log": "build/alpha19-legacy-final.log",
+      "simple_ms": 0.215552,
+      "fsr_ms": 1.040192
+    },
+    {
+      "log": "build/alpha19-legacy-final2.log",
+      "simple_ms": 0.238592,
+      "fsr_ms": 1.183296
+    },
+    {
+      "log": "build/alpha19-legacy-release.log",
+      "simple_ms": 5.250624,
+      "fsr_ms": 16.149312
+    },
+    {
+      "log": "build/alpha19-legacy-verified.log",
+      "simple_ms": 0.266944,
+      "fsr_ms": 2.451264
+    },
+    {
+      "log": "build/alpha19-minimal-final.log",
+      "simple_ms": 5.545984,
+      "fsr_ms": 47.273216
+    },
+    {
+      "log": "build/alpha19-minimal.log",
+      "simple_ms": 0.21184,
+      "fsr_ms": 1.757184
+    }
+  ],
+  "gpu_timing_variability_unresolved": true,
+  "world_fps_measured": false,
+  "icon_matches_logoT": true,
+  "smoke_classes_bundled": false,
+  "amd_license_bundled": true,
+  "user_minecraft_installation_modified": false
+}

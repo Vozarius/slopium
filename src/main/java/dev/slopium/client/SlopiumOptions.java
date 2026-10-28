@@ -9,6 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import dev.slopium.framegen.FrameGenerationMode;
 
 public final class SlopiumOptions implements ConfigEntryPoint {
     private final StorageEventHandler storage = Slopium::applyOptions;
@@ -20,6 +21,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
         boolean sableLight = createLight && Slopium.loaded("sable") && classPresent("top.leonx.dynlight.sodium.sable.SableDynLightSource");
 
         builder.registerOwnModOptions()
+            .setVersion(text("version").getString())
             .setNonTintedIcon(id("textures/gui/logo.png"))
             .setColorTheme(builder.createColorTheme().setBaseThemeRGB(0x72c7a6))
             .addPage(builder.createOptionPage().setName(text("page.general"))
@@ -35,6 +37,21 @@ public final class SlopiumOptions implements ConfigEntryPoint {
                     .addOption(bool(builder, "light_cache", v -> c.lightQueryCache = v, () -> c.lightQueryCache, true, lights))
                     .addOption(bool(builder, "create_light", v -> c.createLight = v, () -> c.createLight, true, createLight))
                     .addOption(bool(builder, "sable_light", v -> c.sableLight = v, () -> c.sableLight, true, sableLight))))
+            .addPage(builder.createOptionPage().setName(text("page.frame_generation"))
+                .addOptionGroup(builder.createOptionGroup().setName(text("group.frame_generation"))
+                    .addOption(mode(builder,"frame_generation_mode",FrameGenerationMode.class,v->c.frameGenerationMode=v,()->c.frameGenerationMode,FrameGenerationMode.OFF,true))
+                    .addOption(integer(builder,"frame_generation_multiplier",v->c.frameGenerationMultiplier=v,()->c.frameGenerationMultiplier,2,2,32,1))
+                    .addOption(bool(builder,"frame_generation_mark",v->c.frameGenerationMarkFrames=v,()->c.frameGenerationMarkFrames,false,true))
+                    .addOption(bool(builder,"frame_generation_counter",v->c.frameGenerationCounter=v,()->c.frameGenerationCounter,true,true))
+                    .addOption(integer(builder,"frame_generation_target",v->c.frameGenerationTargetFps=v,()->c.frameGenerationTargetFps,0,0,240,10)))
+                .addOptionGroup(builder.createOptionGroup().setName(text("group.frame_simple"))
+                    .addOption(integer(builder,"frame_generation_grid",v->c.frameGenerationGridStep=v,()->c.frameGenerationGridStep,4,1,16,1)))
+                .addOptionGroup(builder.createOptionGroup().setName(text("group.frame_hybrid"))
+                    .addOption(integer(builder,"frame_generation_cell",v->c.frameGenerationFlowCell=v,()->c.frameGenerationFlowCell,8,4,16,4))
+                    .addOption(integer(builder,"frame_generation_search",v->c.frameGenerationSearchPixels=v,()->c.frameGenerationSearchPixels,16,4,32,4))
+                    .addOption(integer(builder,"frame_generation_rejection",v->c.frameGenerationRejectionPixels=v,()->c.frameGenerationRejectionPixels,4,1,16,1)))
+                .addOptionGroup(builder.createOptionGroup().setName(text("group.frame_fsr"))
+                    .addOption(bool(builder,"frame_generation_fsr_debug",v->c.frameGenerationFsrDebug=v,()->c.frameGenerationFsrDebug,false,true))))
             .addPage(builder.createOptionPage().setName(text("page.particles"))
                 .addOptionGroup(builder.createOptionGroup().setName(text("group.particle_visibility"))
                     .addOption(wall(builder, "particle_visibility", v -> c.occludeParticles = v, () -> c.occludeParticles, v -> c.opaqueGlassParticles = v, () -> c.opaqueGlassParticles, v -> c.disableParticles = v, () -> c.disableParticles, true))
@@ -135,7 +152,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
         return b.createIntegerOption(id(key)).setName(text(key)).setTooltip(tooltip(key))
             .setStorageHandler(storage).setBinding(set, get).setDefaultValue(defaults).setRange(min, max, step)
             .setEnabledProvider(state -> allowed(key, state), dependencies(key))
-            .setValueFormatter(value -> Component.literal(Integer.toString(value)));
+            .setValueFormatter(value -> key.equals("frame_generation_multiplier")?Component.translatable("slopium.frame_generation_multiplier.value",value,value-1):key.equals("frame_generation_target")&&value==0?text("frame_generation_target.unlimited"):Component.literal(Integer.toString(value)));
     }
     private static final java.util.Map<String,String> PARENTS = java.util.Map.ofEntries(
         java.util.Map.entry("particle_render_distance", "particle_range"), java.util.Map.entry("particles_per_tick", "particle_budget"),
@@ -153,6 +170,8 @@ public final class SlopiumOptions implements ConfigEntryPoint {
     private static ResourceLocation[] dependencies(String key) {
         var result = new java.util.ArrayList<ResourceLocation>();
         if (!key.equals("enabled") && !key.equals("diagnostics")) result.add(id("enabled"));
+        if(key.startsWith("frame_generation_")&&!key.equals("frame_generation_mode"))result.add(id("frame_generation_mode"));
+        if(key.equals("frame_generation_cell")||key.equals("frame_generation_search")||key.equals("frame_generation_rejection"))result.add(id("frame_generation_multiplier"));
         String parent = PARENTS.get(key), override = override(key);
         if (parent != null) result.add(id(parent));
         if (override != null) result.add(id(override));
@@ -165,6 +184,13 @@ public final class SlopiumOptions implements ConfigEntryPoint {
     private static boolean allowed(String key, net.caffeinemc.mods.sodium.api.config.ConfigState state) {
         if (key.equals("enabled") || key.equals("diagnostics")) return true;
         if (!state.readBooleanOption(id("enabled"))) return false;
+        if(key.startsWith("frame_generation_")&&!key.equals("frame_generation_mode")) {
+            var fg=state.readEnumOption(id("frame_generation_mode"),FrameGenerationMode.class);
+            if(key.equals("frame_generation_target")||key.equals("frame_generation_multiplier")||key.equals("frame_generation_mark")||key.equals("frame_generation_counter"))return fg!=FrameGenerationMode.OFF;
+            if(key.equals("frame_generation_grid"))return fg==FrameGenerationMode.SIMPLE;
+            if(key.equals("frame_generation_fsr_debug"))return fg==FrameGenerationMode.FSR;
+            return fg==FrameGenerationMode.FSR&&state.readIntOption(id("frame_generation_multiplier"))>2;
+        }
         String parent = PARENTS.get(key), override = override(key);
         if (parent != null && !state.readBooleanOption(id(parent))) return false;
         if (override != null && state.readEnumOption(id(override), Visibility.class) == Visibility.ALL) return false;
@@ -186,6 +212,8 @@ public final class SlopiumOptions implements ConfigEntryPoint {
     }
     private static Component tooltip(String key) {
         var result = text(key + ".tooltip").copy();
+        if(key.equals("frame_generation_mode")&&dev.slopium.framegen.FrameGeneration.conflictingGenerator())
+            result=text("frame_generation.conflict").copy().withStyle(net.minecraft.ChatFormatting.RED).append("\n\n").append(result);
         String parent = PARENTS.get(key), fullCut = override(key);
         if (parent != null) result.append(Component.translatable("slopium.hint.parent", text(parent)));
         if (fullCut != null) result.append(Component.translatable("slopium.hint.override", text(fullCut)));

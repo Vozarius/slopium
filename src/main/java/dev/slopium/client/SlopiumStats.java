@@ -32,6 +32,7 @@ public final class SlopiumStats {
     public static boolean flywheelNativeDepth, flywheelGpuModels;
 
     public static void reset() {
+        dev.slopium.framegen.FrameGeneration.resetCounters();
         cameraChecks=cameraRejects=0;
         particleSharedLightHits=0;
         visibilityPathReuse=visibilityWitnessReuse=visibilityCells=0;
