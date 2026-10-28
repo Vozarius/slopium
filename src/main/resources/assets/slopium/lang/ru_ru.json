@@ -1,5 +1,5 @@
 {
-  "slopium.version": "Бета 2",
+  "slopium.version": "Бета 3",
   "slopium.page.frame_generation": "Генерация кадров",
   "slopium.frame_generation.unavailable": "Slopium: генерация кадров отключена: %s. Обычная отрисовка сохранена. Повторная попытка — после применения настроек.",
   "slopium.group.frame_generation": "Режим и частота вывода",
@@ -220,5 +220,8 @@
   "slopium.frame_generation_counter.tooltip": "Показывает активный алгоритм, настоящие FPS, суммарный вывод и число созданных кадров. Причины блокировки видны даже при выключенном счётчике. Лимит Minecraft и VSync сохраняются.",
   "slopium.frame_generation.counter": "Настоящие: %s FPS | Вывод: %s FPS | Создано: %s",
   "slopium.frame_generation.conflict": "Отключено: уберите отдельный FrameGen/PFG из mods и перезапустите игру.",
-  "slopium.frame_generation_target.unlimited": "Только лимит Minecraft"
+  "slopium.frame_generation_target.unlimited": "Только лимит Minecraft",
+  "slopium.frame_generation_input": "Максимум входных FPS",
+  "slopium.frame_generation_input.unlimited": "Без ограничения",
+  "slopium.frame_generation_input.tooltip": "Предел настоящей отрисовки мира для простой генерации и FSR. 0 — не ограничивать. Например, 60 входных и ×4 дают предел вывода до 240 FPS. Более низкие лимиты вывода, Minecraft и VSync сохраняются. При ожидании простая генерация перепроецирует изображение, FSR после окончания пары повторяет последний кадр. При резком повороте устаревшее изображение удерживается до следующего разрешённого настоящего кадра. После загрузки мира, изменения настроек или размера окна первый кадр рисуется сразу. Тики и ввод игрока не ограничиваются."
 }

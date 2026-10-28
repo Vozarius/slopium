@@ -16,6 +16,7 @@ public final class SlopiumConfig {
     public volatile boolean enabled = true;
     public volatile dev.slopium.framegen.FrameGenerationMode frameGenerationMode = dev.slopium.framegen.FrameGenerationMode.OFF;
     public int frameGenerationTargetFps = 0;
+    public int frameGenerationInputFps = 0;
     public int frameGenerationMultiplier = 2;
     public boolean frameGenerationMarkFrames = false;
     public boolean frameGenerationCounter = true;
@@ -134,6 +135,7 @@ public final class SlopiumConfig {
     private void validate() {
         if(frameGenerationMode==null)frameGenerationMode=dev.slopium.framegen.FrameGenerationMode.OFF;
         frameGenerationTargetFps=Math.clamp(frameGenerationTargetFps,0,240);
+        frameGenerationInputFps=Math.clamp(frameGenerationInputFps,0,240);
         frameGenerationMultiplier=Math.clamp(frameGenerationMultiplier,2,32);
         frameGenerationGridStep=Math.clamp(frameGenerationGridStep,1,16);
         frameGenerationFlowCell=Math.clamp(frameGenerationFlowCell,4,16);

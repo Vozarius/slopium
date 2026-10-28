@@ -41,6 +41,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
                 .addOptionGroup(builder.createOptionGroup().setName(text("group.frame_generation"))
                     .addOption(mode(builder,"frame_generation_mode",FrameGenerationMode.class,v->c.frameGenerationMode=v,()->c.frameGenerationMode,FrameGenerationMode.OFF,true))
                     .addOption(integer(builder,"frame_generation_multiplier",v->c.frameGenerationMultiplier=v,()->c.frameGenerationMultiplier,2,2,32,1))
+                    .addOption(integer(builder,"frame_generation_input",v->c.frameGenerationInputFps=v,()->c.frameGenerationInputFps,0,0,240,1))
                     .addOption(bool(builder,"frame_generation_mark",v->c.frameGenerationMarkFrames=v,()->c.frameGenerationMarkFrames,false,true))
                     .addOption(bool(builder,"frame_generation_counter",v->c.frameGenerationCounter=v,()->c.frameGenerationCounter,true,true))
                     .addOption(integer(builder,"frame_generation_target",v->c.frameGenerationTargetFps=v,()->c.frameGenerationTargetFps,0,0,240,10)))
@@ -152,7 +153,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
         return b.createIntegerOption(id(key)).setName(text(key)).setTooltip(tooltip(key))
             .setStorageHandler(storage).setBinding(set, get).setDefaultValue(defaults).setRange(min, max, step)
             .setEnabledProvider(state -> allowed(key, state), dependencies(key))
-            .setValueFormatter(value -> key.equals("frame_generation_multiplier")?Component.translatable("slopium.frame_generation_multiplier.value",value,value-1):key.equals("frame_generation_target")&&value==0?text("frame_generation_target.unlimited"):Component.literal(Integer.toString(value)));
+            .setValueFormatter(value -> key.equals("frame_generation_multiplier")?Component.translatable("slopium.frame_generation_multiplier.value",value,value-1):key.equals("frame_generation_target")&&value==0?text("frame_generation_target.unlimited"):key.equals("frame_generation_input")&&value==0?text("frame_generation_input.unlimited"):Component.literal(Integer.toString(value)));
     }
     private static final java.util.Map<String,String> PARENTS = java.util.Map.ofEntries(
         java.util.Map.entry("particle_render_distance", "particle_range"), java.util.Map.entry("particles_per_tick", "particle_budget"),
@@ -186,7 +187,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
         if (!state.readBooleanOption(id("enabled"))) return false;
         if(key.startsWith("frame_generation_")&&!key.equals("frame_generation_mode")) {
             var fg=state.readEnumOption(id("frame_generation_mode"),FrameGenerationMode.class);
-            if(key.equals("frame_generation_target")||key.equals("frame_generation_multiplier")||key.equals("frame_generation_mark")||key.equals("frame_generation_counter"))return fg!=FrameGenerationMode.OFF;
+            if(key.equals("frame_generation_target")||key.equals("frame_generation_input")||key.equals("frame_generation_multiplier")||key.equals("frame_generation_mark")||key.equals("frame_generation_counter"))return fg!=FrameGenerationMode.OFF;
             if(key.equals("frame_generation_grid"))return fg==FrameGenerationMode.SIMPLE;
             if(key.equals("frame_generation_fsr_debug"))return fg==FrameGenerationMode.FSR;
             return fg==FrameGenerationMode.FSR&&state.readIntOption(id("frame_generation_multiplier"))>2;

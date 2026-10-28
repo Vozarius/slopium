@@ -1,0 +1,28 @@
+{
+  "version": "1-beta.3",
+  "displayVersion": "Бета 3",
+  "jar": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-3.jar",
+  "sha256": "c290136b706c06c998f69e9ae531b3f3cf8a166e9cec608049970bd3e600e18c",
+  "bytes": 30781253,
+  "sources": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-3-sources.jar",
+  "sourcesSha256": "d738312cdd969450832f5d8d86ee983c1f32c8bfecf94d4385376c51f9178ada",
+  "tests": {
+    "errors": 0,
+    "tests": 28,
+    "failures": 0,
+    "skipped": 0
+  },
+  "verifiedLogs": [
+    "build/beta3-legacy.log",
+    "build/beta3-input-world.log",
+    "build/beta3-full.log",
+    "build/beta3-release.log"
+  ],
+  "options": 59,
+  "inputFpsRange": [
+    0,
+    240
+  ],
+  "userModsModified": false,
+  "performanceLimitation": "Input-cap functionality verified; no user-factory performance benchmark."
+}

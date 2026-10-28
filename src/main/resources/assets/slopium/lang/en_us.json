@@ -1,5 +1,5 @@
 {
-  "slopium.version": "Beta 2",
+  "slopium.version": "Beta 3",
   "slopium.page.frame_generation": "Frame generation",
   "slopium.frame_generation.unavailable": "Slopium: frame generation disabled: %s. Normal rendering continues. Apply settings to retry.",
   "slopium.group.frame_generation": "Mode and presentation rate",
@@ -220,5 +220,8 @@
   "slopium.frame_generation_counter.tooltip": "Shows the active backend, real FPS, output FPS and generated count. Blocking reasons remain visible even with this counter off. Minecraft caps and VSync still apply.",
   "slopium.frame_generation.counter": "Real: %s FPS | Output: %s FPS | Generated: %s",
   "slopium.frame_generation.conflict": "Disabled: remove standalone FrameGen/PFG from mods and restart Minecraft.",
-  "slopium.frame_generation_target.unlimited": "Minecraft limit only"
+  "slopium.frame_generation_target.unlimited": "Minecraft limit only",
+  "slopium.frame_generation_input": "Maximum input FPS",
+  "slopium.frame_generation_input.unlimited": "Unlimited",
+  "slopium.frame_generation_input.tooltip": "Limits real world captures for both simple generation and FSR. 0 disables this limit. For example, 60 input x4 caps output at 240 FPS. Lower output/Minecraft limits and VSync still apply. While waiting, simple mode reprojects; FSR holds its endpoint after exhausting a pair. Camera cuts hold the previous image until the next permitted capture. World/settings/size changes require an immediate first real frame. Game ticks and input are not limited."
 }

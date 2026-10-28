@@ -23,6 +23,7 @@ final class SmokeWorldFrames {
     private volatile boolean sceneReady;
     private final FrameGenerationMode[] modes={FrameGenerationMode.OFF,FrameGenerationMode.SIMPLE,FrameGenerationMode.SIMPLE,FrameGenerationMode.FSR,FrameGenerationMode.FSR};
     private final int[] factors={2,2,4,2,4};
+    private final int[] inputs={0,30,120,30,120};
     SmokeWorldFrames(){NeoForge.EVENT_BUS.addListener(this::tick);NeoForge.EVENT_BUS.addListener(this::frame);}
     private void tick(ClientTickEvent.Post event) {
         var mc=Minecraft.getInstance();
@@ -63,6 +64,7 @@ final class SmokeWorldFrames {
         FrameGeneration.release();FrameGeneration.resetCounters();frames=phaseTicks=0;began=System.nanoTime();
         var c=SlopiumConfig.get();c.enabled=true;c.diagnostics=true;c.frameGenerationMode=modes[phase];c.frameGenerationMultiplier=factors[phase];
         c.frameGenerationTargetFps=0;c.frameGenerationCounter=true;c.frameGenerationMarkFrames=true;
+        c.frameGenerationInputFps=Boolean.getBoolean("slopium.inputSmoke")?inputs[phase]:0;
         LogUtils.getLogger().info("SLOPIUM_WORLD: starting {} x{}",modes[phase],factors[phase]);
     }
     private void frame(RenderFrameEvent.Post event) {
@@ -73,8 +75,13 @@ final class SmokeWorldFrames {
         frames++;
         if(System.nanoTime()-began<8_000_000_000L)return;
         if(modes[phase]!=FrameGenerationMode.OFF&&(FrameGeneration.generatedFrames<30||FrameGeneration.realFrames<5))throw new AssertionError("No actual-world generation: "+FrameGeneration.status());
+        if(Boolean.getBoolean("slopium.inputSmoke")&&inputs[phase]>0) {
+            double seconds=(System.nanoTime()-began)/1e9;
+            if(FrameGeneration.realFrames>Math.ceil(seconds*inputs[phase])+2)throw new AssertionError("World input cap exceeded: "+FrameGeneration.status());
+            if(frames>Math.ceil(seconds*inputs[phase]*factors[phase])+8)throw new AssertionError("Output pacing missing above vanilla sentinel: "+frames+" in "+seconds);
+        }
         LogUtils.getLogger().info("SLOPIUM_WORLD: {} x{} actual loop {} FPS; {}",modes[phase],factors[phase],frames/((System.nanoTime()-began)/1e9),FrameGeneration.status());
-        Screenshot.grab(mc.gameDirectory,"beta2-world-"+phase+".png",mc.getMainRenderTarget(),m->{});
+        Screenshot.grab(mc.gameDirectory,(Boolean.getBoolean("slopium.inputSmoke")?"beta3-input-":"beta2-world-")+phase+".png",mc.getMainRenderTarget(),m->{});
         next();
     }
 }

@@ -28,10 +28,12 @@ final class SmokeOptionsChecks {
             }
             value("enabled",true);value("particle_visibility",enumValue("particle_visibility","OFF"));value("particle_range",false);
             value("frame_generation_mode",enumValue("frame_generation_mode","OFF"));
-            if(option("frame_generation_target").isEnabled())throw new AssertionError("Inactive FG target enabled");
+            if(option("frame_generation_target").isEnabled()||option("frame_generation_input").isEnabled())throw new AssertionError("Inactive FG target enabled");
             value("frame_generation_mode",enumValue("frame_generation_mode","SIMPLE"));
+            if(!option("frame_generation_input").isEnabled())throw new AssertionError("Simple input cap disabled");
             if(!option("frame_generation_grid").isEnabled()||option("frame_generation_cell").isEnabled()||option("frame_generation_fsr_debug").isEnabled())throw new AssertionError("Simple FG controls conflict");
             value("frame_generation_mode",enumValue("frame_generation_mode","FSR"));
+            if(!option("frame_generation_input").isEnabled())throw new AssertionError("FSR input cap disabled");
             value("frame_generation_multiplier",2);
             if(option("frame_generation_cell").isEnabled()||!option("frame_generation_fsr_debug").isEnabled())throw new AssertionError("FSR controls conflict");
             value("frame_generation_multiplier",32);

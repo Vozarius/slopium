@@ -11,11 +11,13 @@ final class SmokeFrameLifecycleChecks {
         var mc=Minecraft.getInstance();var c=SlopiumConfig.get();
         var oldWorld=mc.level;var oldScreen=mc.screen;var overlay=mc.getOverlay();boolean focus=mc.isWindowActive(),enabled=c.enabled,diagnostics=c.diagnostics;
         var oldMode=c.frameGenerationMode;int oldMultiplier=c.frameGenerationMultiplier;boolean oldMark=c.frameGenerationMarkFrames;var graphics=mc.options.graphicsMode().get();
+        int oldInput=c.frameGenerationInputFps;
         try(var state=new GlState()) {
             float[] clear=new float[4];glGetFloatv(GL_COLOR_CLEAR_VALUE,clear);double clearDepth=glGetDouble(GL_DEPTH_CLEAR_VALUE);boolean mask=glGetBoolean(GL_DEPTH_WRITEMASK);
             try {
                 mc.level=(SmokeWallChecks.TestLevel)SmokeRadicalChecks.allocate(SmokeWallChecks.TestLevel.class);
                 mc.screen=null;mc.setOverlay(null);mc.setWindowActive(true);mc.options.graphicsMode().set(GraphicsStatus.FANCY);c.enabled=true;c.diagnostics=true;
+                c.frameGenerationInputFps=0;
                 var camera=new Camera();var view=new Matrix4f();var projection=new Matrix4f().perspective((float)Math.toRadians(70),1280f/720,.05f,1000);
                 for(var mode:new FrameGenerationMode[]{FrameGenerationMode.SIMPLE,FrameGenerationMode.FSR}) for(int factor:new int[]{2,3,4,8,32}) {
                     FrameGeneration.release();FrameGeneration.resetCounters();c.frameGenerationMode=mode;c.frameGenerationMultiplier=factor;c.frameGenerationMarkFrames=true;
@@ -56,9 +58,35 @@ final class SmokeFrameLifecycleChecks {
                     if(FrameGeneration.limit(260)!=260)throw new AssertionError("Frame limiter retained while off");
                     com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: production {} x{}: {} outputs / 3 world renders, {} intermediate frames, marker, depth, pause, off and cap passed",mode,factor,2*factor+1,2*(factor-1));
                 }
+                for(var mode:new FrameGenerationMode[]{FrameGenerationMode.SIMPLE,FrameGenerationMode.FSR}) {
+                    FrameGeneration.release();FrameGeneration.resetCounters();c.frameGenerationMode=mode;c.frameGenerationMultiplier=4;c.frameGenerationInputFps=30;
+                    Runnable draw=()->{GlState.fullscreen();glDepthMask(true);glClearDepth(.375);glClearColor(.25f,.5f,.75f,1);glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);};
+                    // Initialize outside the timed interval, then stress the gate faster than its cap.
+                    mc.getMainRenderTarget().bindWrite(true);FrameGeneration.render(camera,view,projection,draw);
+                    long start=System.nanoTime(),before=FrameGeneration.realFrames;
+                    do {mc.getMainRenderTarget().bindWrite(true);FrameGeneration.render(camera,view,projection,draw);}while(System.nanoTime()-start<600_000_000L);
+                    double seconds=(System.nanoTime()-start)/1e9;long rendered=FrameGeneration.realFrames-before;
+                    if(rendered<3||rendered>Math.ceil(seconds*30)+1)throw new AssertionError("Input cap failed: "+mode+" "+rendered+" in "+seconds);
+                    if(mode==FrameGenerationMode.FSR&&FrameGeneration.heldFrames==0)throw new AssertionError("FSR did not hold exhausted pair");
+                    long cutStart=System.nanoTime(),cutBefore=FrameGeneration.realFrames;int turn=0;
+                    do {
+                        camera.rotation().rotationY((++turn%2)*.7f);
+                        mc.getMainRenderTarget().bindWrite(true);FrameGeneration.render(camera,view,projection,draw);
+                    }while(System.nanoTime()-cutStart<400_000_000L);
+                    double cutSeconds=(System.nanoTime()-cutStart)/1e9;
+                    if(FrameGeneration.realFrames-cutBefore>Math.ceil(cutSeconds*30)+1)throw new AssertionError("Camera cuts bypassed input cap: "+mode);
+                    camera.rotation().identity();
+                    if(GL_NO_ERROR!=glGetError())throw new AssertionError("Input cap leaked GL state");
+                    int oldTarget=c.frameGenerationTargetFps;c.frameGenerationTargetFps=0;c.frameGenerationInputFps=120;
+                    if(FrameGeneration.limit(260)!=480||FrameGeneration.limiterThreshold()!=Integer.MAX_VALUE)throw new AssertionError("High output limit lost to vanilla unlimited sentinel");
+                    c.frameGenerationTargetFps=oldTarget;
+                    com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: {} input cap 30: {} real captures in {} s; {} held frames",mode,rendered,seconds,FrameGeneration.heldFrames);
+                }
+                if(java.util.Arrays.stream(Minecraft.class.getDeclaredMethods()).noneMatch(m->m.getName().contains("slopium$finiteHighLimit")))throw new AssertionError("High-rate limiter hook absent");
                 if(java.util.Arrays.stream(net.minecraft.client.renderer.GameRenderer.class.getDeclaredMethods()).noneMatch(m->m.getName().contains("slopium$worldFrame")))throw new AssertionError("Frame generation mixin absent");
             } finally {
                 FrameGeneration.release();FrameGeneration.resetCounters();c.frameGenerationMode=oldMode;c.enabled=enabled;c.diagnostics=diagnostics;c.frameGenerationMultiplier=oldMultiplier;c.frameGenerationMarkFrames=oldMark;
+                c.frameGenerationInputFps=oldInput;
                 mc.level=oldWorld;mc.screen=oldScreen;mc.setOverlay(overlay);mc.setWindowActive(focus);mc.options.graphicsMode().set(graphics);
                 glClearColor(clear[0],clear[1],clear[2],clear[3]);glClearDepth(clearDepth);glDepthMask(mask);
             }
