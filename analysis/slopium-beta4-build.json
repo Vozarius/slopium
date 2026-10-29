@@ -1,0 +1,31 @@
+{
+  "version": "1-beta.4",
+  "displayVersion": "Бета 4",
+  "jar": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-4.jar",
+  "sha256": "647283a739d51aa8281c0e448cba6e00ef0473fb22b37783f6112e256f1ff107",
+  "bytes": 30782804,
+  "sources": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-4-sources.jar",
+  "sourcesSha256": "96749b28c84d8706a221b54a6648aa7fcb062e937898d60496cfd63374e52357",
+  "tests": {
+    "tests": 33,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "verifiedLogs": [
+    "build/beta4-full.log",
+    "build/beta4-release-final.log",
+    "build/beta4-world-final.log"
+  ],
+  "options": 59,
+  "userModsModified": false,
+  "worldRun": {
+    "simpleCappedOutput": 231.67,
+    "multiplier": 32,
+    "targetRealFps": 30,
+    "simpleUncappedOutput": 939.49,
+    "fsrUncappedOutput": 910.02,
+    "fsrCappedOutput": 222.16
+  },
+  "performanceLimitation": "Small world with large headroom; output includes held frames. No factory benchmark. Deadlines prioritize real frames but cannot guarantee no CPU/GPU overhead."
+}

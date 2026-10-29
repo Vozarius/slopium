@@ -2,27 +2,26 @@ package dev.slopium.framegen;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 class FrameCadenceTest {
-    @Test void everyMultiplierPresentsOrderedDistinctPhases() {
+    @Test void timeSelectsDistinctOrderedFractionsForAllMultipliers() {
         for(int n=2;n<=32;n++) {
             var c=new FrameCadence();c.configure(n);
-            assertFalse(c.captured());assertTrue(c.needsWorld());
-            for(int pair=0;pair<3;pair++) {
-                assertTrue(c.captured());
-                for(int k=1;k<=n;k++) {
-                    assertFalse(c.needsWorld());assertEquals(k/(float)n,c.fraction());
-                    assertEquals(k==n,c.endpoint());assertEquals(2*k==n,c.midpoint());c.presented();
-                }
-                assertTrue(c.needsWorld());
+            assertFalse(c.captured());assertFalse(c.sample(50,100));assertTrue(c.captured());
+            for(int k=1;k<=n;k++) {
+                assertTrue(c.sample(k*100,n*100));assertEquals(k/(float)n,c.fraction());
+                assertFalse(c.sample(k*100,n*100));assertEquals(k==n,c.endpoint());assertEquals(k*2==n,c.midpoint());
             }
         }
     }
-    @Test void cameraCutDiscardsPendingSyntheticPair() {
-        var cadence=new FrameCadence();cadence.captured();cadence.captured();assertFalse(cadence.needsWorld());
-        cadence.reset();assertTrue(cadence.needsWorld());assertFalse(cadence.captured());
+    @Test void skippedFractionsNeverBlockANewRealFrame() {
+        var c=new FrameCadence();c.configure(32);c.captured();c.captured();
+        assertTrue(c.sample(16,32));assertEquals(.5f,c.fraction());
+        assertTrue(c.captured());assertEquals(0,c.fraction());
+        assertTrue(c.sample(24,32));assertEquals(.75f,c.fraction());
+        assertFalse(c.sample(8,32));
     }
-    @Test void multiplierChangeInvalidatesHistoryAndClampsInvalidValues() {
-        var c=new FrameCadence();c.captured();c.captured();c.configure(4);
-        assertTrue(c.needsWorld());assertFalse(c.captured());
-        c.configure(99);assertEquals(32,c.multiplier());c.configure(-1);assertEquals(2,c.multiplier());
+    @Test void cameraCutAndMultiplierChangeInvalidateHistory() {
+        var c=new FrameCadence();c.captured();c.captured();c.reset();assertFalse(c.captured());
+        c.configure(99);assertEquals(32,c.multiplier());assertFalse(c.captured());
+        c.configure(-1);assertEquals(2,c.multiplier());assertFalse(c.captured());
     }
 }

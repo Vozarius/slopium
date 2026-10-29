@@ -1,5 +1,5 @@
 {
-  "slopium.version": "Beta 3",
+  "slopium.version": "Beta 4",
   "slopium.page.frame_generation": "Frame generation",
   "slopium.frame_generation.unavailable": "Slopium: frame generation disabled: %s. Normal rendering continues. Apply settings to retry.",
   "slopium.group.frame_generation": "Mode and presentation rate",
@@ -11,7 +11,7 @@
   "slopium.value.FrameGenerationMode.SIMPLE": "Simple",
   "slopium.value.FrameGenerationMode.FSR": "FSR 3 + Slopium (test)",
   "slopium.frame_generation_target": "Generated output FPS limit",
-  "slopium.frame_generation_target.tooltip": "0: no extra Slopium cap; Minecraft limit and VSync still apply. At an unchanged FPS cap, generation may reduce real frames without increasing output. Disable VSync and the extra cap for comparison. Existing saved caps are preserved.",
+  "slopium.frame_generation_target.tooltip": "Total output limit. 0 uses only the Minecraft limit and VSync. At 30 real FPS, x32 and a 240 FPS output limit, the effective multiplier decreases instead of dividing real FPS by 32. Attempting 960 FPS requires removing lower limits and VSync; reaching it depends on performance.",
   "slopium.frame_generation_cell": "Motion grid spacing, pixels",
   "slopium.frame_generation_cell.tooltip": "Motion estimation grid only for FSR above x2: 4 detailed, 8 balanced, 16 cheaper. Simple mode has its own reprojection grid.",
   "slopium.frame_generation_search": "Motion search radius, pixels",
@@ -209,10 +209,10 @@
   "slopium.gpu_glass_culling": "GPU Flywheel culling behind glass (test)",
   "slopium.gpu_glass_culling.tooltip": "Any-block Flywheel model mode on indirect: redraws existing Sodium translucent terrain into separate depth, then uses native GPU culling. Includes glass/water; rendered holes remain open. Special-renderer obstacles are not included. Costs an extra GPU pass and memory; may not improve FPS. Iris/Oculus and Fabulous use CPU fallback. Ticks and animation pausing stay on CPU.",
   "slopium.frame_generation_mark.tooltip": "A pink stripe at the top appears only on intermediate frames, never real frames. Works with both modes. Frame counts and active multiplier: /slopium status.",
-  "slopium.frame_generation_multiplier.tooltip": "x2: one generated frame per real frame; x32: up to 31. Simple mode updates the camera every frame but world animation only on real frames. FSR adds latency; above x2 uses FSR + Slopium. Start at x2–x4. Abrupt motion, menus and world changes reset history. FPS caps and VSync still apply.",
+  "slopium.frame_generation_multiplier.tooltip": "Generation ceiling: up to 1 additional frame at x2 or 31 at x32. Real frames have priority; intermediate frames that cannot fit are skipped. Actual multiplication depends on CPU/GPU headroom, output limits and VSync. FSR adds latency; above x2 it uses the FSR + Slopium hybrid.",
   "slopium.frame_generation_multiplier": "Frame multiplier",
   "slopium.frame_generation_mark": "Mark generated frames",
-  "slopium.frame_generation_multiplier.value": "%sx — generated: %s",
+  "slopium.frame_generation_multiplier.value": "up to ×%s — up to %s new",
   "slopium.group.frame_hybrid": "Slopium interpolation: FSR above x2",
   "slopium.frame_generation_grid": "Reprojection grid step, px",
   "slopium.frame_generation_grid.tooltip": "FrameGen reprojects the last real frame to the current camera using depth. 1: finer edges; 4: balanced; 16: cheaper. World animation updates on real frames; newly revealed surfaces are approximated.",
@@ -221,7 +221,7 @@
   "slopium.frame_generation.counter": "Real: %s FPS | Output: %s FPS | Generated: %s",
   "slopium.frame_generation.conflict": "Disabled: remove standalone FrameGen/PFG from mods and restart Minecraft.",
   "slopium.frame_generation_target.unlimited": "Minecraft limit only",
-  "slopium.frame_generation_input": "Maximum input FPS",
-  "slopium.frame_generation_input.unlimited": "Unlimited",
-  "slopium.frame_generation_input.tooltip": "Limits real world captures for both simple generation and FSR. 0 disables this limit. For example, 60 input x4 caps output at 240 FPS. Lower output/Minecraft limits and VSync still apply. While waiting, simple mode reprojects; FSR holds its endpoint after exhausting a pair. Camera cuts hold the previous image until the next permitted capture. World/settings/size changes require an immediate first real frame. Game ticks and input are not limited."
+  "slopium.frame_generation_input": "Target real FPS",
+  "slopium.frame_generation_input.unlimited": "Automatic",
+  "slopium.frame_generation_input.tooltip": "Priority world-render frequency for both methods. 0 measures ordinary frames on activation and every 5 seconds. 30 targets one real frame roughly every 33 ms. Missed synthetic frames are skipped instead of delaying real frames to complete the multiplier. CPU/GPU capacity may prevent meeting the target. At 30 real FPS, x32 attempts up to 960 output FPS; lower output limits and VSync still apply. Server ticks are unchanged."
 }

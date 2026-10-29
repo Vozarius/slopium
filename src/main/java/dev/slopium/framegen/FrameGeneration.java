@@ -10,12 +10,12 @@ import static org.lwjgl.opengl.GL33C.*;
 /** Render-thread-only world reprojection / interpolation. Simulation, picking, hand and HUD remain live. */
 public final class FrameGeneration {
     private static final FrameCadence CADENCE=new FrameCadence();
-    private static final InputFrameLimiter INPUT=new InputFrameLimiter();
+    private static final FrameSchedule SCHEDULE=new FrameSchedule();
     private static GlImage previous,current,generated,fsrMiddle;
     private static final float[] FRAME_MARKER={1,.1f,.7f,1};
     private static SimpleInterpolator simple;
     private static dev.slopium.framegen.reference.Reprojector reprojection;
-    private static int reprojected;
+    private static int heldSource;
     private static String lastNotice="";
     private static FsrInterpolator fsr;
     private static GpuTimer timer;
@@ -49,14 +49,15 @@ public final class FrameGeneration {
     public static int limit(int original) {
         if(!active)return original;
         var c=SlopiumConfig.get();
-        int limit=InputFrameLimiter.outputLimit(original,c.frameGenerationTargetFps,c.frameGenerationInputFps,c.frameGenerationMultiplier);
+        int input=SCHEDULE.probing()?0:(c.frameGenerationInputFps>0?c.frameGenerationInputFps:SCHEDULE.targetFps());
+        int limit=InputFrameLimiter.outputLimit(original,c.frameGenerationTargetFps,input,c.frameGenerationMultiplier);
         return limit==0?original:limit;
     }
-    public static int limiterThreshold(){var c=SlopiumConfig.get();return active&&(c.frameGenerationTargetFps>0||c.frameGenerationInputFps>0)?Integer.MAX_VALUE:260;}
+    public static int limiterThreshold(){var c=SlopiumConfig.get();return active&&(c.frameGenerationTargetFps>0||c.frameGenerationInputFps>0||!SCHEDULE.probing())?Integer.MAX_VALUE:260;}
     public static String status() {
         double seconds=elapsedNanos/1e9;
-        return String.format(java.util.Locale.ROOT,"Frame generation | %s | real=%d | generated=%d | endpoints=%d | held=%d | input cap=%d | base=%.1f FPS | output=%.1f FPS | GPU generation=%.3f ms",
-            state,realFrames,generatedFrames,endpointFrames,heldFrames,SlopiumConfig.get().frameGenerationInputFps,seconds<=0?0:(realFrames-realStarts)/seconds,seconds<=0?0:(outputFrames-outputStarts)/seconds,gpuMilliseconds);
+        return String.format(java.util.Locale.ROOT,"Frame generation | %s | real=%d | generated=%d | endpoints=%d | held=%d | input target=%d | scheduled=%d FPS | base=%.1f FPS | output=%.1f FPS | GPU generation=%.3f ms",
+            state,realFrames,generatedFrames,endpointFrames,heldFrames,SlopiumConfig.get().frameGenerationInputFps,SCHEDULE.targetFps(),seconds<=0?0:(realFrames-realStarts)/seconds,seconds<=0?0:(outputFrames-outputStarts)/seconds,gpuMilliseconds);
     }
     public static void resetCounters(){realFrames=generatedFrames=endpointFrames=outputFrames=heldFrames=0;lastOutput=elapsedNanos=outputStarts=realStarts=0;gpuMilliseconds=0;if(timer!=null){timer.nanos=timer.samples=0;}}
     private static void recordOutput(long now,boolean real) {
@@ -73,7 +74,7 @@ public final class FrameGeneration {
             if(previous!=null){previous.close();previous=null;}if(current!=null){current.close();current=null;}if(generated!=null){generated.close();generated=null;}
             if(fsrMiddle!=null){fsrMiddle.close();fsrMiddle=null;}
         }
-        CADENCE.reset();INPUT.reset();reprojected=0;previousVp=null;eye=null;rotation=null;world=null;active=false;lastCapture=lastOutput=0;
+        CADENCE.reset();SCHEDULE.reset();heldSource=0;previousVp=null;eye=null;rotation=null;world=null;active=false;lastCapture=lastOutput=0;
     }
     public static void render(Camera camera,Matrix4f view,Matrix4f projection,Runnable draw) {
         var mc=Minecraft.getInstance();var c=SlopiumConfig.get();var main=mc.getMainRenderTarget();
@@ -87,7 +88,7 @@ public final class FrameGeneration {
         if(blocked!=null){
             if(blocked.startsWith("paused")&&mc.level!=null&&current!=null) {
                 // Keep expensive native contexts over chat/menu pauses; never reuse temporal history.
-                CADENCE.reset();INPUT.reset();previousVp=null;eye=null;rotation=null;lastCapture=lastOutput=0;active=false;
+                CADENCE.reset();SCHEDULE.reset();previousVp=null;eye=null;rotation=null;lastCapture=lastOutput=0;active=false;
             } else if(active||current!=null)release();
             state=blocked.equals("off")?blocked:
             failedRevision==Slopium.configRevision()?failureState:blocked;
@@ -110,7 +111,7 @@ public final class FrameGeneration {
                     glActiveTexture(GL_TEXTURE0);glBindTexture(GL_TEXTURE_2D,main.getDepthTextureId());
                     int depthFormat=glGetTexLevelParameteri(GL_TEXTURE_2D,0,GL_TEXTURE_INTERNAL_FORMAT);
                     current=new GlImage(main.width,main.height,GL_RGBA8,depthFormat);
-                    if(mode==FrameGenerationMode.SIMPLE)reprojection=new dev.slopium.framegen.reference.Reprojector();
+                    if(mode==FrameGenerationMode.SIMPLE){reprojection=new dev.slopium.framegen.reference.Reprojector();generated=new GlImage(main.width,main.height,GL_RGBA8,depthFormat);}
                     if(mode==FrameGenerationMode.FSR&&multiplier>2)simple=new SimpleInterpolator(main.width,main.height,c.frameGenerationFlowCell);
                     if(mode==FrameGenerationMode.FSR) {
                         previous=new GlImage(main.width,main.height,GL_RGBA8,depthFormat);
@@ -121,41 +122,45 @@ public final class FrameGeneration {
                 }
             }
             long now=System.nanoTime();
-            INPUT.configure(c.frameGenerationInputFps);
-            // A high multiplier intentionally keeps one pair longer than 250 ms. Detect a stalled
-            // output stream, not the age of the real frame, or x32 would reset halfway through.
+            SCHEDULE.configure(c.frameGenerationInputFps);SCHEDULE.begin(now);
+            if(SCHEDULE.probing()) {
+                drawing=true;draw.run();drawing=false;drew=true;
+                CADENCE.reset();previousVp=null;eye=null;rotation=null;lastCapture=0;
+                realFrames++;recordOutput(now,true);active=true;state="measuring real frame rate";return;
+            }
+            // Low input targets can retain a frame longer than 250 ms: detect output stalls instead.
             if(eye!=null&&(eye.distanceToSqr(camera.getPosition())>64||Math.abs(rotation.dot(camera.rotation()))<.995f||lastOutput!=0&&now-lastOutput>250_000_000L)) {
-                // Rapid camera turns must not bypass the input cap on every output frame.
-                if(previousVp!=null&&!INPUT.ready(now)){hold(main,now);return;}
-                CADENCE.reset();INPUT.reset();previousVp=null;
+                // Rapid camera turns do not force real frames ahead of their scheduled time.
+                if(previousVp!=null&&!SCHEDULE.due(now)){hold(main,now);return;}
+                CADENCE.reset();previousVp=null;
             }
             if(mode==FrameGenerationMode.SIMPLE) {
                 Matrix4f vp=new Matrix4f(projection).mul(view);
-                if(previousVp!=null&&(reprojected<multiplier-1||!INPUT.ready(now))) {
+                if(previousVp!=null&&!SCHEDULE.due(now)) {
+                    if(!SCHEDULE.canGenerate(now,multiplier)){hold(main,now);return;}
                     try(var ignored=new GlState()) {
                         if(c.diagnostics&&timer==null)timer=new GpuTimer();
                         if(timer!=null)timer.start();
                         try {
-                            reprojection.draw(current,main.frameBufferId,previousVp,vp,eye.subtract(camera.getPosition()),projection,c.frameGenerationGridStep);
+                            reprojection.draw(current,generated.fbo,previousVp,vp,eye.subtract(camera.getPosition()),projection,c.frameGenerationGridStep);
+                            heldSource=generated.fbo;present(generated.fbo,main.frameBufferId,main.width,main.height,true);
                             mark(main,c);
                         } finally {if(timer!=null){timer.stop();gpuMilliseconds=timer.milliseconds();}}
                     }
-                    restoreLighting(mc);reprojected++;generatedFrames++;recordOutput(now,false);
+                    restoreLighting(mc);SCHEDULE.generated(Math.max(System.nanoTime()-now,(long)(gpuMilliseconds*1e6)));generatedFrames++;recordOutput(now,false);
                 } else {
                     drawing=true;draw.run();drawing=false;drew=true;
                     try(var ignored=new GlState()){present(main.frameBufferId,current.fbo,main.width,main.height,true);}
                     previousVp=vp;eye=camera.getPosition();rotation=new Quaternionf(camera.rotation());lastCapture=now;
-                    INPUT.captured(now);reprojected=0;realFrames++;recordOutput(now,true);
+                    heldSource=current.fbo;SCHEDULE.captured(now);realFrames++;recordOutput(now,true);
                 }
-                active=true;state=backend="FrameGen reprojection x"+multiplier;return;
+                active=true;state=backend="FrameGen reprojection up to x"+multiplier;return;
             }
-            if(CADENCE.needsWorld()&&previousVp!=null&&!INPUT.ready(now)) {
-                // FSR has exhausted its pair. Hold the endpoint, not an invented extra midpoint.
-                hold(main,now);return;
-            }
-            if(!CADENCE.needsWorld()) {
+            if(previousVp!=null&&!SCHEDULE.due(now)) {
+                // Skip obsolete fractions rather than delaying the next real frame to drain a pair.
+                if(!CADENCE.sample(now-lastCapture,SCHEDULE.period())||!SCHEDULE.canGenerate(now,multiplier)) {hold(main,now);return;}
                 try(var ignored=new GlState()) {
-                    if(CADENCE.endpoint()) {present(current.fbo,main.frameBufferId,main.width,main.height,true);endpointFrames++;}
+                    if(CADENCE.endpoint()) {heldSource=current.fbo;present(current.fbo,main.frameBufferId,main.width,main.height,true);endpointFrames++;}
                     else {
                         if(timer!=null)timer.start();
                         try {
@@ -165,28 +170,33 @@ public final class FrameGeneration {
                         }finally{if(timer!=null){timer.stop();gpuMilliseconds=timer.milliseconds();}}
                     }
                 }
-                restoreLighting(mc);CADENCE.presented();recordOutput(now,false);active=true;return;
+                restoreLighting(mc);SCHEDULE.generated(Math.max(System.nanoTime()-now,(long)(gpuMilliseconds*1e6)));recordOutput(now,false);active=true;return;
             }
             drawing=true;draw.run();drawing=false;drew=true;
             Matrix4f vp=new Matrix4f(projection).mul(view),toPrevious=new Matrix4f();
             if(previousVp!=null&&eye!=null){var delta=camera.getPosition().subtract(eye);toPrevious.set(previousVp).translate((float)delta.x,(float)delta.y,(float)delta.z).mul(new Matrix4f(vp).invert());}
             boolean interpolate=CADENCE.captured();
             try(var ignored=new GlState()) {
-                if(c.diagnostics&&timer==null)timer=new GpuTimer();
+                // The adaptive FSR budget needs delayed GPU costs even when the debug overlay is off.
+                if(timer==null)timer=new GpuTimer();
                 if(timer!=null)timer.start();
                 try {
                 var swap=previous;previous=current;current=swap;
                 GlState.fullscreen();glBindFramebuffer(GL_READ_FRAMEBUFFER,main.frameBufferId);glBindFramebuffer(GL_DRAW_FRAMEBUFFER,current.fbo);
                 glBlitFramebuffer(0,0,main.width,main.height,0,0,main.width,main.height,GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT,GL_NEAREST);
-                if(fsr!=null) fsr.generate(current,fsrMiddle==null?generated:fsrMiddle,toPrevious,projection,!interpolate,lastCapture==0?16.667f:(now-lastCapture)/1e6f,c.frameGenerationFsrDebug);
-                if(interpolate&&simple!=null)simple.prepare(previous,current,toPrevious,new Matrix4f(toPrevious).invert(),c.frameGenerationSearchPixels);
-                if(interpolate){presentGenerated(main,c);CADENCE.presented();}
+                if(System.nanoTime()-now+Math.max(1_000_000,(long)(gpuMilliseconds*1e6))<SCHEDULE.period()) {
+                    fsr.generate(current,fsrMiddle==null?generated:fsrMiddle,toPrevious,projection,!interpolate,lastCapture==0?16.667f:(now-lastCapture)/1e6f,c.frameGenerationFsrDebug);
+                    if(interpolate&&simple!=null)simple.prepare(previous,current,toPrevious,new Matrix4f(toPrevious).invert(),c.frameGenerationSearchPixels);
+                } else {CADENCE.reset();interpolate=false;}
+                // Start the delayed pair at its older endpoint. Intermediate fractions follow time.
+                heldSource=interpolate?previous.fbo:current.fbo;
+                present(heldSource,main.frameBufferId,main.width,main.height,false);
                 } finally {if(timer!=null){timer.stop();gpuMilliseconds=timer.milliseconds();}}
             }
             previousVp=vp;eye=camera.getPosition();rotation=new Quaternionf(camera.rotation());lastCapture=now;
-            INPUT.captured(now);
+            SCHEDULE.captured(now);
             recordOutput(now,true);realFrames++;active=true;
-            state=backend=(mode==FrameGenerationMode.SIMPLE?"Simple":"FSR "+fsr.provider+(multiplier>2?" + Slopium":""))+" x"+multiplier;
+            state=backend="FSR "+fsr.provider+(multiplier>2?" + Slopium":"")+" up to x"+multiplier;
         } catch(RuntimeException|LinkageError failure) {
             if(drawing)throw failure;
             failedRevision=Slopium.configRevision();state=failureState="disabled: "+failure.getMessage();active=false;
@@ -198,7 +208,11 @@ public final class FrameGeneration {
         }
     }
     private static void hold(com.mojang.blaze3d.pipeline.RenderTarget main,long now) {
-        try(var ignored=new GlState()){present(current.fbo,main.frameBufferId,main.width,main.height,true);}
+        try(var ignored=new GlState()){
+            present(heldSource==0?current.fbo:heldSource,main.frameBufferId,main.width,main.height,false);
+            glBindFramebuffer(GL_READ_FRAMEBUFFER,mode==FrameGenerationMode.SIMPLE&&heldSource==generated.fbo?generated.fbo:current.fbo);glBindFramebuffer(GL_DRAW_FRAMEBUFFER,main.frameBufferId);
+            glBlitFramebuffer(0,0,main.width,main.height,0,0,main.width,main.height,GL_DEPTH_BUFFER_BIT,GL_NEAREST);
+        }
         restoreLighting(Minecraft.getInstance());heldFrames++;recordOutput(now,false);active=true;
     }
     private static void presentGenerated(com.mojang.blaze3d.pipeline.RenderTarget main,SlopiumConfig c) {
@@ -208,7 +222,7 @@ public final class FrameGeneration {
             simple.synthesize(previous,current,generated,CADENCE.fraction(),c.frameGenerationRejectionPixels,fsrMiddle);
             source=generated.fbo;
         }
-        present(source,main.frameBufferId,main.width,main.height,false);
+        heldSource=source;present(source,main.frameBufferId,main.width,main.height,false);
         mark(main,c);
         generatedFrames++;
     }
