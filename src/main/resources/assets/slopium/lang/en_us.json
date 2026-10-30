@@ -1,5 +1,5 @@
 {
-  "slopium.version": "Beta 4",
+  "slopium.version": "Beta 5",
   "slopium.page.frame_generation": "Frame generation",
   "slopium.frame_generation.unavailable": "Slopium: frame generation disabled: %s. Normal rendering continues. Apply settings to retry.",
   "slopium.group.frame_generation": "Mode and presentation rate",
@@ -223,5 +223,7 @@
   "slopium.frame_generation_target.unlimited": "Minecraft limit only",
   "slopium.frame_generation_input": "Target real FPS",
   "slopium.frame_generation_input.unlimited": "Automatic",
-  "slopium.frame_generation_input.tooltip": "Priority world-render frequency for both methods. 0 measures ordinary frames on activation and every 5 seconds. 30 targets one real frame roughly every 33 ms. Missed synthetic frames are skipped instead of delaying real frames to complete the multiplier. CPU/GPU capacity may prevent meeting the target. At 30 real FPS, x32 attempts up to 960 output FPS; lower output limits and VSync still apply. Server ticks are unchanged."
+  "slopium.frame_generation_input.tooltip": "Priority world-render frequency for both methods. 0 measures ordinary frames on activation and every 5 seconds. 30 targets one real frame roughly every 33 ms. Missed synthetic frames are skipped instead of delaying real frames to complete the multiplier. CPU/GPU capacity may prevent meeting the target. At 30 real FPS, x32 attempts up to 960 output FPS; lower output limits and VSync still apply. Server ticks are unchanged.",
+  "slopium.frame_generation_fast": "Lightweight intermediate frames",
+  "slopium.frame_generation_fast.tooltip": "Skips repeated world preparation and paired render-frame events on intermediate frames. Ticks, input, picking, hand and HUD remain live. This is a short path on the existing render thread, not an independent presenter thread. Late mod geometry is captured for Simple and drawn separately for FSR. Disable for mod compatibility issues. Gains depend on the work bypassed."
 }

@@ -21,6 +21,9 @@ public final class FrameGeneration {
     private static GpuTimer timer;
     private static double gpuMilliseconds;
     private static Matrix4f previousVp;
+    private static boolean lastWorldReal;
+    private static long fastFailedRevision=-1;
+    private static String fastProblem="";
     private static Vec3 eye;
     private static Quaternionf rotation;
     private static Object world;
@@ -59,7 +62,7 @@ public final class FrameGeneration {
         return String.format(java.util.Locale.ROOT,"Frame generation | %s | real=%d | generated=%d | endpoints=%d | held=%d | input target=%d | scheduled=%d FPS | base=%.1f FPS | output=%.1f FPS | GPU generation=%.3f ms",
             state,realFrames,generatedFrames,endpointFrames,heldFrames,SlopiumConfig.get().frameGenerationInputFps,SCHEDULE.targetFps(),seconds<=0?0:(realFrames-realStarts)/seconds,seconds<=0?0:(outputFrames-outputStarts)/seconds,gpuMilliseconds);
     }
-    public static void resetCounters(){realFrames=generatedFrames=endpointFrames=outputFrames=heldFrames=0;lastOutput=elapsedNanos=outputStarts=realStarts=0;gpuMilliseconds=0;if(timer!=null){timer.nanos=timer.samples=0;}}
+    public static void resetCounters(){FastFramePath.reset();realFrames=generatedFrames=endpointFrames=outputFrames=heldFrames=0;lastOutput=elapsedNanos=outputStarts=realStarts=0;gpuMilliseconds=0;if(timer!=null){timer.nanos=timer.samples=0;}}
     private static void recordOutput(long now,boolean real) {
         if(lastOutput!=0)elapsedNanos+=now-lastOutput;
         else {outputStarts++;if(real)realStarts++;}
@@ -77,6 +80,7 @@ public final class FrameGeneration {
         CADENCE.reset();SCHEDULE.reset();heldSource=0;previousVp=null;eye=null;rotation=null;world=null;active=false;lastCapture=lastOutput=0;
     }
     public static void render(Camera camera,Matrix4f view,Matrix4f projection,Runnable draw) {
+        lastWorldReal=false;
         var mc=Minecraft.getInstance();var c=SlopiumConfig.get();var main=mc.getMainRenderTarget();
         String blocked=!c.enabled||c.frameGenerationMode==FrameGenerationMode.OFF?"off":
             mc.screen!=null?"paused (menu)":mc.getOverlay()!=null?"paused (loading overlay)":
@@ -137,40 +141,17 @@ public final class FrameGeneration {
             if(mode==FrameGenerationMode.SIMPLE) {
                 Matrix4f vp=new Matrix4f(projection).mul(view);
                 if(previousVp!=null&&!SCHEDULE.due(now)) {
-                    if(!SCHEDULE.canGenerate(now,multiplier)){hold(main,now);return;}
-                    try(var ignored=new GlState()) {
-                        if(c.diagnostics&&timer==null)timer=new GpuTimer();
-                        if(timer!=null)timer.start();
-                        try {
-                            reprojection.draw(current,generated.fbo,previousVp,vp,eye.subtract(camera.getPosition()),projection,c.frameGenerationGridStep);
-                            heldSource=generated.fbo;present(generated.fbo,main.frameBufferId,main.width,main.height,true);
-                            mark(main,c);
-                        } finally {if(timer!=null){timer.stop();gpuMilliseconds=timer.milliseconds();}}
-                    }
-                    restoreLighting(mc);SCHEDULE.generated(Math.max(System.nanoTime()-now,(long)(gpuMilliseconds*1e6)));generatedFrames++;recordOutput(now,false);
+                    intermediate(camera,view,projection,now,multiplier);
                 } else {
                     drawing=true;draw.run();drawing=false;drew=true;
                     try(var ignored=new GlState()){present(main.frameBufferId,current.fbo,main.width,main.height,true);}
                     previousVp=vp;eye=camera.getPosition();rotation=new Quaternionf(camera.rotation());lastCapture=now;
-                    heldSource=current.fbo;SCHEDULE.captured(now);realFrames++;recordOutput(now,true);
+                    heldSource=current.fbo;SCHEDULE.captured(now);lastWorldReal=true;realFrames++;recordOutput(now,true);
                 }
                 active=true;state=backend="FrameGen reprojection up to x"+multiplier;return;
             }
             if(previousVp!=null&&!SCHEDULE.due(now)) {
-                // Skip obsolete fractions rather than delaying the next real frame to drain a pair.
-                if(!CADENCE.sample(now-lastCapture,SCHEDULE.period())||!SCHEDULE.canGenerate(now,multiplier)) {hold(main,now);return;}
-                try(var ignored=new GlState()) {
-                    if(CADENCE.endpoint()) {heldSource=current.fbo;present(current.fbo,main.frameBufferId,main.width,main.height,true);endpointFrames++;}
-                    else {
-                        if(timer!=null)timer.start();
-                        try {
-                            GlState.fullscreen();glBindFramebuffer(GL_READ_FRAMEBUFFER,current.fbo);glBindFramebuffer(GL_DRAW_FRAMEBUFFER,main.frameBufferId);
-                            glBlitFramebuffer(0,0,main.width,main.height,0,0,main.width,main.height,GL_DEPTH_BUFFER_BIT,GL_NEAREST);
-                            presentGenerated(main,c);
-                        }finally{if(timer!=null){timer.stop();gpuMilliseconds=timer.milliseconds();}}
-                    }
-                }
-                restoreLighting(mc);SCHEDULE.generated(Math.max(System.nanoTime()-now,(long)(gpuMilliseconds*1e6)));recordOutput(now,false);active=true;return;
+                intermediate(camera,view,projection,now,multiplier);return;
             }
             drawing=true;draw.run();drawing=false;drew=true;
             Matrix4f vp=new Matrix4f(projection).mul(view),toPrevious=new Matrix4f();
@@ -194,7 +175,7 @@ public final class FrameGeneration {
                 } finally {if(timer!=null){timer.stop();gpuMilliseconds=timer.milliseconds();}}
             }
             previousVp=vp;eye=camera.getPosition();rotation=new Quaternionf(camera.rotation());lastCapture=now;
-            SCHEDULE.captured(now);
+            SCHEDULE.captured(now);lastWorldReal=true;
             recordOutput(now,true);realFrames++;active=true;
             state=backend="FSR "+fsr.provider+(multiplier>2?" + Slopium":"")+" up to x"+multiplier;
         } catch(RuntimeException|LinkageError failure) {
@@ -205,6 +186,81 @@ public final class FrameGeneration {
             if(!drew)draw.run();
             // A valid current frame is already in the main target on dispatch failure.
             release();
+        }
+    }
+    private static void intermediate(Camera camera,Matrix4f view,Matrix4f projection,long now,int multiplier) {
+        var mc=Minecraft.getInstance();var c=SlopiumConfig.get();var main=mc.getMainRenderTarget();
+        if(mode==FrameGenerationMode.SIMPLE) {
+            Matrix4f vp=new Matrix4f(projection).mul(view);
+            if(!SCHEDULE.canGenerate(now,multiplier)){hold(main,now);return;}
+            try(var ignored=new GlState()) {
+                if(c.diagnostics&&timer==null)timer=new GpuTimer();
+                if(timer!=null)timer.start();
+                try {
+                    reprojection.draw(current,generated.fbo,previousVp,vp,eye.subtract(camera.getPosition()),projection,c.frameGenerationGridStep);
+                    heldSource=generated.fbo;present(generated.fbo,main.frameBufferId,main.width,main.height,true);
+                    mark(main,c);
+                } finally {if(timer!=null){timer.stop();gpuMilliseconds=timer.milliseconds();}}
+            }
+            restoreLighting(mc);SCHEDULE.generated(Math.max(System.nanoTime()-now,(long)(gpuMilliseconds*1e6)));generatedFrames++;recordOutput(now,false);
+            return;
+        }
+        // Skip obsolete fractions rather than delaying the next real frame to drain a pair.
+        if(!CADENCE.sample(now-lastCapture,SCHEDULE.period())||!SCHEDULE.canGenerate(now,multiplier)) {hold(main,now);return;}
+        try(var ignored=new GlState()) {
+            if(CADENCE.endpoint()) {heldSource=current.fbo;present(current.fbo,main.frameBufferId,main.width,main.height,true);endpointFrames++;}
+            else {
+                if(timer!=null)timer.start();
+                try {
+                    GlState.fullscreen();glBindFramebuffer(GL_READ_FRAMEBUFFER,current.fbo);glBindFramebuffer(GL_DRAW_FRAMEBUFFER,main.frameBufferId);
+                    glBlitFramebuffer(0,0,main.width,main.height,0,0,main.width,main.height,GL_DEPTH_BUFFER_BIT,GL_NEAREST);
+                    presentGenerated(main,c);
+                }finally{if(timer!=null){timer.stop();gpuMilliseconds=timer.milliseconds();}}
+            }
+        }
+        restoreLighting(mc);SCHEDULE.generated(Math.max(System.nanoTime()-now,(long)(gpuMilliseconds*1e6)));recordOutput(now,false);active=true;return;
+    }
+    public static boolean fastEligible(long now) {
+        var c=SlopiumConfig.get();var mc=Minecraft.getInstance();var main=mc.getMainRenderTarget();
+        return active&&c.enabled&&c.frameGenerationFastPath&&c.frameGenerationMode==mode&&mode!=FrameGenerationMode.OFF
+            &&revision==Slopium.configRevision()&&fastFailedRevision!=revision&&current!=null&&previousVp!=null
+            &&mc.level==world&&mc.player!=null&&mc.screen==null&&mc.getOverlay()==null&&!mc.isPaused()&&mc.isWindowActive()
+            &&mc.options.graphicsMode().get()!=GraphicsStatus.FABULOUS&&!Slopium.loaded("iris")&&!Slopium.loaded("oculus")
+            &&current.width==main.width&&current.height==main.height&&!SCHEDULE.probeDue(now)&&!SCHEDULE.due(now)
+            &&CADENCE.multiplier()==c.frameGenerationMultiplier;
+    }
+    public static boolean tryFast(Camera camera,Matrix4f view,Matrix4f projection) {
+        long now=System.nanoTime();if(!fastEligible(now))return false;
+        var mc=Minecraft.getInstance();if(glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING)!=mc.getMainRenderTarget().frameBufferId)return false;
+        // Keep normal camera-cut handling and any changed camera effects on the complete path.
+        if(eye==null||eye.distanceToSqr(camera.getPosition())>64||Math.abs(rotation.dot(camera.rotation()))<.995f
+            ||mc.player.spinningEffectIntensity>0||mc.player.hurtTime>0)return false;
+        try {
+            SCHEDULE.begin(now);lastWorldReal=false;
+            intermediate(camera,view,projection,now,CADENCE.multiplier());return true;
+        } catch(RuntimeException|LinkageError e) {
+            disableFast(e);return false;
+        }
+    }
+    public static void disableFast(Throwable e) {
+        fastFailedRevision=Slopium.configRevision();fastProblem=e.getClass().getSimpleName()+": "+e.getMessage();
+        com.mojang.logging.LogUtils.getLogger().warn("Slopium short frame path failed; using ordinary rendering until settings change",e);
+        release();
+    }
+    public static String fastFailure(){return fastFailedRevision==Slopium.configRevision()?" | fallback="+fastProblem:"";}
+    public static void captureLateWorld() {
+        if(!lastWorldReal||mode!=FrameGenerationMode.SIMPLE||current==null||!SlopiumConfig.get().frameGenerationFastPath)return;
+        var main=Minecraft.getInstance().getMainRenderTarget();
+        // Include AFTER_LEVEL geometry in simple reprojection, before hand/HUD are drawn.
+        try(var ignored=new GlState()){present(main.frameBufferId,current.fbo,main.width,main.height,true);}
+    }
+    public static void finishFastWorld(Matrix4f view,Matrix4f projection) {
+        var mc=Minecraft.getInstance();mc.gameRenderer.resetProjectionMatrix(projection);
+        if(mode==FrameGenerationMode.FSR) {
+            // FSR history is captured earlier: keep late mod geometry live instead of dropping it.
+            net.neoforged.neoforge.client.ClientHooks.dispatchRenderStage(
+                net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_LEVEL,mc.levelRenderer,null,
+                view,projection,mc.levelRenderer.getTicks(),mc.gameRenderer.getMainCamera(),mc.levelRenderer.getFrustum());
         }
     }
     private static void hold(com.mojang.blaze3d.pipeline.RenderTarget main,long now) {

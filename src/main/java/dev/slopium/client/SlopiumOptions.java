@@ -42,6 +42,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
                     .addOption(mode(builder,"frame_generation_mode",FrameGenerationMode.class,v->c.frameGenerationMode=v,()->c.frameGenerationMode,FrameGenerationMode.OFF,true))
                     .addOption(integer(builder,"frame_generation_multiplier",v->c.frameGenerationMultiplier=v,()->c.frameGenerationMultiplier,2,2,32,1))
                     .addOption(integer(builder,"frame_generation_input",v->c.frameGenerationInputFps=v,()->c.frameGenerationInputFps,0,0,240,1))
+                    .addOption(bool(builder,"frame_generation_fast",v->c.frameGenerationFastPath=v,()->c.frameGenerationFastPath,false,true))
                     .addOption(bool(builder,"frame_generation_mark",v->c.frameGenerationMarkFrames=v,()->c.frameGenerationMarkFrames,false,true))
                     .addOption(bool(builder,"frame_generation_counter",v->c.frameGenerationCounter=v,()->c.frameGenerationCounter,true,true))
                     .addOption(integer(builder,"frame_generation_target",v->c.frameGenerationTargetFps=v,()->c.frameGenerationTargetFps,0,0,240,10)))
@@ -187,7 +188,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
         if (!state.readBooleanOption(id("enabled"))) return false;
         if(key.startsWith("frame_generation_")&&!key.equals("frame_generation_mode")) {
             var fg=state.readEnumOption(id("frame_generation_mode"),FrameGenerationMode.class);
-            if(key.equals("frame_generation_target")||key.equals("frame_generation_input")||key.equals("frame_generation_multiplier")||key.equals("frame_generation_mark")||key.equals("frame_generation_counter"))return fg!=FrameGenerationMode.OFF;
+            if(key.equals("frame_generation_target")||key.equals("frame_generation_input")||key.equals("frame_generation_multiplier")||key.equals("frame_generation_mark")||key.equals("frame_generation_counter")||key.equals("frame_generation_fast"))return fg!=FrameGenerationMode.OFF;
             if(key.equals("frame_generation_grid"))return fg==FrameGenerationMode.SIMPLE;
             if(key.equals("frame_generation_fsr_debug"))return fg==FrameGenerationMode.FSR;
             return fg==FrameGenerationMode.FSR&&state.readIntOption(id("frame_generation_multiplier"))>2;

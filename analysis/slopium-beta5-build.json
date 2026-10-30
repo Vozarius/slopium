@@ -1,0 +1,59 @@
+{
+  "version": "1-beta.5",
+  "displayVersion": "Бета 5",
+  "jar": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-5.jar",
+  "sha256": "75be9adf04acbf610e4a66ac9f18a7355f8b6a3246ae448e8f9fe42c8c242763",
+  "bytes": 30791894,
+  "sources": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-5-sources.jar",
+  "sourcesSha256": "95372bc91b5135f15e14b4fee82dc6774d8dfc87592c8b1c3979b9bdb6bedf88",
+  "tests": {
+    "errors": 0,
+    "failures": 0,
+    "tests": 33,
+    "skipped": 0
+  },
+  "options": 60,
+  "fastPathDefault": false,
+  "independentPresentationThread": false,
+  "userModsModified": false,
+  "verifiedLogs": [
+    "build/beta5-legacy.log",
+    "build/beta5-world.log",
+    "build/beta5-full-retry.log",
+    "build/beta5-world-full-final.log",
+    "build/beta5-world-full-audio-retry.log",
+    "build/beta5-release.log"
+  ],
+  "failedRuns": [
+    {
+      "log": "build/beta5-full.log",
+      "reason": "Create registration: unused register callbacks; root cause unproven"
+    },
+    {
+      "log": "build/beta5-world-full.log",
+      "reason": "Cold FSR startup included in measurement failed real FPS assertion; subsequent tests report startup separately"
+    },
+    {
+      "log": "build/beta5-world-full-audio.log",
+      "reason": "Intermittent Create registration failure repeated before world load"
+    }
+  ],
+  "controlledCallbackLoad": {
+    "fsrBefore": 72.89,
+    "fsrAfter": 128.49,
+    "simpleAfter": 137.07,
+    "simpleBefore": 76.01,
+    "targetRealFps": 30,
+    "multiplier": 6,
+    "cpuMilliseconds": 12
+  },
+  "fullModsNullAudio": {
+    "fsrAfter": 166.04,
+    "simpleBefore": 165.53,
+    "multiplier": 6,
+    "simpleAfter": 146.75,
+    "targetRealFps": 30,
+    "fsrBefore": 170.24
+  },
+  "performanceLimitation": "Output includes held frames. Gain only demonstrated with artificial expensive render callbacks. No gain in full mod scene; experimental toggle disabled by default. No factory benchmark or guaranteed multiplier."
+}

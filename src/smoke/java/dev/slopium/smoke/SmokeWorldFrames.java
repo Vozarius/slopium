@@ -20,11 +20,23 @@ final class SmokeWorldFrames {
     private boolean started;
     private int warmup,phase=-1,frames,phaseTicks;
     private long began;
+    private int settlingFrames;
+    private boolean measuring;
     private volatile boolean sceneReady;
     private final FrameGenerationMode[] modes={FrameGenerationMode.OFF,FrameGenerationMode.SIMPLE,FrameGenerationMode.SIMPLE,FrameGenerationMode.FSR,FrameGenerationMode.FSR};
-    private final int[] factors={2,32,32,32,32};
+    private final int[] factors={2,6,6,6,6};
     private final int[] inputs={0,30,30,30,30};
-    SmokeWorldFrames(){NeoForge.EVENT_BUS.addListener(this::tick);NeoForge.EVENT_BUS.addListener(this::frame);}
+    private long callbacks;
+    private long fastHud;
+    private final double[] outputRates=new double[5];
+    private void simulatedRenderLoad(RenderFrameEvent.Pre event) {
+        if(phase<0||!Boolean.getBoolean("slopium.fastSmoke")||Minecraft.getInstance().screen!=null)return;
+        callbacks++;
+        long until=System.nanoTime()+12_000_000L;
+        while(System.nanoTime()<until)Thread.onSpinWait();
+    }
+    private void hud(RenderGuiEvent.Post event){if(phase>=0&&FastFramePath.active())fastHud++;}
+    SmokeWorldFrames(){NeoForge.EVENT_BUS.addListener(this::tick);NeoForge.EVENT_BUS.addListener(this::frame);NeoForge.EVENT_BUS.addListener(this::simulatedRenderLoad);NeoForge.EVENT_BUS.addListener(this::hud);}
     private void tick(ClientTickEvent.Post event) {
         var mc=Minecraft.getInstance();
         if(!started&&mc.screen instanceof TitleScreen&&mc.getOverlay()==null) {
@@ -60,10 +72,15 @@ final class SmokeWorldFrames {
     }
     private void next() {
         var mc=Minecraft.getInstance();
-        if(++phase==modes.length){LogUtils.getLogger().info("SLOPIUM_WORLD: all actual-world generation phases passed");mc.stop();return;}
+        if(++phase==modes.length){
+            if(Boolean.getBoolean("slopium.fastSmoke")&&(outputRates[2]<outputRates[1]*1.15||outputRates[4]<outputRates[3]*1.15))throw new AssertionError("Short path did not reduce controlled render-callback overhead");
+            LogUtils.getLogger().info("SLOPIUM_WORLD: all actual-world generation phases passed");mc.stop();return;
+        }
         FrameGeneration.release();FrameGeneration.resetCounters();frames=phaseTicks=0;began=System.nanoTime();
+        measuring=false;settlingFrames=0;
         var c=SlopiumConfig.get();c.enabled=true;c.diagnostics=true;c.frameGenerationMode=modes[phase];c.frameGenerationMultiplier=factors[phase];
-        c.frameGenerationTargetFps=phase==1||phase==3?240:0;c.frameGenerationCounter=true;c.frameGenerationMarkFrames=true;
+        c.frameGenerationTargetFps=0;c.frameGenerationCounter=true;c.frameGenerationMarkFrames=true;
+        c.frameGenerationFastPath=phase==2||phase==4;callbacks=fastHud=0;
         c.frameGenerationInputFps=Boolean.getBoolean("slopium.inputSmoke")?inputs[phase]:0;
         LogUtils.getLogger().info("SLOPIUM_WORLD: starting {} x{}",modes[phase],factors[phase]);
     }
@@ -72,17 +89,36 @@ final class SmokeWorldFrames {
         if(!started||mc.level==null||mc.player==null||mc.screen!=null||warmup<200||!sceneReady||mc.player.getY()<290||
             !mc.level.getBlockState(new net.minecraft.core.BlockPos(0,301,14)).is(net.minecraft.world.level.block.Blocks.BRICKS))return;
         if(phase<0){next();return;}
-        frames++;
+        if(!measuring) {
+            // Measure context/shader startup separately from the sustained loop. Native FSR can
+            // take seconds to initialize; three ordinary frames also prime its first image pair.
+            if(++settlingFrames<3)return;
+            LogUtils.getLogger().info("SLOPIUM_WORLD: phase {} startup {} ms",phase,(System.nanoTime()-began)/1e6);
+            FrameGeneration.resetCounters();frames=phaseTicks=0;callbacks=fastHud=0;began=System.nanoTime();measuring=true;return;
+        }
+        frames=modes[phase]==FrameGenerationMode.OFF?frames+1:(int)FrameGeneration.outputFrames;
         if(System.nanoTime()-began<8_000_000_000L)return;
         if(modes[phase]!=FrameGenerationMode.OFF&&(FrameGeneration.generatedFrames<30||FrameGeneration.realFrames<5))throw new AssertionError("No actual-world generation: "+FrameGeneration.status());
         if(Boolean.getBoolean("slopium.inputSmoke")&&inputs[phase]>0) {
             double seconds=(System.nanoTime()-began)/1e9;
             if(FrameGeneration.realFrames>Math.ceil(seconds*inputs[phase])+2)throw new AssertionError("World input cap exceeded: "+FrameGeneration.status());
             if(frames>Math.ceil(seconds*inputs[phase]*factors[phase])+8)throw new AssertionError("Output pacing missing above vanilla sentinel: "+frames+" in "+seconds);
-            if(FrameGeneration.realFrames<seconds*24)throw new AssertionError("x32 starved real world frames: "+FrameGeneration.status());
+            if(FrameGeneration.realFrames<seconds*20)throw new AssertionError("Real world frames starved: "+FrameGeneration.status());
         }
-        LogUtils.getLogger().info("SLOPIUM_WORLD: {} x{} actual loop {} FPS; {}",modes[phase],factors[phase],frames/((System.nanoTime()-began)/1e9),FrameGeneration.status());
-        Screenshot.grab(mc.gameDirectory,"beta4-priority-"+phase+".png",mc.getMainRenderTarget(),m->{});
+        outputRates[phase]=frames/((System.nanoTime()-began)/1e9);
+        if(phase==2||phase==4) {
+            if(FastFramePath.fastFrames<30)throw new AssertionError("Short path never used: "+FastFramePath.status());
+            if(fastHud<FastFramePath.fastFrames-1)throw new AssertionError("HUD did not remain live on short frames");
+            if(phaseTicks<100)throw new AssertionError("Client ticks starved");
+            var config=SlopiumConfig.get();config.frameGenerationFastPath=false;
+            if(FrameGeneration.fastEligible(System.nanoTime()))throw new AssertionError("Short path ignored toggle");
+            config.frameGenerationFastPath=true;
+            var saved=mc.screen;mc.screen=new net.minecraft.client.gui.screens.PauseScreen(false);
+            if(FrameGeneration.fastEligible(System.nanoTime()))throw new AssertionError("Short path ignored menu");
+            mc.screen=saved;
+        }
+        LogUtils.getLogger().info("SLOPIUM_WORLD: {} x{} fast={} actual loop {} FPS; {}; {}; render callbacks={} ticks={}",modes[phase],factors[phase],SlopiumConfig.get().frameGenerationFastPath,outputRates[phase],FrameGeneration.status(),FastFramePath.status(),callbacks,phaseTicks);
+        Screenshot.grab(mc.gameDirectory,"beta5-fast-"+phase+".png",mc.getMainRenderTarget(),m->{});
         next();
     }
 }

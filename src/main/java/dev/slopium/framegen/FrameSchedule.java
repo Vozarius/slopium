@@ -29,6 +29,7 @@ public final class FrameSchedule {
         lastStart=now;
     }
     public boolean probing(){return probing;}
+    public boolean probeDue(long now){return probing||target==0&&now>=probeAt;}
     public long period(){return period;}
     public int targetFps(){return period==0?0:(int)Math.clamp(Math.round(1e9/period),1,1_000_000);}
     public boolean due(long now){return !captured||now-next>=0;}

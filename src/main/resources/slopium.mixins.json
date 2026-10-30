@@ -45,6 +45,9 @@
     "FlywheelGpuContextMixin",
     "FlywheelDepthSourceMixin",
     "FrameGenerationMixin",
+    "FrameGameRendererAccess",
+    "FramePresentationMixin",
+    "FrameFastLevelMixin",
     "FrameGenerationLimitMixin"
   ],
   "injectors": {
