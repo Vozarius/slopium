@@ -17,6 +17,7 @@ import net.neoforged.neoforge.common.NeoForge;
 
 /** Actual integrated-server world + normal GameRenderer/swap loop; no simulated world draw. */
 final class SmokeWorldFrames {
+    private final SmokeParallelFrames parallel=Boolean.getBoolean("slopium.asyncSmoke")?new SmokeParallelFrames():null;
     private boolean started;
     private int warmup,phase=-1,frames,phaseTicks;
     private long began;
@@ -88,6 +89,7 @@ final class SmokeWorldFrames {
         var mc=Minecraft.getInstance();
         if(!started||mc.level==null||mc.player==null||mc.screen!=null||warmup<200||!sceneReady||mc.player.getY()<290||
             !mc.level.getBlockState(new net.minecraft.core.BlockPos(0,301,14)).is(net.minecraft.world.level.block.Blocks.BRICKS))return;
+        if(parallel!=null){parallel.frame();return;}
         if(phase<0){next();return;}
         if(!measuring) {
             // Measure context/shader startup separately from the sustained loop. Native FSR can

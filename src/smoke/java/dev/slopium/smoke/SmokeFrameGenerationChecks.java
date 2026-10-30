@@ -5,6 +5,20 @@ import static org.lwjgl.opengl.GL33C.*;
 
 /** Real GPU checks, intentionally outside the distributable JAR. */
 final class SmokeFrameGenerationChecks {
+    static void screenSpace() {
+        try(var state=new GlState();var a=new GlImage(128,128,GL_RGBA8,0);var b=new GlImage(128,128,GL_RGBA8,0);
+            var out=new GlImage(128,128,GL_RGBA8,0);var flow=new SimpleInterpolator(128,128,4,true)) {
+            float[] clear=new float[4];glGetFloatv(GL_COLOR_CLEAR_VALUE,clear);
+            try {
+                patch(a,40);patch(b,48);flow.prepare(a,b,new Matrix4f(),new Matrix4f(),16);
+                flow.synthesize(a,b,out,.25f,6,null);float quarter=red(out,44);
+                flow.synthesize(a,b,out,.75f,6,null);float threeQuarter=red(out,44);
+                if(quarter<.8f||threeQuarter>.25f)throw new AssertionError("Screen-space worker shader repeats endpoints: "+quarter+", "+threeQuarter);
+                if(glGetError()!=GL_NO_ERROR)throw new AssertionError("Screen-space shader GL error");
+                com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_PARALLEL: distinct GPU motion phases verified without depth textures");
+            }finally{glClearColor(clear[0],clear[1],clear[2],clear[3]);}
+        }
+    }
     static void run() {
         try(var state=new GlState();var a=new GlImage(128,128,GL_RGBA8,GL_DEPTH_COMPONENT32F);
             var b=new GlImage(128,128,GL_RGBA8,GL_DEPTH_COMPONENT32F);var out=new GlImage(128,128,GL_RGBA8,0);

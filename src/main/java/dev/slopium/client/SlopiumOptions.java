@@ -43,6 +43,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
                     .addOption(integer(builder,"frame_generation_multiplier",v->c.frameGenerationMultiplier=v,()->c.frameGenerationMultiplier,2,2,32,1))
                     .addOption(integer(builder,"frame_generation_input",v->c.frameGenerationInputFps=v,()->c.frameGenerationInputFps,0,0,240,1))
                     .addOption(bool(builder,"frame_generation_fast",v->c.frameGenerationFastPath=v,()->c.frameGenerationFastPath,false,true))
+                    .addOption(bool(builder,"frame_generation_parallel",v->c.frameGenerationParallel=v,()->c.frameGenerationParallel,false,dev.slopium.framegen.AsyncPresenter.supported()))
                     .addOption(bool(builder,"frame_generation_mark",v->c.frameGenerationMarkFrames=v,()->c.frameGenerationMarkFrames,false,true))
                     .addOption(bool(builder,"frame_generation_counter",v->c.frameGenerationCounter=v,()->c.frameGenerationCounter,true,true))
                     .addOption(integer(builder,"frame_generation_target",v->c.frameGenerationTargetFps=v,()->c.frameGenerationTargetFps,0,0,240,10)))
@@ -173,6 +174,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
         var result = new java.util.ArrayList<ResourceLocation>();
         if (!key.equals("enabled") && !key.equals("diagnostics")) result.add(id("enabled"));
         if(key.startsWith("frame_generation_")&&!key.equals("frame_generation_mode"))result.add(id("frame_generation_mode"));
+        if(key.startsWith("frame_generation_")&&!key.equals("frame_generation_mode")&&!key.equals("frame_generation_parallel"))result.add(id("frame_generation_parallel"));
         if(key.equals("frame_generation_cell")||key.equals("frame_generation_search")||key.equals("frame_generation_rejection"))result.add(id("frame_generation_multiplier"));
         String parent = PARENTS.get(key), override = override(key);
         if (parent != null) result.add(id(parent));
@@ -188,6 +190,11 @@ public final class SlopiumOptions implements ConfigEntryPoint {
         if (!state.readBooleanOption(id("enabled"))) return false;
         if(key.startsWith("frame_generation_")&&!key.equals("frame_generation_mode")) {
             var fg=state.readEnumOption(id("frame_generation_mode"),FrameGenerationMode.class);
+            if(key.equals("frame_generation_parallel"))return fg==FrameGenerationMode.SIMPLE;
+            boolean parallel=fg==FrameGenerationMode.SIMPLE&&state.readBooleanOption(id("frame_generation_parallel"));
+            if(key.equals("frame_generation_fast")||key.equals("frame_generation_mark"))return fg!=FrameGenerationMode.OFF&&!parallel;
+            if(key.equals("frame_generation_grid"))return fg==FrameGenerationMode.SIMPLE&&!parallel;
+            if(parallel&&(key.equals("frame_generation_cell")||key.equals("frame_generation_search")||key.equals("frame_generation_rejection")))return true;
             if(key.equals("frame_generation_target")||key.equals("frame_generation_input")||key.equals("frame_generation_multiplier")||key.equals("frame_generation_mark")||key.equals("frame_generation_counter")||key.equals("frame_generation_fast"))return fg!=FrameGenerationMode.OFF;
             if(key.equals("frame_generation_grid"))return fg==FrameGenerationMode.SIMPLE;
             if(key.equals("frame_generation_fsr_debug"))return fg==FrameGenerationMode.FSR;

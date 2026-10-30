@@ -38,6 +38,12 @@ public final class FrameGeneration {
     public static void overlay(net.neoforged.neoforge.client.event.RenderGuiEvent.Post event) {
         var mc=Minecraft.getInstance();var c=SlopiumConfig.get();
         if(!c.enabled||c.frameGenerationMode==FrameGenerationMode.OFF||mc.level==null||mc.screen!=null)return;
+        if(AsyncPresenter.active()) {
+            if(c.frameGenerationCounter)event.getGuiGraphics().drawString(mc.font,AsyncPresenter.overlay(),8,event.getGuiGraphics().guiHeight()-64,0xFFFFFFFF);
+            return;
+        }
+        if(c.frameGenerationParallel&&AsyncPresenter.failureNotice()!=null)
+            event.getGuiGraphics().drawString(mc.font,AsyncPresenter.failureNotice(),8,event.getGuiGraphics().guiHeight()-80,0xFFFFAA55);
         // Errors must remain visible even with diagnostics and the optional counter off.
         if(!c.frameGenerationCounter&&active)return;
         var line=net.minecraft.network.chat.Component.literal("Slopium FG: "+state);
@@ -50,6 +56,7 @@ public final class FrameGeneration {
         }
     }
     public static int limit(int original) {
+        if(AsyncPresenter.active())return AsyncPresenter.inputLimit(original);
         if(!active)return original;
         var c=SlopiumConfig.get();
         int input=SCHEDULE.probing()?0:(c.frameGenerationInputFps>0?c.frameGenerationInputFps:SCHEDULE.targetFps());
@@ -62,7 +69,7 @@ public final class FrameGeneration {
         return String.format(java.util.Locale.ROOT,"Frame generation | %s | real=%d | generated=%d | endpoints=%d | held=%d | input target=%d | scheduled=%d FPS | base=%.1f FPS | output=%.1f FPS | GPU generation=%.3f ms",
             state,realFrames,generatedFrames,endpointFrames,heldFrames,SlopiumConfig.get().frameGenerationInputFps,SCHEDULE.targetFps(),seconds<=0?0:(realFrames-realStarts)/seconds,seconds<=0?0:(outputFrames-outputStarts)/seconds,gpuMilliseconds);
     }
-    public static void resetCounters(){FastFramePath.reset();realFrames=generatedFrames=endpointFrames=outputFrames=heldFrames=0;lastOutput=elapsedNanos=outputStarts=realStarts=0;gpuMilliseconds=0;if(timer!=null){timer.nanos=timer.samples=0;}}
+    public static void resetCounters(){AsyncPresenter.resetCounters();FastFramePath.reset();realFrames=generatedFrames=endpointFrames=outputFrames=heldFrames=0;lastOutput=elapsedNanos=outputStarts=realStarts=0;gpuMilliseconds=0;if(timer!=null){timer.nanos=timer.samples=0;}}
     private static void recordOutput(long now,boolean real) {
         if(lastOutput!=0)elapsedNanos+=now-lastOutput;
         else {outputStarts++;if(real)realStarts++;}
@@ -81,6 +88,7 @@ public final class FrameGeneration {
     }
     public static void render(Camera camera,Matrix4f view,Matrix4f projection,Runnable draw) {
         lastWorldReal=false;
+        if(AsyncPresenter.active()){draw.run();return;}
         var mc=Minecraft.getInstance();var c=SlopiumConfig.get();var main=mc.getMainRenderTarget();
         String blocked=!c.enabled||c.frameGenerationMode==FrameGenerationMode.OFF?"off":
             mc.screen!=null?"paused (menu)":mc.getOverlay()!=null?"paused (loading overlay)":

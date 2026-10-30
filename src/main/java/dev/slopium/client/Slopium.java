@@ -151,6 +151,7 @@ public final class Slopium {
                     +" | passes="+dev.slopium.visibility.GpuGlassDepth.passes+" | CPU submit total ms="+dev.slopium.visibility.GpuGlassDepth.submitNanos/1_000_000.0),false);
                 var timing = SlopiumStats.FRAME_TIMES.snapshot();
                 context.getSource().sendSuccess(()->Component.literal(dev.slopium.framegen.FrameGeneration.status()),false);
+                context.getSource().sendSuccess(()->Component.literal(dev.slopium.framegen.AsyncPresenter.status()),false);
                 context.getSource().sendSuccess(()->Component.literal(dev.slopium.framegen.FastFramePath.status()),false);
                 context.getSource().sendSuccess(() -> Component.literal(timing.samples() == 0
                     ? "Frames | no samples; enable diagnostics and close menus in the world"

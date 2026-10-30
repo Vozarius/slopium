@@ -7,8 +7,11 @@ public final class SimpleInterpolator implements AutoCloseable {
     private GlProgram flowProgram,interpolation;
     private GlImage flow;
     public SimpleInterpolator(int w,int h,int cell) {
+        this(w,h,cell,false);
+    }
+    public SimpleInterpolator(int w,int h,int cell,boolean screenSpace) {
         try {
-            flowProgram=new GlProgram("flow");interpolation=new GlProgram("interpolate");
+            flowProgram=new GlProgram(screenSpace?"async_flow":"flow");interpolation=new GlProgram("interpolate");
             flow=new GlImage(Math.max(1,(w+cell-1)/cell),Math.max(1,(h+cell-1)/cell),GL_RGBA16F,0);
         }catch(RuntimeException e){close();throw e;}
     }

@@ -132,3 +132,28 @@ extern "C" JNIEXPORT void JNICALL Java_dev_slopium_framegen_FsrNative_generate(J
     try{((Session*)ptr)->generate(frame,reset,delta,nearPlane,farPlane,fov,debug);}catch(const std::exception& ex){error(e,ex);}
 }
 extern "C" JNIEXPORT void JNICALL Java_dev_slopium_framegen_FsrNative_destroy(JNIEnv*,jclass,jlong ptr){delete (Session*)ptr;}
+
+// CPU presentation pacing only. Does not initialize D3D12/FSR or alter global timer resolution.
+struct PresentationWait {
+    HANDLE handles[2]{};
+    ~PresentationWait(){for(auto h:handles)if(h)CloseHandle(h);}
+};
+extern "C" JNIEXPORT jlong JNICALL Java_dev_slopium_framegen_PresentationTimer_create(JNIEnv*,jclass) {
+    auto p=std::make_unique<PresentationWait>();
+    p->handles[0]=CreateEventW(nullptr,FALSE,FALSE,nullptr);
+    p->handles[1]=CreateWaitableTimerExW(nullptr,nullptr,CREATE_WAITABLE_TIMER_HIGH_RESOLUTION,TIMER_MODIFY_STATE|SYNCHRONIZE);
+    return p->handles[0]&&p->handles[1]?(jlong)p.release():0;
+}
+extern "C" JNIEXPORT jboolean JNICALL Java_dev_slopium_framegen_PresentationTimer_awaitNative(JNIEnv*,jclass,jlong ptr,jlong nanos) {
+    auto p=(PresentationWait*)ptr;if(!p)return JNI_FALSE;
+    LARGE_INTEGER due;due.QuadPart=-(nanos/100+1);
+    if(!SetWaitableTimerEx(p->handles[1],&due,0,nullptr,nullptr,nullptr,0))return JNI_FALSE;
+    DWORD result=WaitForMultipleObjects(2,p->handles,FALSE,50);
+    return result==WAIT_OBJECT_0||result==WAIT_OBJECT_0+1;
+}
+extern "C" JNIEXPORT void JNICALL Java_dev_slopium_framegen_PresentationTimer_wakeNative(JNIEnv*,jclass,jlong ptr) {
+    if(ptr)SetEvent(((PresentationWait*)ptr)->handles[0]);
+}
+extern "C" JNIEXPORT void JNICALL Java_dev_slopium_framegen_PresentationTimer_destroy(JNIEnv*,jclass,jlong ptr) {
+    delete (PresentationWait*)ptr;
+}

@@ -32,6 +32,9 @@ final class SmokeOptionsChecks {
             value("frame_generation_mode",enumValue("frame_generation_mode","SIMPLE"));
             if(!option("frame_generation_input").isEnabled()||!option("frame_generation_fast").isEnabled())throw new AssertionError("Simple controls disabled");
             if(!option("frame_generation_grid").isEnabled()||option("frame_generation_cell").isEnabled()||option("frame_generation_fsr_debug").isEnabled())throw new AssertionError("Simple FG controls conflict");
+            value("frame_generation_parallel",true);
+            if(option("frame_generation_grid").isEnabled()||option("frame_generation_fast").isEnabled()||!option("frame_generation_cell").isEnabled())throw new AssertionError("Parallel controls conflict");
+            value("frame_generation_parallel",false);
             value("frame_generation_mode",enumValue("frame_generation_mode","FSR"));
             if(!option("frame_generation_input").isEnabled())throw new AssertionError("FSR input cap disabled");
             value("frame_generation_multiplier",2);

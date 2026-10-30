@@ -1,0 +1,61 @@
+{
+  "version": "1-beta.6",
+  "displayVersion": "Бета 6",
+  "date": "2026-10-31",
+  "jar": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-6.jar",
+  "sha256": "7816b3db031d5f38c1963a10a2e715abb399a373616fe372d04b56186df8ffc3",
+  "bytes": 30813272,
+  "sources": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-6-sources.jar",
+  "sourcesSha256": "ea3efc4542a653255338ca865a2506e9ba8efde4cc55d353a341baff080dbee4",
+  "tests": {
+    "failures": 0,
+    "tests": 33,
+    "errors": 0,
+    "skipped": 0
+  },
+  "options": 61,
+  "parallelDefault": false,
+  "independentPresentationThread": true,
+  "parallelBackend": "Windows WGL; Simple mode only; screen-space interpolation; high-resolution waitable timer",
+  "userModsModified": false,
+  "verifiedLogs": [
+    "build/beta6-parallel-precise.log",
+    "build/beta6-parallel-precise-full.log",
+    "build/beta6-release-smoke.log"
+  ],
+  "failedRuns": [
+    {
+      "log": "build/beta6-parallel-full.log",
+      "reason": "Native GLFW access violation while creating world before parallel mode was activated; root cause not established; subsequent full runs successful"
+    }
+  ],
+  "fullModCpuStallTest": {
+    "minimumRenderThreadStallMs": 55,
+    "x32Capped240": {
+      "output": 190.65497,
+      "real": 14.6945,
+      "stallsWithConcurrentGenerationAndSwap": 118
+    },
+    "baselineRealFps": 14.12299,
+    "x6": {
+      "output": 73.77368,
+      "real": 12.74545,
+      "stallsWithConcurrentGenerationAndSwap": 252
+    }
+  },
+  "validatedTransitions": [
+    "menu",
+    "restart",
+    "resize",
+    "VSync",
+    "global disable",
+    "no remaining presenter thread"
+  ],
+  "limitations": [
+    "Adds about one source-frame interval of latency; hand and HUD interpolated",
+    "Extra GPU work can affect real FPS; no guaranteed multiplier",
+    "Output counts successful swaps, not monitor scanouts",
+    "Long stalls hold last completed frame after finishing the available pair",
+    "No benchmark in user factory scene"
+  ]
+}
