@@ -5,8 +5,9 @@ uniform sampler2D previousColor,currentColor,previousDepth,currentDepth;
 uniform mat4 currentToPrevious,previousToCurrent;
 uniform vec2 size;
 uniform float searchPixels;
+uniform int hasDepth;
 vec2 cameraMotion(sampler2D depth,mat4 transform,vec2 p) {
-    float d=texture(depth,p).r;
+    float d=hasDepth!=0?texture(depth,p).r:1.0;
     vec4 q=transform*vec4(p*2.0-1.0,d*2.0-1.0,1.0);
     if(q.w<=0.0)return vec2(0);
     return q.xy/q.w*.5+.5-p;
@@ -24,9 +25,16 @@ float errorAt(sampler2D a,sampler2D b,vec2 p,vec2 motion,vec2 prior) {
     return cost+dot(residual,residual)*0.00001;
 }
 vec2 estimate(sampler2D a,sampler2D b,sampler2D depth,mat4 transform) {
-    vec2 prior=vec2(0);
+    vec2 prior=cameraMotion(depth,transform,uv);
+    // No photometric match exists outside the source image. Retain geometric motion
+    // there: replacing it with zero breaks inverse warping of objects entering this area.
+    vec2 projected=uv+prior;
+    if(any(lessThan(projected,vec2(0)))||any(greaterThan(projected,vec2(1))))return prior;
     vec2 best=prior;
     float cost=errorAt(a,b,uv,best,prior);
+    // Screen-fixed UI may disagree with the world-derived motion. Keep a stationary candidate.
+    float stationary=errorAt(a,b,uv,vec2(0),prior);
+    if(stationary<cost){best=vec2(0);cost=stationary;}
     // Hierarchical bounded search; a stationary patch prefers its camera-derived vector.
     for(float stepSize=searchPixels*.5;stepSize>=1.0;stepSize*=.5) {
         vec2 center=best;

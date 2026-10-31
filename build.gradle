@@ -128,7 +128,7 @@ def nativeFsr = tasks.register('buildNativeFsr', Exec) {
 }
 tasks.named('processResources') { dependsOn nativeFsr }
 tasks.named('jar') {
-    archiveVersion = 'beta-6'
+    archiveVersion = 'beta-7'
     from('LICENSE') { rename { 'LICENSE-slopium' } }
     from('licenses') { into 'licenses' }
     from('src/main/java/dev/slopium/framegen/reference') { into 'sources/dev/slopium/framegen/reference' }
@@ -137,7 +137,7 @@ tasks.named('jar') {
 
 java.withSourcesJar()
 tasks.named('sourcesJar') {
-    archiveVersion = 'beta-6'
+    archiveVersion = 'beta-7'
     from('LICENSE'); from('README.md')
     from('licenses') { into 'licenses' }
     from('native') { into 'native' }

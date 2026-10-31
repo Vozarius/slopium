@@ -1,0 +1,48 @@
+{
+  "version": "1-beta.7",
+  "displayVersion": "Бета 7",
+  "date": "2026-10-31",
+  "jar": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-7.jar",
+  "sha256": "d38e3e2bcda904a40e5075038399d2c146d593a531c5da8863ba69d313646556",
+  "bytes": 30817237,
+  "sources": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-7-sources.jar",
+  "sourcesSha256": "6dddda697676b376b3448ef75cd68f24eddb0b2e3d68f332304206e1946e4191",
+  "tests": {
+    "tests": 36,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "cameraAndWorldDepthMotionPrior": true,
+  "completePairsBeforeNormalArrivalSwitch": true,
+  "userModsModified": false,
+  "verifiedLogs": [
+    "build/beta7-build.log",
+    "build/beta7-parallel-legacy-final.log",
+    "build/beta7-parallel-full-retry.log"
+  ],
+  "failedFullRun": {
+    "log": "build/beta7-parallel-full.log",
+    "reason": "Create/Registrate unused register callbacks during mod loading, before generator activated; root cause unknown; retry passed"
+  },
+  "fullModCpuStallTest": {
+    "minimumRenderThreadStallMs": 55,
+    "baselineRealFps": 12.864398943615141,
+    "x6": {
+      "real": 12.483493825124667,
+      "output": 73.50281164233404
+    },
+    "x32Capped240": {
+      "real": 13.373406892903882,
+      "output": 191.102234946262
+    }
+  },
+  "limitations": [
+    "Windows Simple parallel mode only",
+    "No per-object engine velocity buffer; independent motion estimated from images",
+    "Hand/HUD included; ghosting and distortion possible",
+    "Adds source-frame latency, more with queued snapshots",
+    "Camera cut or stale queue explicitly resets history",
+    "Output counts swaps, not monitor scanouts; multiplier not guaranteed"
+  ]
+}

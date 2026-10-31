@@ -11,7 +11,7 @@ public final class SimpleInterpolator implements AutoCloseable {
     }
     public SimpleInterpolator(int w,int h,int cell,boolean screenSpace) {
         try {
-            flowProgram=new GlProgram(screenSpace?"async_flow":"flow");interpolation=new GlProgram("interpolate");
+            flowProgram=new GlProgram(screenSpace?"async_flow":"flow");interpolation=new GlProgram(screenSpace?"async_interpolate":"interpolate");
             flow=new GlImage(Math.max(1,(w+cell-1)/cell),Math.max(1,(h+cell-1)/cell),GL_RGBA16F,0);
         }catch(RuntimeException e){close();throw e;}
     }
@@ -23,6 +23,7 @@ public final class SimpleInterpolator implements AutoCloseable {
         GlState.fullscreen();flow.bind();flowProgram.use();
         flowProgram.texture("previousColor",0,previous.texture);flowProgram.texture("currentColor",1,current.texture);
         flowProgram.texture("previousDepth",2,previous.depth);flowProgram.texture("currentDepth",3,current.depth);
+        flowProgram.integer("hasDepth",previous.depth!=0&&current.depth!=0?1:0);
         flowProgram.matrix("currentToPrevious",currentToPrevious);flowProgram.matrix("previousToCurrent",previousToCurrent);
         flowProgram.vector("size",current.width,current.height);flowProgram.scalar("searchPixels",search);flowProgram.draw();
     }

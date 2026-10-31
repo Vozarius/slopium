@@ -88,7 +88,7 @@ public final class FrameGeneration {
     }
     public static void render(Camera camera,Matrix4f view,Matrix4f projection,Runnable draw) {
         lastWorldReal=false;
-        if(AsyncPresenter.active()){draw.run();return;}
+        if(AsyncPresenter.active()){long stamp=System.nanoTime();draw.run();AsyncPresenter.captureWorld(camera,view,projection,stamp);return;}
         var mc=Minecraft.getInstance();var c=SlopiumConfig.get();var main=mc.getMainRenderTarget();
         String blocked=!c.enabled||c.frameGenerationMode==FrameGenerationMode.OFF?"off":
             mc.screen!=null?"paused (menu)":mc.getOverlay()!=null?"paused (loading overlay)":

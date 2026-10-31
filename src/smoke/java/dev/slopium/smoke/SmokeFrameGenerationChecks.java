@@ -14,6 +14,39 @@ final class SmokeFrameGenerationChecks {
                 flow.synthesize(a,b,out,.25f,6,null);float quarter=red(out,44);
                 flow.synthesize(a,b,out,.75f,6,null);float threeQuarter=red(out,44);
                 if(quarter<.8f||threeQuarter>.25f)throw new AssertionError("Screen-space worker shader repeats endpoints: "+quarter+", "+threeQuarter);
+                // Movement far beyond the residual search radius: the camera prior must carry it.
+                // Sample only the area covered by both camera views; disoccluded borders use fallback.
+                patch(a,32);patch(b,80);
+                flow.prepare(a,b,new Matrix4f().translation(-96f/128,0,0),new Matrix4f().translation(96f/128,0,0),8);
+                for(int phase=1;phase<4;phase++) {
+                    flow.synthesize(a,b,out,phase*.25f,6,null);
+                    int center=40+12*phase;
+                    if(red(out,center)<.8f||red(out,38)>.25f||red(out,90)>.25f)
+                        throw new AssertionError("Large camera motion is not a moving intermediate image at phase "+phase+": "+red(out,center)+", "+red(out,38)+", "+red(out,90));
+                }
+                // Exercise depth-dependent perspective motion, not just a uniform 2D offset.
+                try(var da=new GlImage(128,128,GL_RGBA8,GL_DEPTH_COMPONENT32F);
+                    var db=new GlImage(128,128,GL_RGBA8,GL_DEPTH_COMPONENT32F)) {
+                    patch(da,32);patch(db,80); // depth .5 => clip z=0
+                    var backward=new Matrix4f().translation(-96f/128,0,0).m20(.5f);
+                    flow.prepare(da,db,backward,new Matrix4f(backward).invert(),8);
+                    flow.synthesize(da,db,out,.5f,6,null);
+                    if(red(out,64)<.8f||red(out,38)>.25f||red(out,90)>.25f)
+                        throw new AssertionError("World depth was ignored in camera motion");
+                }
+                // Invalid flow must transition over time instead of displaying the new pixel at t=0.
+                try(var vectors=new GlImage(128,128,GL_RGBA16F,0);var shader=new GlProgram("async_interpolate")) {
+                    vectors.bind();glClearColor(2,2,2,2);glClear(GL_COLOR_BUFFER_BIT);
+                    out.bind();shader.use();shader.texture("previousColor",0,a.texture);shader.texture("currentColor",1,b.texture);
+                    shader.texture("flow",2,vectors.texture);shader.texture("fsrMiddle",3,b.texture);
+                    shader.integer("useFsrMiddle",0);shader.vector("size",128,128);shader.scalar("consistencyPixels",6);
+                    for(float fraction:new float[]{0,.25f,.75f,1}) {
+                        shader.scalar("fraction",fraction);shader.draw();
+                        if(Math.abs(red(out,84)-fraction)>.02f||Math.abs(red(out,36)-(1-fraction))>.02f)
+                            throw new AssertionError("Uncertain motion jumps to the endpoint at "+fraction);
+                    }
+                }
+                com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_PARALLEL: large camera motion, world-depth prior and continuous invalid-flow fallback passed");
                 if(glGetError()!=GL_NO_ERROR)throw new AssertionError("Screen-space shader GL error");
                 com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_PARALLEL: distinct GPU motion phases verified without depth textures");
             }finally{glClearColor(clear[0],clear[1],clear[2],clear[3]);}
