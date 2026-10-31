@@ -1,0 +1,46 @@
+{
+  "version": "1-beta.8",
+  "displayVersion": "Бета 8",
+  "date": "2026-10-31",
+  "jar": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-8.jar",
+  "sha256": "2713a9f108b6944e71e48d905d0578876601cda25e61b955ae395ff4e5cad560",
+  "bytes": 30821541,
+  "sources": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-8-sources.jar",
+  "sourcesSha256": "939f50630146c3a86420a1d688968b3380f2a531e558b7dd1c566cb6da9fd894",
+  "tests": {
+    "tests": 41,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "options": 62,
+  "amortizationDefault": false,
+  "manualMultiplierIgnoredWhenAmortizing": true,
+  "userModsModified": false,
+  "verifiedLogs": [
+    "build/beta8-amortize-parallel-steady.log",
+    "build/beta8-release-legacy.log"
+  ],
+  "parallelTarget60": {
+    "ordinaryLoad": {
+      "real": 15.953423262879976,
+      "output": 59.92504613119291
+    },
+    "oneSecondStalls": {
+      "real": 0.974185366408469,
+      "output": 60.034173204921906
+    },
+    "recovery": {
+      "real": 562.4810716691532,
+      "output": 458.22542353513694,
+      "synthesisStopped": true
+    }
+  },
+  "limitations": [
+    "Target is best-effort, not guaranteed output on every GPU",
+    "At 1 source FPS, interpolation adds roughly one second of latency",
+    "Sequential Simple/FSR cannot synthesize while render thread is blocked",
+    "Full pack startup stopped in Create/Registrate unused register callbacks before final functional checks; legacy checks passed",
+    "Cold startup run below target; steady-state numbers exclude warmup"
+  ]
+}
