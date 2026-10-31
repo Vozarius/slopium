@@ -42,7 +42,14 @@ final class SmokeOptionsChecks {
             value("frame_generation_multiplier",32);
             if(!option("frame_generation_cell").isEnabled()||!option("frame_generation_multiplier").isEnabled())throw new AssertionError("FSR hybrid controls disabled");
             value("frame_generation_multiplier",2);
+            value("frame_generation_amortize",true);
+            if(option("frame_generation_multiplier").isEnabled()||!option("frame_generation_cell").isEnabled()||!option("frame_generation_input").isEnabled())throw new AssertionError("Adaptive FSR controls conflict");
+            value("frame_generation_mode",enumValue("frame_generation_mode","SIMPLE"));
+            if(!option("frame_generation_amortize").isEnabled()||option("frame_generation_multiplier").isEnabled())throw new AssertionError("Adaptive Simple controls conflict");
+            value("frame_generation_amortize",false);
+            if(!option("frame_generation_multiplier").isEnabled())throw new AssertionError("Manual multiplier did not restore");
             value("frame_generation_mode",enumValue("frame_generation_mode","OFF"));
+            if(option("frame_generation_amortize").isEnabled())throw new AssertionError("Inactive amortization enabled");
             if(option("frame_generation_multiplier").isEnabled()||option("frame_generation_mark").isEnabled())throw new AssertionError("Inactive FG multiplier/marker enabled");
             if(option("particle_render_distance").isEnabled())throw new AssertionError("Inactive radius enabled");
             value("particle_range",true);

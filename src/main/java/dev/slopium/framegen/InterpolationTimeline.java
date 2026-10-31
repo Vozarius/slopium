@@ -6,9 +6,14 @@ public final class InterpolationTimeline {
     private int displayed=-1;
     private boolean complete=true;
     public boolean readyForNext(){return complete;}
+    /** A fixed output grid may cross a source boundary between swaps. */
+    public void finishAtBoundary(long now){if(duration>0&&now>=start+duration)complete=true;}
     public void begin(long now,long nanos,boolean interpolate) {
+        begin(now,nanos,interpolate,Math.min(5_000_000L,nanos/4));
+    }
+    public void begin(long now,long nanos,boolean interpolate,long maximumLateness) {
         long previousEnd=start+duration;
-        boolean continuous=complete&&duration>0&&now>=previousEnd&&now-previousEnd<Math.min(5_000_000L,nanos/4);
+        boolean continuous=complete&&duration>0&&now>=previousEnd&&now-previousEnd<maximumLateness;
         if(!complete)throw new IllegalStateException("Cannot replace an unfinished interpolation pair");
         start=continuous?previousEnd:now;
         duration=interpolate?Math.max(1,nanos):0;

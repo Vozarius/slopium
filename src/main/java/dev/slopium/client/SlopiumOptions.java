@@ -40,6 +40,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
             .addPage(builder.createOptionPage().setName(text("page.frame_generation"))
                 .addOptionGroup(builder.createOptionGroup().setName(text("group.frame_generation"))
                     .addOption(mode(builder,"frame_generation_mode",FrameGenerationMode.class,v->c.frameGenerationMode=v,()->c.frameGenerationMode,FrameGenerationMode.OFF,true))
+                    .addOption(bool(builder,"frame_generation_amortize",v->c.frameGenerationAmortize=v,()->c.frameGenerationAmortize,false,true))
                     .addOption(integer(builder,"frame_generation_multiplier",v->c.frameGenerationMultiplier=v,()->c.frameGenerationMultiplier,2,2,32,1))
                     .addOption(integer(builder,"frame_generation_input",v->c.frameGenerationInputFps=v,()->c.frameGenerationInputFps,0,0,240,1))
                     .addOption(bool(builder,"frame_generation_fast",v->c.frameGenerationFastPath=v,()->c.frameGenerationFastPath,false,true))
@@ -176,6 +177,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
         if(key.startsWith("frame_generation_")&&!key.equals("frame_generation_mode"))result.add(id("frame_generation_mode"));
         if(key.startsWith("frame_generation_")&&!key.equals("frame_generation_mode")&&!key.equals("frame_generation_parallel"))result.add(id("frame_generation_parallel"));
         if(key.equals("frame_generation_cell")||key.equals("frame_generation_search")||key.equals("frame_generation_rejection"))result.add(id("frame_generation_multiplier"));
+        if(key.startsWith("frame_generation_")&&!key.equals("frame_generation_mode")&&!key.equals("frame_generation_amortize")&&!key.equals("frame_generation_parallel"))result.add(id("frame_generation_amortize"));
         String parent = PARENTS.get(key), override = override(key);
         if (parent != null) result.add(id(parent));
         if (override != null) result.add(id(override));
@@ -191,6 +193,9 @@ public final class SlopiumOptions implements ConfigEntryPoint {
         if(key.startsWith("frame_generation_")&&!key.equals("frame_generation_mode")) {
             var fg=state.readEnumOption(id("frame_generation_mode"),FrameGenerationMode.class);
             if(key.equals("frame_generation_parallel"))return fg==FrameGenerationMode.SIMPLE;
+            if(key.equals("frame_generation_amortize"))return fg!=FrameGenerationMode.OFF;
+            boolean amortize=state.readBooleanOption(id("frame_generation_amortize"));
+            if(key.equals("frame_generation_multiplier"))return fg!=FrameGenerationMode.OFF&&!amortize;
             boolean parallel=fg==FrameGenerationMode.SIMPLE&&state.readBooleanOption(id("frame_generation_parallel"));
             if(key.equals("frame_generation_fast")||key.equals("frame_generation_mark"))return fg!=FrameGenerationMode.OFF&&!parallel;
             if(key.equals("frame_generation_grid"))return fg==FrameGenerationMode.SIMPLE&&!parallel;
@@ -198,7 +203,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
             if(key.equals("frame_generation_target")||key.equals("frame_generation_input")||key.equals("frame_generation_multiplier")||key.equals("frame_generation_mark")||key.equals("frame_generation_counter")||key.equals("frame_generation_fast"))return fg!=FrameGenerationMode.OFF;
             if(key.equals("frame_generation_grid"))return fg==FrameGenerationMode.SIMPLE;
             if(key.equals("frame_generation_fsr_debug"))return fg==FrameGenerationMode.FSR;
-            return fg==FrameGenerationMode.FSR&&state.readIntOption(id("frame_generation_multiplier"))>2;
+            return fg==FrameGenerationMode.FSR&&(amortize||state.readIntOption(id("frame_generation_multiplier"))>2);
         }
         String parent = PARENTS.get(key), override = override(key);
         if (parent != null && !state.readBooleanOption(id(parent))) return false;

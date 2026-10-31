@@ -22,6 +22,7 @@ public final class SlopiumConfig {
     public boolean frameGenerationCounter = true;
     public boolean frameGenerationFastPath = false;
     public boolean frameGenerationParallel = false;
+    public boolean frameGenerationAmortize = false;
     public int frameGenerationGridStep = 4;
     public int frameGenerationFlowCell = 8;
     public int frameGenerationSearchPixels = 16;

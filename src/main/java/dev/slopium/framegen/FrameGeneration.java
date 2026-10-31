@@ -11,6 +11,17 @@ import static org.lwjgl.opengl.GL33C.*;
 public final class FrameGeneration {
     private static final FrameCadence CADENCE=new FrameCadence();
     private static final FrameSchedule SCHEDULE=new FrameSchedule();
+    private static final AdaptiveFrameTarget AMORTIZER=new AdaptiveFrameTarget();
+    private static long frameBegan,pacingNanos;
+    private static boolean adaptiveConfigured;
+    public static void beginFrame(){frameBegan=System.nanoTime();pacingNanos=0;lastWorldReal=false;}
+    public static void pacingDelay(long nanos){pacingNanos+=nanos;}
+    public static void endFrame(){
+        if(lastWorldReal&&SlopiumConfig.get().frameGenerationAmortize&&!AsyncPresenter.active())
+            AMORTIZER.cost(System.nanoTime()-frameBegan-pacingNanos);
+    }
+    private static int phases(SlopiumConfig c){return c.frameGenerationAmortize?AdaptiveFrameTarget.PHASES:Math.clamp(c.frameGenerationMultiplier,2,32);}
+    private static boolean amortizing(){var c=SlopiumConfig.get();return c.frameGenerationAmortize&&AMORTIZER.needed(AdaptiveFrameTarget.target(c.frameGenerationInputFps));}
     private static GlImage previous,current,generated,fsrMiddle;
     private static final float[] FRAME_MARKER={1,.1f,.7f,1};
     private static SimpleInterpolator simple;
@@ -59,11 +70,18 @@ public final class FrameGeneration {
         if(AsyncPresenter.active())return AsyncPresenter.inputLimit(original);
         if(!active)return original;
         var c=SlopiumConfig.get();
+        if(c.frameGenerationAmortize){
+            int cap=c.frameGenerationTargetFps;
+            if(amortizing())cap=AdaptiveFrameTarget.cap(cap,AdaptiveFrameTarget.target(c.frameGenerationInputFps));
+            return cap<=0?original:original>=260?cap:Math.min(original,cap);
+        }
         int input=SCHEDULE.probing()?0:(c.frameGenerationInputFps>0?c.frameGenerationInputFps:SCHEDULE.targetFps());
         int limit=InputFrameLimiter.outputLimit(original,c.frameGenerationTargetFps,input,c.frameGenerationMultiplier);
         return limit==0?original:limit;
     }
-    public static int limiterThreshold(){var c=SlopiumConfig.get();return active&&(c.frameGenerationTargetFps>0||c.frameGenerationInputFps>0||!SCHEDULE.probing())?Integer.MAX_VALUE:260;}
+    public static int limiterThreshold(){var c=SlopiumConfig.get();
+        if(active&&c.frameGenerationAmortize)return amortizing()||c.frameGenerationTargetFps>0?Integer.MAX_VALUE:260;
+        return active&&(c.frameGenerationTargetFps>0||c.frameGenerationInputFps>0||!SCHEDULE.probing())?Integer.MAX_VALUE:260;}
     public static String status() {
         double seconds=elapsedNanos/1e9;
         return String.format(java.util.Locale.ROOT,"Frame generation | %s | real=%d | generated=%d | endpoints=%d | held=%d | input target=%d | scheduled=%d FPS | base=%.1f FPS | output=%.1f FPS | GPU generation=%.3f ms",
@@ -112,10 +130,12 @@ public final class FrameGeneration {
         if(failedRevision==Slopium.configRevision()){state=failureState;draw.run();return;}
         boolean drew=false,drawing=false;
         try {
-            int multiplier=Math.clamp(c.frameGenerationMultiplier,2,32);
-            if(current==null||current.width!=main.width||current.height!=main.height||world!=mc.level||revision!=Slopium.configRevision()||mode!=c.frameGenerationMode||CADENCE.multiplier()!=multiplier) {
+            int multiplier=phases(c);
+            if(current==null||current.width!=main.width||current.height!=main.height||world!=mc.level||revision!=Slopium.configRevision()||mode!=c.frameGenerationMode||CADENCE.multiplier()!=multiplier||adaptiveConfigured!=c.frameGenerationAmortize) {
+                long allocationStarted=System.nanoTime();
                 release();mode=c.frameGenerationMode;revision=Slopium.configRevision();world=mc.level;
-                CADENCE.configure(multiplier);
+                if(c.frameGenerationAmortize)CADENCE.configureAdaptive();else CADENCE.configure(multiplier);
+                AMORTIZER.reset();adaptiveConfigured=c.frameGenerationAmortize;
                 try(var ignored=new GlState()) {
                     glActiveTexture(GL_TEXTURE0);glBindTexture(GL_TEXTURE_2D,main.getColorTextureId());
                     int colorFormat=glGetTexLevelParameteri(GL_TEXTURE_2D,0,GL_TEXTURE_INTERNAL_FORMAT);
@@ -132,13 +152,23 @@ public final class FrameGeneration {
                         if(multiplier>2)fsrMiddle=new GlImage(main.width,main.height,GL_RGBA8,0);
                     }
                 }
+                frameBegan+=System.nanoTime()-allocationStarted;
             }
             long now=System.nanoTime();
-            SCHEDULE.configure(c.frameGenerationInputFps);SCHEDULE.begin(now);
+            if(c.frameGenerationAmortize&&!amortizing()) {
+                drawing=true;draw.run();drawing=false;drew=true;
+                CADENCE.reset();SCHEDULE.reset();previousVp=null;eye=null;rotation=null;lastCapture=0;
+                lastWorldReal=true;realFrames++;recordOutput(now,true);active=true;
+                state="FPS amortization: source sufficient / measuring (target "+AdaptiveFrameTarget.target(c.frameGenerationInputFps)+")";
+                return;
+            }
+            if(c.frameGenerationAmortize)SCHEDULE.adaptive(AMORTIZER.period(),AdaptiveFrameTarget.target(c.frameGenerationInputFps));
+            else SCHEDULE.configure(c.frameGenerationInputFps);
+            SCHEDULE.begin(now);
             if(SCHEDULE.probing()) {
                 drawing=true;draw.run();drawing=false;drew=true;
                 CADENCE.reset();previousVp=null;eye=null;rotation=null;lastCapture=0;
-                realFrames++;recordOutput(now,true);active=true;state="measuring real frame rate";return;
+                lastWorldReal=true;realFrames++;recordOutput(now,true);active=true;state="measuring real frame rate";return;
             }
             // Low input targets can retain a frame longer than 250 ms: detect output stalls instead.
             if(eye!=null&&(eye.distanceToSqr(camera.getPosition())>64||Math.abs(rotation.dot(camera.rotation()))<.995f||lastOutput!=0&&now-lastOutput>250_000_000L)) {
@@ -156,7 +186,7 @@ public final class FrameGeneration {
                     previousVp=vp;eye=camera.getPosition();rotation=new Quaternionf(camera.rotation());lastCapture=now;
                     heldSource=current.fbo;SCHEDULE.captured(now);lastWorldReal=true;realFrames++;recordOutput(now,true);
                 }
-                active=true;state=backend="FrameGen reprojection up to x"+multiplier;return;
+                active=true;state=backend=c.frameGenerationAmortize?"FrameGen: FPS amortization -> "+AdaptiveFrameTarget.target(c.frameGenerationInputFps):"FrameGen reprojection up to x"+multiplier;return;
             }
             if(previousVp!=null&&!SCHEDULE.due(now)) {
                 intermediate(camera,view,projection,now,multiplier);return;
@@ -185,7 +215,7 @@ public final class FrameGeneration {
             previousVp=vp;eye=camera.getPosition();rotation=new Quaternionf(camera.rotation());lastCapture=now;
             SCHEDULE.captured(now);lastWorldReal=true;
             recordOutput(now,true);realFrames++;active=true;
-            state=backend="FSR "+fsr.provider+(multiplier>2?" + Slopium":"")+" up to x"+multiplier;
+            state=backend="FSR "+fsr.provider+(c.frameGenerationAmortize?" + Slopium: FPS amortization -> "+AdaptiveFrameTarget.target(c.frameGenerationInputFps):(multiplier>2?" + Slopium":"")+" up to x"+multiplier);
         } catch(RuntimeException|LinkageError failure) {
             if(drawing)throw failure;
             failedRevision=Slopium.configRevision();state=failureState="disabled: "+failure.getMessage();active=false;
@@ -235,7 +265,7 @@ public final class FrameGeneration {
             &&mc.level==world&&mc.player!=null&&mc.screen==null&&mc.getOverlay()==null&&!mc.isPaused()&&mc.isWindowActive()
             &&mc.options.graphicsMode().get()!=GraphicsStatus.FABULOUS&&!Slopium.loaded("iris")&&!Slopium.loaded("oculus")
             &&current.width==main.width&&current.height==main.height&&!SCHEDULE.probeDue(now)&&!SCHEDULE.due(now)
-            &&CADENCE.multiplier()==c.frameGenerationMultiplier;
+            &&CADENCE.multiplier()==phases(c)&&(!c.frameGenerationAmortize||amortizing());
     }
     public static boolean tryFast(Camera camera,Matrix4f view,Matrix4f projection) {
         long now=System.nanoTime();if(!fastEligible(now))return false;

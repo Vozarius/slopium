@@ -6,6 +6,7 @@ public final class FrameCadence {
     private int multiplier=2,phase;
     public int multiplier(){return multiplier;}
     public void configure(int value){value=Math.clamp(value,2,32);if(value!=multiplier){multiplier=value;reset();}}
+    public void configureAdaptive(){if(multiplier!=AdaptiveFrameTarget.PHASES){multiplier=AdaptiveFrameTarget.PHASES;reset();}}
     public boolean endpoint(){return phase==multiplier;}
     public boolean midpoint(){return phase*2==multiplier;}
     public float fraction(){return phase/(float)multiplier;}

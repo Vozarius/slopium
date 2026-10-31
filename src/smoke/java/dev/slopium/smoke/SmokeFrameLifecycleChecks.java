@@ -11,7 +11,8 @@ final class SmokeFrameLifecycleChecks {
         var mc=Minecraft.getInstance();var c=SlopiumConfig.get();
         var oldWorld=mc.level;var oldScreen=mc.screen;var overlay=mc.getOverlay();boolean focus=mc.isWindowActive(),enabled=c.enabled,diagnostics=c.diagnostics;
         var oldMode=c.frameGenerationMode;int oldMultiplier=c.frameGenerationMultiplier;boolean oldMark=c.frameGenerationMarkFrames;var graphics=mc.options.graphicsMode().get();
-        int oldInput=c.frameGenerationInputFps,oldTarget=c.frameGenerationTargetFps;
+        int oldInput=c.frameGenerationInputFps,oldTarget=c.frameGenerationTargetFps;boolean oldAmortize=c.frameGenerationAmortize;
+        c.frameGenerationAmortize=false;
         try(var state=new GlState()) {
             float[] clear=new float[4];glGetFloatv(GL_COLOR_CLEAR_VALUE,clear);double clearDepth=glGetDouble(GL_DEPTH_CLEAR_VALUE);boolean mask=glGetBoolean(GL_DEPTH_WRITEMASK);
             try {
@@ -70,11 +71,43 @@ final class SmokeFrameLifecycleChecks {
                     if(rate<24)throw new AssertionError("Automatic x32 starved 33 ms real frames: "+mode+" "+rate);
                     com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: automatic {} x32 with simulated 33 ms world work: {} real FPS; {}",mode,rate,FrameGeneration.status());
                 }
+                for(var adaptiveMode:new FrameGenerationMode[]{FrameGenerationMode.SIMPLE,FrameGenerationMode.FSR}) {
+                    FrameGeneration.release();FrameGeneration.resetCounters();c.frameGenerationMode=adaptiveMode;
+                    c.frameGenerationAmortize=true;c.frameGenerationInputFps=60;c.frameGenerationTargetFps=0;c.frameGenerationMultiplier=2;
+                    Runnable cheap=()->{GlState.fullscreen();glClearColor(.25f,.5f,.75f,1);glClear(GL_COLOR_BUFFER_BIT);};
+                    // Warm resources, then measure actual real-frame work independently of synthetic output.
+                    for(int i=0;i<32;i++){FrameGeneration.beginFrame();mc.getMainRenderTarget().bindWrite(true);FrameGeneration.render(camera,view,projection,cheap);FrameGeneration.endFrame();}
+                    Runnable loaded=()->{cheap.run();long until=System.nanoTime()+33_333_333;while(System.nanoTime()<until)java.util.concurrent.locks.LockSupport.parkNanos(until-System.nanoTime());};
+                    long start=System.nanoTime(),beforeGenerated=FrameGeneration.generatedFrames;
+                    do {
+                        long iterationStart=System.nanoTime();FrameGeneration.beginFrame();mc.getMainRenderTarget().bindWrite(true);FrameGeneration.render(camera,view,projection,loaded);
+                        int limit=FrameGeneration.limit(260);
+                        if(limit<260){
+                            long pacing=System.nanoTime(),until=iterationStart+1_000_000_000L/limit;
+                            while(System.nanoTime()<until)java.util.concurrent.locks.LockSupport.parkNanos(until-System.nanoTime());
+                            FrameGeneration.pacingDelay(System.nanoTime()-pacing);
+                        }
+                        FrameGeneration.endFrame();
+                        if(limit>60&&limit!=260)throw new AssertionError("Adaptive sequential output target exceeded");
+                    }while(System.nanoTime()-start<2_000_000_000L);
+                    if(FrameGeneration.generatedFrames<=beforeGenerated)throw new AssertionError("No adaptive synthesis in "+adaptiveMode+": "+FrameGeneration.status());
+                    // Recovery: source-only measurements must eventually disable synthesis and remove its limiter.
+                    long recover=System.nanoTime();
+                    do {FrameGeneration.beginFrame();mc.getMainRenderTarget().bindWrite(true);FrameGeneration.render(camera,view,projection,cheap);
+                        if(FrameGeneration.limit(260)<260){long pacing=System.nanoTime();java.util.concurrent.locks.LockSupport.parkNanos(16_666_667);FrameGeneration.pacingDelay(System.nanoTime()-pacing);}
+                        FrameGeneration.endFrame();}while(System.nanoTime()-recover<2_000_000_000L);
+                    long stableGenerated=FrameGeneration.generatedFrames;
+                    for(int i=0;i<20;i++){FrameGeneration.beginFrame();mc.getMainRenderTarget().bindWrite(true);FrameGeneration.render(camera,view,projection,cheap);FrameGeneration.endFrame();}
+                    if(FrameGeneration.generatedFrames!=stableGenerated||FrameGeneration.limit(260)!=260||FrameGeneration.limiterThreshold()!=260)
+                        throw new AssertionError("Adaptive standby retains synthesis/limiter: "+adaptiveMode);
+                    com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: adaptive {} generation, recovery and uncapped standby passed",adaptiveMode);
+                    c.frameGenerationAmortize=false;
+                }
                 if(java.util.Arrays.stream(Minecraft.class.getDeclaredMethods()).noneMatch(m->m.getName().contains("slopium$finiteHighLimit")))throw new AssertionError("High-rate hook absent");
                 if(java.util.Arrays.stream(net.minecraft.client.renderer.GameRenderer.class.getDeclaredMethods()).noneMatch(m->m.getName().contains("slopium$worldFrame")))throw new AssertionError("Frame hook absent");
             } finally {
                 FrameGeneration.release();FrameGeneration.resetCounters();c.frameGenerationMode=oldMode;c.enabled=enabled;c.diagnostics=diagnostics;c.frameGenerationMultiplier=oldMultiplier;c.frameGenerationMarkFrames=oldMark;
-                c.frameGenerationInputFps=oldInput;c.frameGenerationTargetFps=oldTarget;
+                c.frameGenerationInputFps=oldInput;c.frameGenerationTargetFps=oldTarget;c.frameGenerationAmortize=oldAmortize;
                 mc.level=oldWorld;mc.screen=oldScreen;mc.setOverlay(overlay);mc.setWindowActive(focus);mc.options.graphicsMode().set(graphics);
                 glClearColor(clear[0],clear[1],clear[2],clear[3]);glClearDepth(clearDepth);glDepthMask(mask);
             }

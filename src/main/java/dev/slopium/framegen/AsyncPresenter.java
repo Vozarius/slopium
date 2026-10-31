@@ -47,13 +47,17 @@ public final class AsyncPresenter {
         return String.format(java.util.Locale.ROOT,"Parallel FG | %s | real=%.1f FPS | output=%.1f FPS | generated=%d | published=%d | dropped=%d | copied=%d | GPU=%.3f ms | swap=%.3f ms | %dx%d",
             state,(s.published-s.basePublished+s.dropped-s.baseDropped)/seconds,outputs/seconds,s.generated-s.baseGenerated,
             s.published-s.basePublished,s.dropped-s.baseDropped,s.received-s.baseReceived,s.gpuMs,
-            outputs==0?0:(s.swapNanos-s.baseSwap)/1e6/outputs,s.width,s.height);
+            outputs==0?0:(s.swapNanos-s.baseSwap)/1e6/outputs,s.width,s.height)+adaptiveStatus(s);
+    }
+    private static String adaptiveStatus(Session s){
+        int target=s.settings.amortizeTarget;
+        return target==0?"":" | target="+target+" | "+(s.sourceRate.needed(target)?"filling":"source sufficient; synthesis off");
     }
     public static String overlay(){
         Session s=session;if(s==null)return state;
         double seconds=Math.max(.001,(System.nanoTime()-s.statsBegan)/1e9);
         return String.format(java.util.Locale.ROOT,"Parallel FG | real %.0f FPS | output %.0f FPS | generated %d",
-            (s.published-s.basePublished+s.dropped-s.baseDropped)/seconds,(s.outputs-s.baseOutputs)/seconds,s.generated-s.baseGenerated);
+            (s.published-s.basePublished+s.dropped-s.baseDropped)/seconds,(s.outputs-s.baseOutputs)/seconds,s.generated-s.baseGenerated)+adaptiveStatus(s);
     }
     // Render thread, before any per-frame work. Switching drawables preserves Minecraft's GL cache.
     public static void beginFrame(){
@@ -91,16 +95,19 @@ public final class AsyncPresenter {
         if(vanilla<260)cap=cap>0?Math.min(cap,vanilla):vanilla;
         return new Settings(Math.clamp(c.frameGenerationMultiplier,2,32),Math.max(0,cap),
             Math.clamp(c.frameGenerationFlowCell,4,16),Math.clamp(c.frameGenerationSearchPixels,4,32),
-            Math.clamp(c.frameGenerationRejectionPixels,1,16),mc.options.enableVsync().get());
+            Math.clamp(c.frameGenerationRejectionPixels,1,16),mc.options.enableVsync().get(),
+            c.frameGenerationAmortize?AdaptiveFrameTarget.target(c.frameGenerationInputFps):0);
     }
     public static int inputLimit(int original){
         if(!active())return original;
+        if(SlopiumConfig.get().frameGenerationAmortize)return original;
         int target=SlopiumConfig.get().frameGenerationInputFps;
         return target<=0?original:original>=260?target:Math.min(original,target);
     }
     /** Render thread, immediately after the world pass and BEFORE hand rendering clears depth. */
     public static void captureWorld(net.minecraft.client.Camera camera,Matrix4f view,Matrix4f projection,long stamp) {
         Session s=session;if(s==null||!s.running)return;
+        s.sourceRate.source(stamp);
         var target=Minecraft.getInstance().getMainRenderTarget();
         if(glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING)!=target.frameBufferId)return;
         try(var ignored=new GlState()) {
@@ -162,7 +169,7 @@ public final class AsyncPresenter {
         if(s.worker.isAlive())throw new IllegalStateException("Parallel presenter did not stop before window destruction");
         stop();
     }
-    private record Settings(int multiplier,int cap,int cell,int search,int rejection,boolean vsync){}
+    private record Settings(int multiplier,int cap,int cell,int search,int rejection,boolean vsync,int amortizeTarget){}
     private static final class Slot {
         // FREE -> WRITING -> READY -> READING -> GPU_RELEASE_PENDING -> FREE.
         final AtomicInteger state=new AtomicInteger();final GlImage image;
@@ -179,6 +186,7 @@ public final class AsyncPresenter {
         final org.joml.Quaternionf lastRotation=new org.joml.Quaternionf();
         final Slot[] slots=new Slot[3];
         Slot pending;int depthFormat;
+        final AdaptiveFrameTarget sourceRate=new AdaptiveFrameTarget();
         long hidden,visibleDc,renderRc,workerRc,began;
         long statsBegan,basePublished,baseDropped,baseOutputs,baseGenerated,baseReceived,baseSwap;
         Thread worker;volatile boolean running;volatile Throwable failure;
@@ -255,7 +263,7 @@ public final class AsyncPresenter {
                 Matrix4f historyVp=new Matrix4f(),incomingVp=new Matrix4f(),toPrevious=new Matrix4f(),toCurrent=new Matrix4f();
                 net.minecraft.world.phys.Vec3 historyEye=null;
                 InterpolationTimeline timeline=new InterpolationTimeline();
-                boolean haveCurrent=false,pair=false;
+                boolean haveCurrent=false,pair=false,wasAmortizing=false;
                 long lastStamp=0,period=50_000_000,nextPresent=0;
                 boolean vsync=!settings.vsync;
                 readyLatch.countDown();
@@ -272,6 +280,10 @@ public final class AsyncPresenter {
                         if(!ready(gpuFence)){await(250_000);continue;}
                         glDeleteSync(gpuFence);gpuFence=0;
                     }
+                    boolean amortizing=cfg.amortizeTarget>0&&sourceRate.needed(cfg.amortizeTarget);
+                    if(amortizing!=wasAmortizing){nextPresent=0;wasAmortizing=amortizing;}
+                    int phases=cfg.amortizeTarget>0?AdaptiveFrameTarget.PHASES:cfg.multiplier;
+                    int outputCap=amortizing?AdaptiveFrameTarget.cap(cfg.cap,cfg.amortizeTarget):cfg.cap;
                     Slot oldest=null,newest=null;
                     for(Slot slot:slots)if(slot.state.get()==2&&ready(slot.fence)) {
                         if(oldest==null||slot.sequence<oldest.sequence)oldest=slot;
@@ -279,7 +291,10 @@ public final class AsyncPresenter {
                     }
                     // Finish the visible pair before accepting another. Only explicit camera cuts
                     // or a stale queue may bypass this rule; routine arrivals cannot jump forward.
-                    boolean reset=newest!=null&&(newest.cut||System.nanoTime()-oldest.timestamp>250_000_000L);
+                    long maxAge=cfg.amortizeTarget>0?Math.max(250_000_000L,sourceRate.period()*3):250_000_000L;
+                    boolean bypass=cfg.amortizeTarget>0&&!amortizing;
+                    if(amortizing&&oldest!=null)timeline.finishAtBoundary(System.nanoTime());
+                    boolean reset=newest!=null&&(bypass||newest.cut||System.nanoTime()-oldest.timestamp>maxAge);
                     Slot incoming=reset?newest:timeline.readyForNext()?oldest:null;
                     if(incoming!=null&&incoming.state.compareAndSet(2,3)) {
                         if(reset) {
@@ -303,9 +318,9 @@ public final class AsyncPresenter {
                         // Metadata, too, must be copied before releasing the shared slot.
                         incoming.fence=glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE,0);glFlush();incoming.state.set(4);
                         received++;
-                        pair=haveCurrent&&!cut&&!reset&&stamp>lastStamp&&stamp-lastStamp<250_000_000L;
-                        if(pair)period=Math.clamp(stamp-lastStamp,4_000_000L,250_000_000L);
-                        timeline.begin(System.nanoTime(),period,pair);
+                        pair=haveCurrent&&!cut&&!reset&&stamp>lastStamp&&stamp-lastStamp<(cfg.amortizeTarget>0?10_000_000_001L:250_000_000L);
+                        if(pair)period=Math.clamp(stamp-lastStamp,4_000_000L,cfg.amortizeTarget>0?10_000_000_000L:250_000_000L);
+                        timeline.begin(System.nanoTime(),period,pair,amortizing?1_000_000_000L/cfg.amortizeTarget+5_000_000L:Math.min(5_000_000L,period/4));
                         if(pair){
                             var delta=incomingEye.subtract(historyEye);
                             toPrevious.set(historyVp).translate((float)delta.x,(float)delta.y,(float)delta.z).mul(toCurrent.set(incomingVp).invert());
@@ -317,11 +332,11 @@ public final class AsyncPresenter {
                     }
                     long now=System.nanoTime();
                     if(haveCurrent&&now>=nextPresent) {
-                        int nextPhase=timeline.phase(now,cfg.multiplier);
+                        int nextPhase=timeline.phase(now,phases);
                         if(timeline.needsPresent(nextPhase)) {
                             int image;
-                            if(pair&&nextPhase>0&&nextPhase<cfg.multiplier) {
-                                timer.start();flow.synthesize(previous,current,output,nextPhase/(float)cfg.multiplier,cfg.rejection,null);timer.stop();
+                            if(pair&&nextPhase>0&&nextPhase<phases) {
+                                timer.start();flow.synthesize(previous,current,output,nextPhase/(float)phases,cfg.rejection,null);timer.stop();
                                 image=output.fbo;generated++;
                             } else image=pair&&nextPhase==0?previous.fbo:current.fbo;
                             GlState.fullscreen();glBindFramebuffer(GL_READ_FRAMEBUFFER,image);glBindFramebuffer(GL_DRAW_FRAMEBUFFER,0);
@@ -330,12 +345,13 @@ public final class AsyncPresenter {
                             long swapStart=System.nanoTime();
                             if(!GDI32.SwapBuffers(visibleDc))throw new IllegalStateException("Parallel SwapBuffers failed");
                             swapNanos+=System.nanoTime()-swapStart;
-                            outputs++;timeline.presented(nextPhase,cfg.multiplier);
-                            nextPresent=System.nanoTime()+(cfg.cap==0?0:1_000_000_000L/cfg.cap);
+                            outputs++;timeline.presented(nextPhase,phases);
+                            nextPresent=outputCap==0?0:amortizing?AdaptiveFrameTarget.nextDeadline(nextPresent,swapStart,outputCap)
+                                :System.nanoTime()+1_000_000_000L/outputCap;
                         }
                     }
                     // No repeated identical swaps after a pair ends, no busy spinning during a stall.
-                    long nextPhaseAt=timeline.nextPhaseAt(cfg.multiplier);
+                    long nextPhaseAt=amortizing?nextPresent:timeline.nextPhaseAt(phases);
                     long wait=!haveCurrent||timeline.readyForNext()?(oldest==null?5_000_000:50_000)
                         :Math.max(50_000,Math.min(5_000_000,Math.max(nextPresent,nextPhaseAt)-System.nanoTime()));
                     await(wait);

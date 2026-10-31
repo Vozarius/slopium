@@ -9,6 +9,14 @@ public final class FrameSchedule {
         fps=Math.clamp(fps,0,240);
         if(target!=fps){target=fps;reset();}
     }
+    public void adaptive(long sourcePeriod,int outputTarget) {
+        if(target!=-2){target=-2;reset();}
+        probing=false;
+        long extra=Math.max(1,AdaptiveFrameTarget.framesPerSource(sourcePeriod,outputTarget)-1);
+        // A shared render thread cannot synthesize during a world draw. Reserve only bounded
+        // measured synthesis work; never drain a mandatory multiplier at the expense of input.
+        period=sourcePeriod+Math.min(sourcePeriod/4,(Math.max(100_000,generatedCost)+1_000_000L)*extra);
+    }
     public void reset() {
         period=target>0?(1_000_000_000L+target-1)/target:0;
         probing=target<=0;samples=generated=0;next=lastStart=probeSum=probeAt=0;
@@ -35,7 +43,7 @@ public final class FrameSchedule {
     public boolean due(long now){return !captured||now-next>=0;}
     public void captured(long now) {
         // Preserve cadence under small jitter, but never build a backlog after a long stall.
-        next=!captured||now-next>=period?now+period:next+period;
+        next=target==-2||!captured||now-next>=period?now+period:next+period;
         captured=true;generated=0;
         // A one-off shader compilation or GPU stall must not disable synthesis forever.
         generatedCost=Math.max(100_000,generatedCost*7/8);

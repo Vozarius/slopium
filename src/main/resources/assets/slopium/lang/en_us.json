@@ -1,5 +1,5 @@
 {
-  "slopium.version": "Beta 7",
+  "slopium.version": "Beta 8",
   "slopium.page.frame_generation": "Frame generation",
   "slopium.frame_generation.unavailable": "Slopium: frame generation disabled: %s. Normal rendering continues. Apply settings to retry.",
   "slopium.group.frame_generation": "Mode and presentation rate",
@@ -222,10 +222,12 @@
   "slopium.frame_generation.conflict": "Disabled: remove standalone FrameGen/PFG from mods and restart Minecraft.",
   "slopium.frame_generation_target.unlimited": "Minecraft limit only",
   "slopium.frame_generation_input": "Target real FPS",
-  "slopium.frame_generation_input.unlimited": "Automatic",
-  "slopium.frame_generation_input.tooltip": "Sequential modes: 0 measures the base frame rate automatically; 1–240 sets a manual target. Parallel mode: 0 adds no source-render limit; positive values cap source rendering. Resource limits can prevent reaching the target. x32 at 30 real FPS attempts up to 960 output FPS; output limits and VSync still apply. Server ticks are unchanged.",
+  "slopium.frame_generation_input.unlimited": "Auto / amortization: 60",
+  "slopium.frame_generation_input.tooltip": "With Amortize FPS enabled: desired total output FPS, 0 = 60; this field does not cap source rendering. Otherwise: sequential modes use 0 to measure the baseline automatically or 1–240 for a manual source target; parallel mode uses 0 for no extra source cap or a positive source limit. Output limits and VSync still apply.",
   "slopium.frame_generation_fast": "Lightweight intermediate frames",
   "slopium.frame_generation_fast.tooltip": "Skips repeated world preparation and paired render-frame events on intermediate frames. Ticks, input, picking, hand and HUD remain live. This is a short path on the existing render thread, not an independent presenter thread. Late mod geometry is captured for Simple and drawn separately for FSR. Disable for mod compatibility issues. Gains depend on the work bypassed.",
   "slopium.frame_generation_parallel": "Parallel presentation — Windows (experimental)",
-  "slopium.frame_generation_parallel.tooltip": "Simple only: a separate thread interpolates completed images while Minecraft is busy. Camera motion and world depth seed motion vectors, refined by image matching. Each pair completes before switching. Adds roughly one source frame of latency, more with queued frames. Hand and HUD are included; distortion and ghosting remain possible. Requires spare GPU capacity and extra VRAM. Long stalls hold the last frame. Menus, focus loss and resizing restore ordinary presentation. Disabled by default."
+  "slopium.frame_generation_parallel.tooltip": "Simple only: a separate thread interpolates completed images while Minecraft is busy. Camera motion and world depth seed motion vectors, refined by image matching. Each pair completes before switching. Adds roughly one source frame of latency, more with queued frames. Hand and HUD are included; distortion and ghosting remain possible. Requires spare GPU capacity and extra VRAM. Long stalls hold the last frame. Menus, focus loss and resizing restore ordinary presentation. Disabled by default.",
+  "slopium.frame_generation_amortize": "Amortize FPS",
+  "slopium.frame_generation_amortize.tooltip": "Dynamically fills the gap to Target real FPS (0 means 60). With this toggle, that field is a total output target, not a source-render cap. 30 → 60 needs about ×2; 1 → 60 needs about ×60. Synthesis stops when source FPS is sufficient. Ignores the manual multiplier. Output limits and VSync still apply. This is a best-effort target: source history and spare GPU capacity are required; sequential modes cannot generate while the main thread is blocked."
 }
