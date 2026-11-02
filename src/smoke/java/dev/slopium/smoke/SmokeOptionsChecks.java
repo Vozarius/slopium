@@ -90,6 +90,11 @@ final class SmokeOptionsChecks {
             if(option("create_visibility").isEnabled() || option("factory_items").isEnabled() || option("be_render_distance").isEnabled())throw new AssertionError("Global model cut did not override controls");
             value("enabled",false);
             if(option("particle_visibility").isEnabled() || !option("enabled").isEnabled() || !option("diagnostics").isEnabled())throw new AssertionError("Global enable dependency failed");
+            if(!option("frame_generation_mode").isEnabled())throw new AssertionError("FG disabled with optimizations");
+            for(var mode:List.of("SIMPLE","FSR")){
+                value("frame_generation_mode",enumValue("frame_generation_mode",mode));
+                if(!option("frame_generation_input").isEnabled()||!option("frame_generation_parallel").isEnabled())throw new AssertionError("Standalone FG controls unavailable: "+mode);
+            }
             com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: unique translated controls, unsaved dependencies, combined modes and diagnostic overrides passed ({} controls)",ids.size());
         } finally {
             for(var e:saved.entrySet())e.getKey().set(c,e.getValue());

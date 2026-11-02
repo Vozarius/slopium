@@ -55,7 +55,9 @@
     "AsyncHudMixin",
     "AsyncAlphaMixin",
     "AsyncVignetteMixin",
-    "SlopiumSliderMixin"
+    "SlopiumSliderMixin",
+    "ReeseNumberInputMixin",
+    "FrameDebugMixin"
   ],
   "injectors": {
     "defaultRequire": 1

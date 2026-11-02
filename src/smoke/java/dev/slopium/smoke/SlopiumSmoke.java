@@ -127,6 +127,7 @@ public final class SlopiumSmoke {
         if (!opened || captured || Minecraft.getInstance().getOverlay() != null || ++frames < 60) return;
         captured = true;
         Minecraft client = Minecraft.getInstance();
+        if(capturedPages==0&&pageIndex==1)SmokeNumberRouting.run();
         Screenshot.grab(client.gameDirectory, capturedPages==7?"beta9-number-entry.png":"slopium-beta9-page-" + pageIndex + ".png", client.getMainRenderTarget(), message -> {
             LogUtils.getLogger().info("SLOPIUM_SMOKE: screenshot saved; success");
             client.execute(() -> {

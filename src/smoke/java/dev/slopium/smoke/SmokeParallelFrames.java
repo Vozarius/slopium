@@ -44,6 +44,18 @@ final class SmokeParallelFrames {
         double seconds=(System.nanoTime()-began)/1e9;
         LogUtils.getLogger().info("SLOPIUM_PARALLEL: phase {} actual real {} FPS, phase output {} FPS; {}; progressing stalls={}",phase,frames/seconds,AsyncPresenter.active()?(AsyncPresenter.outputs()-startOutput)/seconds:0,AsyncPresenter.status(),progressDuringStalls);
         if(phase==1||phase==2){
+            var rates=FrameMetrics.display();
+            if(Math.abs(rates.source()-frames/seconds)>Math.max(1,frames/seconds*.2)||Math.abs(rates.output()-(AsyncPresenter.outputs()-startOutput)/seconds)>10)
+                throw new AssertionError("Current FPS disagrees with measured world/swap rate: "+rates);
+            try{
+                var method=net.minecraft.client.gui.components.DebugScreenOverlay.class.getDeclaredMethod("getGameInformation");method.setAccessible(true);
+                var lines=(java.util.List<?>)method.invoke(mc.gui.getDebugOverlay());
+                if(!lines.contains(FrameMetrics.debugLine(mc.fpsString)))throw new AssertionError("F3 did not use shared FPS sample");
+                var stale=java.util.List.of("Minecraft 1.21.1","old cached FPS","unchanged detail");
+                var refreshed=FrameMetrics.refreshDebugLines(stale);
+                if(!refreshed.get(1).equals(FrameMetrics.debugLine(mc.fpsString))||!refreshed.get(2).equals(stale.get(2))||!stale.get(1).equals("old cached FPS"))throw new AssertionError("F3 cache refresh altered unrelated debug data");
+            }catch(ReflectiveOperationException e){throw new AssertionError(e);}
+            LogUtils.getLogger().info("SLOPIUM_PARALLEL: independent measurements match current FPS; real F3 and HUD use shared sample {}",rates);
             if(!AsyncPresenter.active())throw new AssertionError("Parallel presenter inactive: "+AsyncPresenter.status());
             if(AsyncPresenter.generated()-startGenerated<30||progressDuringStalls<(amortize&&phase==2?3:20))throw new AssertionError("No synthesis while Minecraft blocked");
             if((AsyncPresenter.outputs()-startOutput)/seconds<frames/seconds*2)throw new AssertionError("Parallel output did not exceed input x2");
@@ -77,6 +89,7 @@ final class SmokeParallelFrames {
     }
     private void next(){
         var mc=Minecraft.getInstance();var c=SlopiumConfig.get();
+        c.enabled=false;
         if(++phase==4){
             LogUtils.getLogger().info("SLOPIUM_PARALLEL: all blocked-render-thread phases passed; starting lifecycle checks");
             c.frameGenerationMode=mode;c.frameGenerationParallel=true;
@@ -103,12 +116,12 @@ final class SmokeParallelFrames {
                 mc.options.enableVsync().set(true);
             }
             case 4 -> {requireActive();mc.options.enableVsync().set(false);c.enabled=false;}
-            case 5 -> {requireStopped();c.enabled=true;}
+            case 5 -> {requireActive();c.enabled=true;}
             case 6 -> {requireActive();c.frameGenerationMode=mode==FrameGenerationMode.FSR?FrameGenerationMode.SIMPLE:FrameGenerationMode.FSR;}
             case 7 -> {requireActive();c.frameGenerationParallel=false;}
             case 8 -> {
                 requireStopped();if(org.lwjgl.opengl.GL33C.glGetError()!=0)throw new AssertionError("GL error after drawable restoration");
-                LogUtils.getLogger().info("SLOPIUM_PARALLEL: menu, restart, resize, VSync, Simple/FSR mode switch and global disable passed; no surviving presenter thread");
+                LogUtils.getLogger().info("SLOPIUM_PARALLEL: menu, restart, resize, VSync, Simple/FSR mode switch and generation with optimizations disabled passed; no surviving presenter thread");
                 mc.stop();phase=5;
             }
         }

@@ -49,7 +49,7 @@ public final class FrameGeneration {
     public static boolean conflictingGenerator(){return Slopium.loaded("framegen")||Slopium.loaded("pfg");}
     public static void overlay(net.neoforged.neoforge.client.event.RenderGuiEvent.Post event) {
         var mc=Minecraft.getInstance();var c=SlopiumConfig.get();
-        if(!c.enabled||c.frameGenerationMode==FrameGenerationMode.OFF||mc.level==null||mc.screen!=null)return;
+        if(c.frameGenerationMode==FrameGenerationMode.OFF||mc.level==null||mc.screen!=null)return;
         if(AsyncPresenter.active()) {
             if(c.frameGenerationCounter){
                 var gui=event.getGuiGraphics();int y=gui.guiHeight()-64;
@@ -68,9 +68,7 @@ public final class FrameGeneration {
         var gui=event.getGuiGraphics();int y=gui.guiHeight()-64;
         gui.drawString(mc.font,line,8,y,active?0xFFFFFFFF:0xFFFFAA55);
         if(active) {
-            double seconds=elapsedNanos/1e9;
-            gui.drawString(mc.font,net.minecraft.network.chat.Component.translatable("slopium.frame_generation.counter",
-                seconds<=0?0:Math.round((realFrames-realStarts)/seconds),seconds<=0?0:Math.round((outputFrames-outputStarts)/seconds),generatedFrames),8,y+11,0xFFFFFFFF);
+            gui.drawString(mc.font,FrameMetrics.counter(),8,y+11,0xFFFFFFFF);
         }
     }
     public static int limit(int original) {
@@ -90,11 +88,12 @@ public final class FrameGeneration {
         if(active&&c.frameGenerationAmortize)return amortizing()||c.frameGenerationTargetFps>0?Integer.MAX_VALUE:260;
         return active&&(c.frameGenerationTargetFps>0||c.frameGenerationInputFps>0||!SCHEDULE.probing())?Integer.MAX_VALUE:260;}
     public static String status() {
-        double seconds=elapsedNanos/1e9;
-        return String.format(java.util.Locale.ROOT,"Frame generation | %s | real=%d | generated=%d | endpoints=%d | held=%d | input target=%d | scheduled=%d FPS | base=%.1f FPS | output=%.1f FPS | GPU generation=%.3f ms",
-            state,realFrames,generatedFrames,endpointFrames,heldFrames,SlopiumConfig.get().frameGenerationInputFps,SCHEDULE.targetFps(),seconds<=0?0:(realFrames-realStarts)/seconds,seconds<=0?0:(outputFrames-outputStarts)/seconds,gpuMilliseconds);
+        if(AsyncPresenter.active())return "Sequential FG | inactive; see Parallel FG for current FPS";
+        var rates=FrameMetrics.display();
+        return String.format(java.util.Locale.ROOT,"Frame generation | %s | world draws=%d | synthetic images=%d | endpoints=%d | held=%d | input target=%d | schedule target=%d | real=%.1f FPS | output=%.1f FPS | GPU generation=%.3f ms",
+            state,realFrames,generatedFrames,endpointFrames,heldFrames,SlopiumConfig.get().frameGenerationInputFps,SCHEDULE.targetFps(),rates.source(),rates.output(),gpuMilliseconds);
     }
-    public static void resetCounters(){AsyncPresenter.resetCounters();FastFramePath.reset();realFrames=generatedFrames=endpointFrames=outputFrames=heldFrames=0;lastOutput=elapsedNanos=outputStarts=realStarts=0;gpuMilliseconds=0;if(timer!=null){timer.nanos=timer.samples=0;}}
+    public static void resetCounters(){FrameMetrics.reset();AsyncPresenter.resetCounters();FastFramePath.reset();realFrames=generatedFrames=endpointFrames=outputFrames=heldFrames=0;lastOutput=elapsedNanos=outputStarts=realStarts=0;gpuMilliseconds=0;if(timer!=null){timer.nanos=timer.samples=0;}}
     private static void recordOutput(long now,boolean real) {
         if(lastOutput!=0)elapsedNanos+=now-lastOutput;
         else {outputStarts++;if(real)realStarts++;}
@@ -117,7 +116,7 @@ public final class FrameGeneration {
         lastWorldReal=false;
         if(AsyncPresenter.active()){long stamp=System.nanoTime();draw.run();AsyncPresenter.captureWorld(camera,view,projection,stamp);return;}
         var mc=Minecraft.getInstance();var c=SlopiumConfig.get();var main=mc.getMainRenderTarget();
-        String blocked=!c.enabled||c.frameGenerationMode==FrameGenerationMode.OFF?"off":
+        String blocked=c.frameGenerationMode==FrameGenerationMode.OFF?"off":
             mc.screen!=null?"paused (menu)":mc.getOverlay()!=null?"paused (loading overlay)":
             mc.isPaused()?"paused (game)":mc.level==null?"paused (no world)":!mc.isWindowActive()?"paused (window focus)":
             Slopium.loaded("iris")||Slopium.loaded("oculus")?"shader integration unsupported":
@@ -250,7 +249,7 @@ public final class FrameGeneration {
                     mark(main,c);
                 } finally {if(timer!=null){timer.stop();gpuMilliseconds=timer.milliseconds();}}
             }
-            restoreLighting(mc);SCHEDULE.generated(Math.max(System.nanoTime()-now,(long)(gpuMilliseconds*1e6)));generatedFrames++;recordOutput(now,false);
+            restoreLighting(mc);SCHEDULE.generated(Math.max(System.nanoTime()-now,(long)(gpuMilliseconds*1e6)));generatedFrames++;FrameMetrics.synthesized();recordOutput(now,false);
             return;
         }
         // Skip obsolete fractions rather than delaying the next real frame to drain a pair.
@@ -270,7 +269,7 @@ public final class FrameGeneration {
     }
     public static boolean fastEligible(long now) {
         var c=SlopiumConfig.get();var mc=Minecraft.getInstance();var main=mc.getMainRenderTarget();
-        return active&&c.enabled&&c.frameGenerationFastPath&&c.frameGenerationMode==mode&&mode!=FrameGenerationMode.OFF
+        return active&&c.frameGenerationFastPath&&c.frameGenerationMode==mode&&mode!=FrameGenerationMode.OFF
             &&revision==Slopium.configRevision()&&fastFailedRevision!=revision&&current!=null&&previousVp!=null
             &&mc.level==world&&mc.player!=null&&mc.screen==null&&mc.getOverlay()==null&&!mc.isPaused()&&mc.isWindowActive()
             &&mc.options.graphicsMode().get()!=GraphicsStatus.FABULOUS&&!Slopium.loaded("iris")&&!Slopium.loaded("oculus")
@@ -328,7 +327,7 @@ public final class FrameGeneration {
         }
         heldSource=source;present(source,main.frameBufferId,main.width,main.height,false);
         mark(main,c);
-        generatedFrames++;
+        generatedFrames++;FrameMetrics.synthesized();
     }
     private static void restoreLighting(Minecraft mc) {
         if(mc.level.effects().constantAmbientLight())com.mojang.blaze3d.platform.Lighting.setupNetherLevel();

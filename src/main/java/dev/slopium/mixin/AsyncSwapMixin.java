@@ -9,5 +9,5 @@ import org.spongepowered.asm.mixin.injection.At;
 public abstract class AsyncSwapMixin {
     // Retain pollEvents, replayQueue and Tesselator cleanup on Minecraft's own thread.
     @WrapOperation(method="flipFrame",at=@At(value="INVOKE",target="Lorg/lwjgl/glfw/GLFW;glfwSwapBuffers(J)V"))
-    private static void slopium$workerOwnsSwap(long window,Operation<Void> original){if(!AsyncPresenter.active())original.call(window);}
+    private static void slopium$workerOwnsSwap(long window,Operation<Void> original){if(!AsyncPresenter.active()){original.call(window);dev.slopium.framegen.FrameMetrics.mainPresented();}}
 }

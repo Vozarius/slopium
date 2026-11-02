@@ -1,0 +1,35 @@
+{
+  "version": "1-beta.10",
+  "displayVersion": "Бета 10",
+  "date": "2026-11-02",
+  "jar": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-10.jar",
+  "sha256": "93209a04aeb535f5d4bcf5cd68dfecb34ea8de56e07f05524e64a5bcfc145172",
+  "bytes": 30840903,
+  "sources": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-10-sources.jar",
+  "sourcesSha256": "b09f5905ae1284ee5c759afe4dd121dffeaeb04163ba90b809872094e0359a04",
+  "tests": {
+    "tests": 44,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "verifiedLogs": [
+    "build/beta10-ui-retry.log",
+    "build/beta10-fps-world.log",
+    "build/beta10-ui-plain-retry.log",
+    "build/beta10-final-parallel.log"
+  ],
+  "userModsModified": false,
+  "features": [
+    "Exact numeric entry from actual Sodium and Reese option rows",
+    "Shared recent source-world and window-presentation FPS for F3, HUD and status",
+    "Refresh only cached F3 FPS row for Sodium Extra",
+    "Frame generation independent of the optimization master switch"
+  ],
+  "limitations": [
+    "Recent one-second samples require warmup; HUD updates with real frames",
+    "Output counts presentations including repeated images, not physical monitor refresh",
+    "Unchanged third-party FPS APIs and F3 timing graphs can still measure the main loop",
+    "Existing frame-generation quality, latency and GPU limitations remain"
+  ]
+}

@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Minecraft.class)
 public abstract class AsyncPresentationMixin {
     @Inject(method="runTick",at=@At("HEAD"))
-    private void slopium$parallelBegin(boolean render,CallbackInfo ci){AsyncPresenter.beginFrame();dev.slopium.framegen.FrameGeneration.beginFrame();}
+    private void slopium$parallelBegin(boolean render,CallbackInfo ci){AsyncPresenter.beginFrame();dev.slopium.framegen.FrameMetrics.beginFrame(render);dev.slopium.framegen.FrameGeneration.beginFrame();}
     @Inject(method="runTick",at=@At("TAIL"))
     private void slopium$measureSource(boolean render,CallbackInfo ci){dev.slopium.framegen.FrameGeneration.endFrame();}
     @WrapOperation(method="runTick",at=@At(value="INVOKE",target="Lcom/mojang/blaze3d/systems/RenderSystem;limitDisplayFPS(I)V"))

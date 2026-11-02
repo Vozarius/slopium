@@ -154,9 +154,9 @@ public final class Slopium {
                 context.getSource().sendSuccess(()->Component.literal(dev.slopium.framegen.AsyncPresenter.status()),false);
                 context.getSource().sendSuccess(()->Component.literal(dev.slopium.framegen.FastFramePath.status()),false);
                 context.getSource().sendSuccess(() -> Component.literal(timing.samples() == 0
-                    ? "Frames | no samples; enable diagnostics and close menus in the world"
+                    ? "Render-loop history | no samples; enable diagnostics and close menus in the world"
                     : String.format(java.util.Locale.ROOT,
-                        "Frames | n=%d | %.1fs | avg=%.1f FPS | p50=%.2f ms | p95=%.2f ms | p99=%.2f ms | max=%.2f ms | >16.67ms=%.1f%%",
+                        "Render-loop history | n=%d | %.1fs | avg loop rate=%.1f/s | p50=%.2f ms | p95=%.2f ms | p99=%.2f ms | max=%.2f ms | >16.67ms=%.1f%%",
                         timing.samples(), timing.seconds(), timing.averageFps(), timing.medianMs(),
                         timing.p95Ms(), timing.p99Ms(), timing.maxMs(), timing.overBudgetPercent())), false);
                 return Command.SINGLE_SUCCESS;

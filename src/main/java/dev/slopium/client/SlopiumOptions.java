@@ -175,7 +175,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
     }
     private static ResourceLocation[] dependencies(String key) {
         var result = new java.util.ArrayList<ResourceLocation>();
-        if (!key.equals("enabled") && !key.equals("diagnostics")) result.add(id("enabled"));
+        if (!key.equals("enabled") && !key.equals("diagnostics")&&!key.startsWith("frame_generation_")) result.add(id("enabled"));
         if(key.startsWith("frame_generation_")&&!key.equals("frame_generation_mode"))result.add(id("frame_generation_mode"));
         if(key.startsWith("frame_generation_")&&!key.equals("frame_generation_mode")&&!key.equals("frame_generation_parallel"))result.add(id("frame_generation_parallel"));
         if(key.equals("frame_generation_cell")||key.equals("frame_generation_search")||key.equals("frame_generation_rejection")||key.equals("frame_generation_refinement")||key.equals("frame_generation_protect"))result.add(id("frame_generation_multiplier"));
@@ -191,7 +191,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
     }
     private static boolean allowed(String key, net.caffeinemc.mods.sodium.api.config.ConfigState state) {
         if (key.equals("enabled") || key.equals("diagnostics")) return true;
-        if (!state.readBooleanOption(id("enabled"))) return false;
+        if (!key.startsWith("frame_generation_")&&!state.readBooleanOption(id("enabled"))) return false;
         if(key.startsWith("frame_generation_")&&!key.equals("frame_generation_mode")) {
             var fg=state.readEnumOption(id("frame_generation_mode"),FrameGenerationMode.class);
             if(key.equals("frame_generation_parallel"))return fg!=FrameGenerationMode.OFF;

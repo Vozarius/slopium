@@ -42,10 +42,10 @@ public final class AsyncPresenter {
     public static String status(){
         Session s=session;
         if(s==null)return "Parallel FG | "+state;
-        double seconds=Math.max(.001,(System.nanoTime()-s.statsBegan)/1e9);
+        var rates=FrameMetrics.display();
         long outputs=s.outputs-s.baseOutputs;
         return String.format(java.util.Locale.ROOT,"Parallel FG | %s | real=%.1f FPS | output=%.1f FPS | generated=%d | published=%d | dropped=%d | copied=%d | GPU=%.3f ms | swap=%.3f ms | %dx%d",
-            state,(s.published-s.basePublished+s.dropped-s.baseDropped)/seconds,outputs/seconds,s.generated-s.baseGenerated,
+            state,rates.source(),rates.output(),s.generated-s.baseGenerated,
             s.published-s.basePublished,s.dropped-s.baseDropped,s.received-s.baseReceived,s.gpuMs,
             outputs==0?0:(s.swapNanos-s.baseSwap)/1e6/outputs,s.width,s.height)+adaptiveStatus(s);
     }
@@ -54,10 +54,7 @@ public final class AsyncPresenter {
         return target==0?"":" | target="+target+" | "+(s.sourceRate.needed(target)?"filling":"source sufficient; synthesis off");
     }
     public static String overlay(){
-        Session s=session;if(s==null)return state;
-        double seconds=Math.max(.001,(System.nanoTime()-s.statsBegan)/1e9);
-        return net.minecraft.network.chat.Component.translatable("slopium.frame_generation.counter",
-            Math.round((s.published-s.basePublished+s.dropped-s.baseDropped)/seconds),Math.round((s.outputs-s.baseOutputs)/seconds),s.generated-s.baseGenerated).getString();
+        return FrameMetrics.counter().getString();
     }
     public static net.minecraft.network.chat.Component title(){
         Session s=session;if(s==null)return net.minecraft.network.chat.Component.literal(state);
@@ -72,7 +69,7 @@ public final class AsyncPresenter {
         var mc=Minecraft.getInstance();
         if(!mc.isGameLoadFinished())return;
         var c=SlopiumConfig.get();
-        boolean wanted=c.enabled&&c.frameGenerationParallel&&c.frameGenerationMode!=FrameGenerationMode.OFF
+        boolean wanted=c.frameGenerationParallel&&c.frameGenerationMode!=FrameGenerationMode.OFF
             &&supported()&&mc.level!=null&&mc.player!=null&&mc.screen==null&&mc.getOverlay()==null
             &&!mc.isPaused()&&mc.isWindowActive()&&!FrameGeneration.conflictingGenerator()
             &&!Slopium.loaded("iris")&&!Slopium.loaded("oculus")
@@ -398,6 +395,7 @@ public final class AsyncPresenter {
                             gpuFence=glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE,0);glFlush();
                             long swapStart=System.nanoTime();
                             if(!GDI32.SwapBuffers(visibleDc))throw new IllegalStateException("Parallel SwapBuffers failed");
+                            FrameMetrics.presented(System.nanoTime(),pair&&nextPhase>0&&nextPhase<phases);
                             swapNanos+=System.nanoTime()-swapStart;
                             outputs++;timeline.presented(nextPhase,phases);
                             nextPresent=outputCap==0?0:amortizing?AdaptiveFrameTarget.nextDeadline(nextPresent,swapStart,outputCap)

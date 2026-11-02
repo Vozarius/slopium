@@ -17,7 +17,7 @@ final class SmokeFrameLifecycleChecks {
             float[] clear=new float[4];glGetFloatv(GL_COLOR_CLEAR_VALUE,clear);double clearDepth=glGetDouble(GL_DEPTH_CLEAR_VALUE);boolean mask=glGetBoolean(GL_DEPTH_WRITEMASK);
             try {
                 mc.level=(SmokeWallChecks.TestLevel)SmokeRadicalChecks.allocate(SmokeWallChecks.TestLevel.class);
-                mc.screen=null;mc.setOverlay(null);mc.setWindowActive(true);mc.options.graphicsMode().set(GraphicsStatus.FANCY);c.enabled=true;c.diagnostics=true;
+                mc.screen=null;mc.setOverlay(null);mc.setWindowActive(true);mc.options.graphicsMode().set(GraphicsStatus.FANCY);c.enabled=false;c.diagnostics=true;
                 var camera=new Camera();var view=new Matrix4f();var projection=new Matrix4f().perspective((float)Math.toRadians(70),1280f/720,.05f,1000);
                 for(var mode:new FrameGenerationMode[]{FrameGenerationMode.SIMPLE,FrameGenerationMode.FSR}) for(int factor:new int[]{2,3,4,8,32}) {
                     FrameGeneration.release();FrameGeneration.resetCounters();c.frameGenerationMode=mode;c.frameGenerationMultiplier=factor;c.frameGenerationMarkFrames=true;c.frameGenerationInputFps=30;
