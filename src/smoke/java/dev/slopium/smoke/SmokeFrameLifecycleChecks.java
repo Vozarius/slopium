@@ -64,12 +64,17 @@ final class SmokeFrameLifecycleChecks {
                 for(var mode:new FrameGenerationMode[]{FrameGenerationMode.SIMPLE,FrameGenerationMode.FSR}) {
                     FrameGeneration.release();FrameGeneration.resetCounters();c.frameGenerationMode=mode;c.frameGenerationMultiplier=32;c.frameGenerationInputFps=0;c.diagnostics=false;
                     Runnable expensiveWorld=()->{GlState.fullscreen();glClearColor(.25f,.5f,.75f,1);glClear(GL_COLOR_BUFFER_BIT);java.util.concurrent.locks.LockSupport.parkNanos(33_333_333);};
+                    // parkNanos may oversleep on Windows. Compare against the same measured
+                    // ungenerated work, not an assumed 30 FPS based on the requested sleep.
+                    mc.getMainRenderTarget().bindWrite(true);long baselineStart=System.nanoTime();
+                    for(int i=0;i<16;i++)expensiveWorld.run();
+                    double baseline=16e9/(System.nanoTime()-baselineStart);
                     mc.getMainRenderTarget().bindWrite(true);FrameGeneration.render(camera,view,projection,expensiveWorld);
                     long start=System.nanoTime(),before=FrameGeneration.realFrames;
                     do {mc.getMainRenderTarget().bindWrite(true);FrameGeneration.render(camera,view,projection,expensiveWorld);}while(System.nanoTime()-start<1_200_000_000L);
                     double rate=(FrameGeneration.realFrames-before)/((System.nanoTime()-start)/1e9);
-                    if(rate<24)throw new AssertionError("Automatic x32 starved 33 ms real frames: "+mode+" "+rate);
-                    com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: automatic {} x32 with simulated 33 ms world work: {} real FPS; {}",mode,rate,FrameGeneration.status());
+                    if(rate<baseline*.8)throw new AssertionError("Automatic x32 starved source frames: "+mode+" "+rate+" vs baseline "+baseline);
+                    com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: automatic {} x32 with simulated 33 ms world work: {} real FPS, baseline {}; {}",mode,rate,baseline,FrameGeneration.status());
                 }
                 for(var adaptiveMode:new FrameGenerationMode[]{FrameGenerationMode.SIMPLE,FrameGenerationMode.FSR}) {
                     FrameGeneration.release();FrameGeneration.resetCounters();c.frameGenerationMode=adaptiveMode;

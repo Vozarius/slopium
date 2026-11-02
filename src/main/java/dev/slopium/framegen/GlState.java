@@ -10,7 +10,7 @@ public final class GlState implements AutoCloseable {
     private final int depthFunction=glGetInteger(GL_DEPTH_FUNC);
     private final boolean depthMask=glGetBoolean(GL_DEPTH_WRITEMASK);
     private final double clearDepth=glGetDouble(GL_DEPTH_CLEAR_VALUE);
-    private final int[] viewport=new int[4],textures=new int[4],samplers=new int[4],scissorBox=new int[4];
+    private final int[] viewport=new int[4],textures=new int[6],samplers=new int[6],scissorBox=new int[4];
     private final boolean depth=glIsEnabled(GL_DEPTH_TEST),blend=glIsEnabled(GL_BLEND),cull=glIsEnabled(GL_CULL_FACE);
     private final boolean scissor=glIsEnabled(GL_SCISSOR_TEST),srgb=glIsEnabled(GL_FRAMEBUFFER_SRGB);
     private final boolean[] mask=new boolean[4];
@@ -21,7 +21,7 @@ public final class GlState implements AutoCloseable {
             var bytes=stack.malloc(4);glGetBooleanv(GL_COLOR_WRITEMASK,bytes);
             for(int i=0;i<4;i++)mask[i]=bytes.get(i)!=0;
         }
-        for(int i=0;i<4;i++){glActiveTexture(GL_TEXTURE0+i);textures[i]=glGetInteger(GL_TEXTURE_BINDING_2D);samplers[i]=glGetInteger(GL_SAMPLER_BINDING);glBindSampler(i,0);}
+        for(int i=0;i<6;i++){glActiveTexture(GL_TEXTURE0+i);textures[i]=glGetInteger(GL_TEXTURE_BINDING_2D);samplers[i]=glGetInteger(GL_SAMPLER_BINDING);glBindSampler(i,0);}
         glActiveTexture(GL_TEXTURE0);
     }
     public static void fullscreen() {
@@ -35,7 +35,7 @@ public final class GlState implements AutoCloseable {
         set(GL_DEPTH_TEST,depth);set(GL_BLEND,blend);set(GL_CULL_FACE,cull);set(GL_SCISSOR_TEST,scissor);set(GL_FRAMEBUFFER_SRGB,srgb);
         glColorMask(mask[0],mask[1],mask[2],mask[3]);
         glDepthFunc(depthFunction);glDepthMask(depthMask);glClearDepth(clearDepth);
-        for(int i=0;i<4;i++){glActiveTexture(GL_TEXTURE0+i);glBindTexture(GL_TEXTURE_2D,textures[i]);glBindSampler(i,samplers[i]);}
+        for(int i=0;i<6;i++){glActiveTexture(GL_TEXTURE0+i);glBindTexture(GL_TEXTURE_2D,textures[i]);glBindSampler(i,samplers[i]);}
         glActiveTexture(active);
     }
     private static void set(int cap,boolean value){if(value)glEnable(cap);else glDisable(cap);}

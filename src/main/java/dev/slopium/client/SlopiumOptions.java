@@ -51,9 +51,11 @@ public final class SlopiumOptions implements ConfigEntryPoint {
                 .addOptionGroup(builder.createOptionGroup().setName(text("group.frame_simple"))
                     .addOption(integer(builder,"frame_generation_grid",v->c.frameGenerationGridStep=v,()->c.frameGenerationGridStep,4,1,16,1)))
                 .addOptionGroup(builder.createOptionGroup().setName(text("group.frame_hybrid"))
-                    .addOption(integer(builder,"frame_generation_cell",v->c.frameGenerationFlowCell=v,()->c.frameGenerationFlowCell,8,4,16,4))
-                    .addOption(integer(builder,"frame_generation_search",v->c.frameGenerationSearchPixels=v,()->c.frameGenerationSearchPixels,16,4,32,4))
-                    .addOption(integer(builder,"frame_generation_rejection",v->c.frameGenerationRejectionPixels=v,()->c.frameGenerationRejectionPixels,4,1,16,1)))
+                    .addOption(integer(builder,"frame_generation_cell",v->c.frameGenerationFlowCell=v,()->c.frameGenerationFlowCell,8,1,16,1))
+                    .addOption(integer(builder,"frame_generation_search",v->c.frameGenerationSearchPixels=v,()->c.frameGenerationSearchPixels,16,4,128,1))
+                    .addOption(integer(builder,"frame_generation_rejection",v->c.frameGenerationRejectionPixels=v,()->c.frameGenerationRejectionPixels,4,1,16,1))
+                    .addOption(integer(builder,"frame_generation_refinement",v->c.frameGenerationRefinement=v,()->c.frameGenerationRefinement,1,0,4,1))
+                    .addOption(bool(builder,"frame_generation_protect",v->c.frameGenerationProtect=v,()->c.frameGenerationProtect,true,true)))
                 .addOptionGroup(builder.createOptionGroup().setName(text("group.frame_fsr"))
                     .addOption(bool(builder,"frame_generation_fsr_debug",v->c.frameGenerationFsrDebug=v,()->c.frameGenerationFsrDebug,false,true))))
             .addPage(builder.createOptionPage().setName(text("page.particles"))
@@ -153,7 +155,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
             .setEnabledProvider(state -> available && allowed(key, state), dependencies(key)).setImpact(OptionImpact.VARIES);
     }
     private IntegerOptionBuilder integer(ConfigBuilder b, String key, Consumer<Integer> set, Supplier<Integer> get, int defaults, int min, int max, int step) {
-        return b.createIntegerOption(id(key)).setName(text(key)).setTooltip(tooltip(key))
+        return b.createIntegerOption(id(key)).setName(text(key)).setTooltip(tooltip(key).copy().append(text("number.hint")))
             .setStorageHandler(storage).setBinding(set, get).setDefaultValue(defaults).setRange(min, max, step)
             .setEnabledProvider(state -> allowed(key, state), dependencies(key))
             .setValueFormatter(value -> key.equals("frame_generation_multiplier")?Component.translatable("slopium.frame_generation_multiplier.value",value,value-1):key.equals("frame_generation_target")&&value==0?text("frame_generation_target.unlimited"):key.equals("frame_generation_input")&&value==0?text("frame_generation_input.unlimited"):Component.literal(Integer.toString(value)));
@@ -176,7 +178,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
         if (!key.equals("enabled") && !key.equals("diagnostics")) result.add(id("enabled"));
         if(key.startsWith("frame_generation_")&&!key.equals("frame_generation_mode"))result.add(id("frame_generation_mode"));
         if(key.startsWith("frame_generation_")&&!key.equals("frame_generation_mode")&&!key.equals("frame_generation_parallel"))result.add(id("frame_generation_parallel"));
-        if(key.equals("frame_generation_cell")||key.equals("frame_generation_search")||key.equals("frame_generation_rejection"))result.add(id("frame_generation_multiplier"));
+        if(key.equals("frame_generation_cell")||key.equals("frame_generation_search")||key.equals("frame_generation_rejection")||key.equals("frame_generation_refinement")||key.equals("frame_generation_protect"))result.add(id("frame_generation_multiplier"));
         if(key.startsWith("frame_generation_")&&!key.equals("frame_generation_mode")&&!key.equals("frame_generation_amortize")&&!key.equals("frame_generation_parallel"))result.add(id("frame_generation_amortize"));
         String parent = PARENTS.get(key), override = override(key);
         if (parent != null) result.add(id(parent));
@@ -192,14 +194,14 @@ public final class SlopiumOptions implements ConfigEntryPoint {
         if (!state.readBooleanOption(id("enabled"))) return false;
         if(key.startsWith("frame_generation_")&&!key.equals("frame_generation_mode")) {
             var fg=state.readEnumOption(id("frame_generation_mode"),FrameGenerationMode.class);
-            if(key.equals("frame_generation_parallel"))return fg==FrameGenerationMode.SIMPLE;
+            if(key.equals("frame_generation_parallel"))return fg!=FrameGenerationMode.OFF;
             if(key.equals("frame_generation_amortize"))return fg!=FrameGenerationMode.OFF;
             boolean amortize=state.readBooleanOption(id("frame_generation_amortize"));
             if(key.equals("frame_generation_multiplier"))return fg!=FrameGenerationMode.OFF&&!amortize;
-            boolean parallel=fg==FrameGenerationMode.SIMPLE&&state.readBooleanOption(id("frame_generation_parallel"));
+            boolean parallel=fg!=FrameGenerationMode.OFF&&state.readBooleanOption(id("frame_generation_parallel"));
             if(key.equals("frame_generation_fast")||key.equals("frame_generation_mark"))return fg!=FrameGenerationMode.OFF&&!parallel;
             if(key.equals("frame_generation_grid"))return fg==FrameGenerationMode.SIMPLE&&!parallel;
-            if(parallel&&(key.equals("frame_generation_cell")||key.equals("frame_generation_search")||key.equals("frame_generation_rejection")))return true;
+            if(parallel&&(key.equals("frame_generation_cell")||key.equals("frame_generation_search")||key.equals("frame_generation_rejection")||key.equals("frame_generation_refinement")||key.equals("frame_generation_protect")))return true;
             if(key.equals("frame_generation_target")||key.equals("frame_generation_input")||key.equals("frame_generation_multiplier")||key.equals("frame_generation_mark")||key.equals("frame_generation_counter")||key.equals("frame_generation_fast"))return fg!=FrameGenerationMode.OFF;
             if(key.equals("frame_generation_grid"))return fg==FrameGenerationMode.SIMPLE;
             if(key.equals("frame_generation_fsr_debug"))return fg==FrameGenerationMode.FSR;

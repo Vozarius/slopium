@@ -10,14 +10,18 @@ import java.util.concurrent.locks.LockSupport;
 /** Proves actual swaps and synthesis continue while the Minecraft thread cannot execute code. */
 final class SmokeParallelFrames {
     private final boolean amortize=Boolean.getBoolean("slopium.amortizeSmoke");
+    private final FrameGenerationMode mode=Boolean.getBoolean("slopium.parallelFsrSmoke")?FrameGenerationMode.FSR:FrameGenerationMode.SIMPLE;
     private long recoveryGenerated;
     private boolean settled;
     private int phase=-1,frames,progressDuringStalls;
     private long began,startOutput,startGenerated;
     private int lifecycle;
     private long lifecycleAt;
+    private String screenshot;
     SmokeParallelFrames(){NeoForge.EVENT_BUS.addListener(this::load);NeoForge.EVENT_BUS.addListener(this::lifecycle);}
     private void load(RenderFrameEvent.Pre event){
+        // Previous main frame has been restored after composition by this point.
+        if(screenshot!=null){var mc=Minecraft.getInstance();net.minecraft.client.Screenshot.grab(mc.gameDirectory,screenshot,mc.getMainRenderTarget(),m->{});screenshot=null;}
         if(phase<0||phase>2)return;
         long before=AsyncPresenter.generated();
         long beforeOutput=AsyncPresenter.outputs();
@@ -45,7 +49,8 @@ final class SmokeParallelFrames {
             if((AsyncPresenter.outputs()-startOutput)/seconds<frames/seconds*2)throw new AssertionError("Parallel output did not exceed input x2");
             if(amortize&&Math.abs((AsyncPresenter.outputs()-startOutput)/seconds-60)>(phase==2?12:8))throw new AssertionError("Adaptive output did not approach 60 FPS");
             if(phase==2&&(AsyncPresenter.outputs()-startOutput)/seconds>(amortize?62:245))throw new AssertionError("Parallel output cap ignored");
-            net.minecraft.client.Screenshot.grab(mc.gameDirectory,"beta8-parallel-"+phase+".png",mc.getMainRenderTarget(),m->{});
+            checkSeparatedWorld();
+            screenshot="beta9-parallel-"+mode+"-"+phase+".png";
         }
         if(amortize&&phase==3){
             requireActive();
@@ -54,15 +59,31 @@ final class SmokeParallelFrames {
         if(!amortize&&phase==3&&AsyncPresenter.active())throw new AssertionError("Presenter did not return window ownership");
         next();
     }
+    private static void checkSeparatedWorld(){
+        try(var state=new GlState()){
+            var sf=AsyncPresenter.class.getDeclaredField("session");sf.setAccessible(true);Object s=sf.get(null);
+            var pf=s.getClass().getDeclaredField("pending");pf.setAccessible(true);Object pending=pf.get(s);
+            if(pending==null||!AsyncPresenter.overlayActive())throw new AssertionError("No separated source snapshot");
+            var image=pending.getClass().getDeclaredField("image");image.setAccessible(true);var world=(GlImage)image.get(pending);
+            float[] p=new float[4];
+            org.lwjgl.opengl.GL33C.glBindFramebuffer(org.lwjgl.opengl.GL33C.GL_READ_FRAMEBUFFER,world.fbo);
+            org.lwjgl.opengl.GL33C.glReadPixels(world.width/3,world.height/2,1,1,org.lwjgl.opengl.GL33C.GL_RGBA,org.lwjgl.opengl.GL33C.GL_FLOAT,p);
+            if(p[0]+p[1]+p[2]<.05f)throw new AssertionError("World source empty");
+            org.lwjgl.opengl.GL33C.glBindFramebuffer(org.lwjgl.opengl.GL33C.GL_READ_FRAMEBUFFER,Minecraft.getInstance().getMainRenderTarget().frameBufferId);
+            org.lwjgl.opengl.GL33C.glReadPixels(world.width/3,world.height/2,1,1,org.lwjgl.opengl.GL33C.GL_RGBA,org.lwjgl.opengl.GL33C.GL_FLOAT,p);
+            if(p[3]>.01f)throw new AssertionError("HUD empty space is not transparent: "+p[3]);
+            com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_PARALLEL: real world snapshot populated; HUD background transparent before composition");
+        }catch(ReflectiveOperationException e){throw new AssertionError(e);}
+    }
     private void next(){
         var mc=Minecraft.getInstance();var c=SlopiumConfig.get();
         if(++phase==4){
             LogUtils.getLogger().info("SLOPIUM_PARALLEL: all blocked-render-thread phases passed; starting lifecycle checks");
-            c.frameGenerationMode=FrameGenerationMode.SIMPLE;c.frameGenerationParallel=true;
+            c.frameGenerationMode=mode;c.frameGenerationParallel=true;
             lifecycleAt=System.nanoTime()+1_000_000_000L;return;
         }
         if(phase==0)SmokeFrameGenerationChecks.screenSpace();
-        c.frameGenerationMode=phase==0||phase==3&&!amortize?FrameGenerationMode.OFF:FrameGenerationMode.SIMPLE;
+        c.frameGenerationMode=phase==0||phase==3&&!amortize?FrameGenerationMode.OFF:mode;
         c.frameGenerationAmortize=amortize;
         c.frameGenerationParallel=phase==1||phase==2||amortize&&phase==3;c.frameGenerationFastPath=false;
         c.frameGenerationInputFps=amortize?60:0;c.frameGenerationMultiplier=amortize?2:phase==2?32:6;c.frameGenerationTargetFps=amortize?0:phase==2?240:0;
@@ -83,10 +104,11 @@ final class SmokeParallelFrames {
             }
             case 4 -> {requireActive();mc.options.enableVsync().set(false);c.enabled=false;}
             case 5 -> {requireStopped();c.enabled=true;}
-            case 6 -> {requireActive();c.frameGenerationParallel=false;}
-            case 7 -> {
+            case 6 -> {requireActive();c.frameGenerationMode=mode==FrameGenerationMode.FSR?FrameGenerationMode.SIMPLE:FrameGenerationMode.FSR;}
+            case 7 -> {requireActive();c.frameGenerationParallel=false;}
+            case 8 -> {
                 requireStopped();if(org.lwjgl.opengl.GL33C.glGetError()!=0)throw new AssertionError("GL error after drawable restoration");
-                LogUtils.getLogger().info("SLOPIUM_PARALLEL: menu, restart, resize, VSync and global disable passed; no surviving presenter thread");
+                LogUtils.getLogger().info("SLOPIUM_PARALLEL: menu, restart, resize, VSync, Simple/FSR mode switch and global disable passed; no surviving presenter thread");
                 mc.stop();phase=5;
             }
         }

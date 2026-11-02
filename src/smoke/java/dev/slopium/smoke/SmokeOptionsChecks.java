@@ -36,6 +36,10 @@ final class SmokeOptionsChecks {
             if(option("frame_generation_grid").isEnabled()||option("frame_generation_fast").isEnabled()||!option("frame_generation_cell").isEnabled())throw new AssertionError("Parallel controls conflict");
             value("frame_generation_parallel",false);
             value("frame_generation_mode",enumValue("frame_generation_mode","FSR"));
+            value("frame_generation_parallel",true);
+            if(!option("frame_generation_parallel").isEnabled()||!option("frame_generation_refinement").isEnabled()||!option("frame_generation_protect").isEnabled())throw new AssertionError("Parallel FSR quality unavailable");
+            exactNumbers();
+            value("frame_generation_parallel",false);
             if(!option("frame_generation_input").isEnabled())throw new AssertionError("FSR input cap disabled");
             value("frame_generation_multiplier",2);
             if(option("frame_generation_cell").isEnabled()||!option("frame_generation_fsr_debug").isEnabled())throw new AssertionError("FSR controls conflict");
@@ -91,5 +95,30 @@ final class SmokeOptionsChecks {
             for(var e:saved.entrySet())e.getKey().set(c,e.getValue());
             ConfigManager.CONFIG.resetAllOptionsFromBindings();
         }
+    }
+    private static void exactNumbers()throws ReflectiveOperationException {
+        var mc=net.minecraft.client.Minecraft.getInstance();var parent=mc.screen;
+        var o=(IntegerOption)option("frame_generation_input");
+        var type=Class.forName("net.caffeinemc.mods.sodium.client.gui.options.control.SliderControl$SliderControlElement");
+        var ctor=type.getDeclaredConstructors()[0];ctor.setAccessible(true);
+        var list=new net.caffeinemc.mods.sodium.client.gui.options.control.AbstractOptionList(new net.caffeinemc.mods.sodium.client.util.Dim2i(0,0,500,200)){
+            @Override public int getScrollAmount(){return 0;}
+            @Override public void render(net.minecraft.client.gui.GuiGraphics g,int x,int y,float f){}
+        };
+        var element=(net.caffeinemc.mods.sodium.client.gui.options.control.ControlElement)ctor.newInstance(list,o,new net.caffeinemc.mods.sodium.client.util.Dim2i(10,10,400,20),null);
+        Object bound=o.getBinding().load();
+        if(!element.mouseClicked(20,20,1)||!(mc.screen instanceof NumberEntryScreen))throw new AssertionError("Right click did not open numeric entry");
+        var screen=mc.screen;var edit=(net.minecraft.client.gui.components.EditBox)screen.children().stream().filter(x->x instanceof net.minecraft.client.gui.components.EditBox).findFirst().orElseThrow();
+        edit.setValue("2");
+        screen.keyPressed(org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER,0,0);
+        if(mc.screen!=parent||o.getValidatedValue()!=2||!o.getBinding().load().equals(bound))throw new AssertionError("Exact 2 FPS did not remain pending");
+        element.mouseClicked(20,20,1);screen=mc.screen;
+        edit=(net.minecraft.client.gui.components.EditBox)screen.children().stream().filter(x->x instanceof net.minecraft.client.gui.components.EditBox).findFirst().orElseThrow();
+        edit.setValue("999");screen.keyPressed(org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER,0,0);
+        if(mc.screen!=screen||o.getValidatedValue()!=2)throw new AssertionError("Out of range value accepted");
+        edit.setValue("3");screen.keyPressed(org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE,0,0);
+        if(mc.screen!=parent||o.getValidatedValue()!=2)throw new AssertionError("Cancel changed value");
+        if(NumberEntryScreen.parse("2147483648",0,240,1)!=null||NumberEntryScreen.parse("-1",0,240,1)!=null||NumberEntryScreen.parse("11",0,240,10)!=null||NumberEntryScreen.parse("20",0,240,10)!=20)throw new AssertionError("Numeric validation");
+        com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: real slider right-click, exact 2 FPS, pending value, range/step checks and Escape passed");
     }
 }

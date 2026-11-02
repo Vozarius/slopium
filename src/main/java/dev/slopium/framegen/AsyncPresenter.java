@@ -56,32 +56,41 @@ public final class AsyncPresenter {
     public static String overlay(){
         Session s=session;if(s==null)return state;
         double seconds=Math.max(.001,(System.nanoTime()-s.statsBegan)/1e9);
-        return String.format(java.util.Locale.ROOT,"Parallel FG | real %.0f FPS | output %.0f FPS | generated %d",
-            (s.published-s.basePublished+s.dropped-s.baseDropped)/seconds,(s.outputs-s.baseOutputs)/seconds,s.generated-s.baseGenerated)+adaptiveStatus(s);
+        return net.minecraft.network.chat.Component.translatable("slopium.frame_generation.counter",
+            Math.round((s.published-s.basePublished+s.dropped-s.baseDropped)/seconds),Math.round((s.outputs-s.baseOutputs)/seconds),s.generated-s.baseGenerated).getString();
+    }
+    public static net.minecraft.network.chat.Component title(){
+        Session s=session;if(s==null)return net.minecraft.network.chat.Component.literal(state);
+        var title=net.minecraft.network.chat.Component.translatable("slopium.frame_generation.parallel_title",
+            net.minecraft.network.chat.Component.translatable("slopium.value.FrameGenerationMode."+s.mode));
+        if(s.settings.amortizeTarget>0)title.append(net.minecraft.network.chat.Component.translatable(
+            s.sourceRate.needed(s.settings.amortizeTarget)?"slopium.frame_generation.filling":"slopium.frame_generation.sufficient",s.settings.amortizeTarget));
+        return title;
     }
     // Render thread, before any per-frame work. Switching drawables preserves Minecraft's GL cache.
     public static void beginFrame(){
         var mc=Minecraft.getInstance();
         if(!mc.isGameLoadFinished())return;
         var c=SlopiumConfig.get();
-        boolean wanted=c.enabled&&c.frameGenerationParallel&&c.frameGenerationMode==FrameGenerationMode.SIMPLE
+        boolean wanted=c.enabled&&c.frameGenerationParallel&&c.frameGenerationMode!=FrameGenerationMode.OFF
             &&supported()&&mc.level!=null&&mc.player!=null&&mc.screen==null&&mc.getOverlay()==null
             &&!mc.isPaused()&&mc.isWindowActive()&&!FrameGeneration.conflictingGenerator()
             &&!Slopium.loaded("iris")&&!Slopium.loaded("oculus")
+            &&mc.gameRenderer.currentEffect()==null
             &&mc.options.graphicsMode().get()!=net.minecraft.client.GraphicsStatus.FABULOUS;
         if(session!=null) {
             if(session.failure!=null){problem=session.failure.toString();failedRevision=Slopium.configRevision();wanted=false;}
             if(!wanted||session.world!=mc.level||session.width!=mc.getWindow().getWidth()||session.height!=mc.getWindow().getHeight()
-                ||session.revision!=Slopium.configRevision()||!session.running) {
+                ||session.mode!=c.frameGenerationMode||session.revision!=Slopium.configRevision()||!session.running) {
                 stop();return;
             }
             session.settings=settings(mc,c);return;
         }
-        if(!wanted){state=c.frameGenerationParallel?"paused / requires Simple, Windows, focused world":"off";return;}
+        if(!wanted){state=c.frameGenerationParallel?"paused / requires Windows, focused world, no post-effect":"off";return;}
         if(failedRevision==Slopium.configRevision()){state="disabled: "+problem;return;}
         FrameGeneration.release();
         Session next=new Session(mc.getWindow().getWindow(),mc.getWindow().getWidth(),mc.getWindow().getHeight(),mc.level,settings(mc,c));
-        try {next.start();session=next;state="active (screen-space interpolation)";}
+        try {next.start();session=next;state="active ("+c.frameGenerationMode+", world only)";}
         catch(Exception|LinkageError e){
             next.running=false;
             // start() transfers ownership only after the worker is ready, and restores on failure.
@@ -94,9 +103,9 @@ public final class AsyncPresenter {
         int cap=c.frameGenerationTargetFps;
         if(vanilla<260)cap=cap>0?Math.min(cap,vanilla):vanilla;
         return new Settings(Math.clamp(c.frameGenerationMultiplier,2,32),Math.max(0,cap),
-            Math.clamp(c.frameGenerationFlowCell,4,16),Math.clamp(c.frameGenerationSearchPixels,4,32),
+            Math.clamp(c.frameGenerationFlowCell,1,16),Math.clamp(c.frameGenerationSearchPixels,4,128),
             Math.clamp(c.frameGenerationRejectionPixels,1,16),mc.options.enableVsync().get(),
-            c.frameGenerationAmortize?AdaptiveFrameTarget.target(c.frameGenerationInputFps):0);
+            c.frameGenerationAmortize?AdaptiveFrameTarget.target(c.frameGenerationInputFps):0,c.frameGenerationMode,c.frameGenerationFsrDebug,c.frameGenerationRefinement,c.frameGenerationProtect);
     }
     public static int inputLimit(int original){
         if(!active())return original;
@@ -119,7 +128,7 @@ public final class AsyncPresenter {
                 GlState.fullscreen();glBindFramebuffer(GL_READ_FRAMEBUFFER,target.frameBufferId);
                 glBindFramebuffer(GL_DRAW_FRAMEBUFFER,slot.image.fbo);
                 glBlitFramebuffer(0,0,target.width,target.height,0,0,s.width,s.height,GL_DEPTH_BUFFER_BIT,GL_NEAREST);
-                slot.vp.set(projection).mul(view);slot.eye=camera.getPosition();slot.timestamp=stamp;
+                slot.projection.set(projection);slot.vp.set(projection).mul(view);slot.eye=camera.getPosition();slot.timestamp=stamp;
                 slot.rotation.set(camera.rotation());
                 slot.cut=s.lastEye==null||s.lastEye.distanceToSqr(slot.eye)>64
                     ||Math.abs(s.lastRotation.dot(slot.rotation))<.95f;
@@ -127,18 +136,43 @@ public final class AsyncPresenter {
             }
         } catch(RuntimeException e){s.failure=e;s.running=false;}
     }
+    public static boolean overlayActive(){return session!=null&&session.overlayCaptured&&!session.worldEffect;}
+    /** Keep late world geometry in the source; isolate hand and all later HUD rendering. */
+    public static void beginOverlay(){
+        Session s=session;if(s==null||!s.running||s.pending==null||s.overlayCaptured)return;
+        var target=Minecraft.getInstance().getMainRenderTarget();
+        try(var ignored=new GlState()){
+            GlState.fullscreen();glBindFramebuffer(GL_READ_FRAMEBUFFER,target.frameBufferId);glBindFramebuffer(GL_DRAW_FRAMEBUFFER,s.pending.image.fbo);
+            glBlitFramebuffer(0,0,s.width,s.height,0,0,s.width,s.height,GL_COLOR_BUFFER_BIT,GL_NEAREST);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER,target.frameBufferId);glClearBufferfv(GL_COLOR,0,new float[]{0,0,0,0});
+            s.overlayCaptured=true;
+        }
+    }
+    public static int beginWorldEffect(){
+        Session s=session;int previous=glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING);
+        s.worldEffect=true;glBindFramebuffer(GL_DRAW_FRAMEBUFFER,s.pending.image.fbo);return previous;
+    }
+    public static void endWorldEffect(int previous){glBindFramebuffer(GL_DRAW_FRAMEBUFFER,previous);if(session!=null)session.worldEffect=false;}
+    private static void restoreMain(Session s,Slot slot,RenderTarget target){
+        GlState.fullscreen();glBindFramebuffer(GL_READ_FRAMEBUFFER,target.frameBufferId);glBindFramebuffer(GL_DRAW_FRAMEBUFFER,slot.hud.fbo);
+        glBlitFramebuffer(0,0,s.width,s.height,0,0,s.width,s.height,GL_COLOR_BUFFER_BIT,GL_NEAREST);
+        s.overlayCaptured=false;
+        s.compositor.draw(slot.image.texture,slot.hud.texture,target.frameBufferId,s.width,s.height);
+    }
     /** Called instead of the final blit. Never waits for a busy slot or the presenter's GPU work. */
     public static boolean publish(RenderTarget target){
         Session s=session;if(s==null)return false;
         var mc=Minecraft.getInstance();
-        if(mc.level!=s.world||mc.screen!=null||mc.getOverlay()!=null||!mc.isWindowActive()){stop();return active();}
+        if(mc.level!=s.world||mc.screen!=null||mc.getOverlay()!=null||!mc.isWindowActive()){
+            if(s.overlayCaptured&&s.pending!=null)try(var ignored=new GlState()){restoreMain(s,s.pending,target);}
+            stop();return active();
+        }
         if(!s.running)return true;
         Slot slot=s.pending;s.pending=null;
         if(slot==null){s.dropped++;return true;}
         try(var ignored=new GlState()) {
-            GlState.fullscreen();glBindFramebuffer(GL_READ_FRAMEBUFFER,target.frameBufferId);
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER,slot.image.fbo);
-            glBlitFramebuffer(0,0,target.width,target.height,0,0,s.width,s.height,GL_COLOR_BUFFER_BIT,GL_NEAREST);
+            if(!s.overlayCaptured)throw new IllegalStateException("Missing world/UI boundary");
+            restoreMain(s,slot,target);
             s.lastEye=slot.eye;s.lastRotation.set(slot.rotation);slot.sequence=++s.published;
             slot.fence=glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE,0);glFlush();slot.state.set(2);
             s.wake();return true;
@@ -156,7 +190,8 @@ public final class AsyncPresenter {
         // A driver may still be in SwapBuffers. Do not destroy its live context or race its drawable.
         if(s.worker.isAlive()){state="stopping (waiting for GPU)";return;}
         if(!WGL.wglMakeCurrent(s.visibleDc,s.renderRc))throw new IllegalStateException("Cannot restore Minecraft drawable");
-        try(var ignored=new GlState()){for(Slot slot:s.slots){if(slot.fence!=0)glDeleteSync(slot.fence);slot.image.close();}}
+        try(var ignored=new GlState()){for(Slot slot:s.slots){if(slot.fence!=0)glDeleteSync(slot.fence);slot.image.close();slot.hud.close();}}
+        if(s.compositor!=null)s.compositor.close();
         GLFW.glfwDestroyWindow(s.hidden);session=null;
         if(s.pacer!=null)s.pacer.close();
         state=failedRevision==Slopium.configRevision()?"disabled: "+problem:"off";
@@ -169,23 +204,23 @@ public final class AsyncPresenter {
         if(s.worker.isAlive())throw new IllegalStateException("Parallel presenter did not stop before window destruction");
         stop();
     }
-    private record Settings(int multiplier,int cap,int cell,int search,int rejection,boolean vsync,int amortizeTarget){}
+    private record Settings(int multiplier,int cap,int cell,int search,int rejection,boolean vsync,int amortizeTarget,FrameGenerationMode mode,boolean debug,int refinement,boolean protect){}
     private static final class Slot {
         // FREE -> WRITING -> READY -> READING -> GPU_RELEASE_PENDING -> FREE.
-        final AtomicInteger state=new AtomicInteger();final GlImage image;
+        final AtomicInteger state=new AtomicInteger();final GlImage image,hud;
         long timestamp,sequence,fence;boolean cut;
-        final Matrix4f vp=new Matrix4f();
+        final Matrix4f vp=new Matrix4f(),projection=new Matrix4f();
         final org.joml.Quaternionf rotation=new org.joml.Quaternionf();
         net.minecraft.world.phys.Vec3 eye;
-        Slot(int w,int h,int depthFormat){image=new GlImage(w,h,GL_RGBA8,depthFormat);}
+        Slot(int w,int h,int depthFormat){image=new GlImage(w,h,GL_RGBA8,depthFormat);try{hud=new GlImage(w,h,GL_RGBA8,0);}catch(RuntimeException e){image.close();throw e;}}
     }
     private static final class Session {
         final long window,revision=Slopium.configRevision();final int width,height;
-        final Object world;
+        final Object world;final FrameGenerationMode mode;
         net.minecraft.world.phys.Vec3 lastEye;
         final org.joml.Quaternionf lastRotation=new org.joml.Quaternionf();
         final Slot[] slots=new Slot[3];
-        Slot pending;int depthFormat;
+        Slot pending;int depthFormat;boolean overlayCaptured,worldEffect;HudCompositor compositor;
         final AdaptiveFrameTarget sourceRate=new AdaptiveFrameTarget();
         long hidden,visibleDc,renderRc,workerRc,began;
         long statsBegan,basePublished,baseDropped,baseOutputs,baseGenerated,baseReceived,baseSwap;
@@ -194,7 +229,7 @@ public final class AsyncPresenter {
         volatile Settings settings;
         volatile long published,outputs,generated,received,dropped,swapNanos;
         volatile double gpuMs;
-        Session(long window,int w,int h,Object world,Settings settings){this.window=window;width=w;height=h;this.world=world;this.settings=settings;}
+        Session(long window,int w,int h,Object world,Settings settings){this.window=window;width=w;height=h;this.world=world;this.settings=settings;mode=settings.mode;}
         void wake(){if(pacer!=null)pacer.wake();LockSupport.unpark(worker);}
         void await(long nanos){if(pacer!=null)pacer.await(nanos);else LockSupport.parkNanos(nanos);}
         void start() throws Exception {
@@ -233,26 +268,28 @@ public final class AsyncPresenter {
                     depthFormat=glGetTexLevelParameteri(GL_TEXTURE_2D,0,GL_TEXTURE_INTERNAL_FORMAT);
                     if(depthFormat==0)throw new IllegalStateException("World depth texture required");
                     for(int i=0;i<slots.length;i++)slots[i]=new Slot(width,height,depthFormat);
+                    compositor=new HudCompositor();
                 }
                 // One-time ownership handoff. There are no glFinish calls in steady-state exchange.
                 glFinish();
                 if(!WGL.wglMakeCurrent(hiddenDc,renderRc))throw new IllegalStateException("Cannot move Minecraft to offscreen drawable");
                 running=true;began=statsBegan=System.nanoTime();CountDownLatch ready=new CountDownLatch(1);
                 worker=new Thread(()->run(ready),"Slopium presenter");worker.setDaemon(true);worker.start();
-                if(!ready.await(5,TimeUnit.SECONDS))throw new IllegalStateException("Presenter initialization timed out");
+                if(!ready.await(30,TimeUnit.SECONDS))throw new IllegalStateException("Presenter initialization timed out");
                 if(failure!=null)throw new IllegalStateException("Presenter initialization failed",failure);
             } catch(Exception|LinkageError e) {
                 running=false;
                 if(worker!=null){wake();worker.join(5000);if(worker.isAlive()){session=this;throw new IllegalStateException("Presenter still owns the window after startup failure",e);}}
                 WGL.wglMakeCurrent(visibleDc,renderRc);GL.setCapabilities(capabilities);
-                try(var ignored=new GlState()){for(Slot slot:slots)if(slot!=null)slot.image.close();}
+                try(var ignored=new GlState()){for(Slot slot:slots)if(slot!=null){slot.image.close();slot.hud.close();}if(compositor!=null)compositor.close();}
                 if(hidden!=0)GLFW.glfwDestroyWindow(hidden);
                 if(pacer!=null)pacer.close();
                 throw e;
             }
         }
         void run(CountDownLatch readyLatch) {
-            GlImage previous=null,current=null,output=null;SimpleInterpolator flow=null;GpuTimer timer=null;
+            GlImage previous=null,current=null,output=null,hud=null,middle=null;SimpleInterpolator flow=null;GpuTimer timer=null;
+            HudCompositor compose=null;FsrInterpolator fsr=null;boolean nativeHistory=false;
             int sourceFbo=0;long gpuFence=0;
             try {
                 if(!WGL.wglMakeCurrent(visibleDc,workerRc))throw new IllegalStateException("Cannot attach presenter to visible drawable");
@@ -260,6 +297,9 @@ public final class AsyncPresenter {
                 sourceFbo=glGenFramebuffers();previous=new GlImage(width,height,GL_RGBA8,depthFormat);
                 current=new GlImage(width,height,GL_RGBA8,depthFormat);output=new GlImage(width,height,GL_RGBA8,0);
                 flow=new SimpleInterpolator(width,height,settings.cell,true);timer=new GpuTimer();
+                hud=new GlImage(width,height,GL_RGBA8,0);compose=new HudCompositor();
+                if(mode==FrameGenerationMode.FSR){middle=new GlImage(width,height,GL_RGBA8,0);fsr=new FsrInterpolator(width,height);}
+                Matrix4f historyProjection=new Matrix4f(),incomingProjection=new Matrix4f();
                 Matrix4f historyVp=new Matrix4f(),incomingVp=new Matrix4f(),toPrevious=new Matrix4f(),toCurrent=new Matrix4f();
                 net.minecraft.world.phys.Vec3 historyEye=null;
                 InterpolationTimeline timeline=new InterpolationTimeline();
@@ -314,7 +354,10 @@ public final class AsyncPresenter {
                         glBindFramebuffer(GL_DRAW_FRAMEBUFFER,current.fbo);
                         glBlitFramebuffer(0,0,width,height,0,0,width,height,GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT,GL_NEAREST);
                         long stamp=incoming.timestamp;boolean cut=incoming.cut;
-                        incomingVp.set(incoming.vp);var incomingEye=incoming.eye;
+                        incomingVp.set(incoming.vp);incomingProjection.set(incoming.projection);var incomingEye=incoming.eye;
+                        glFramebufferTexture2D(GL_READ_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,incoming.hud.texture,0);
+                        glBindFramebuffer(GL_DRAW_FRAMEBUFFER,hud.fbo);
+                        glBlitFramebuffer(0,0,width,height,0,0,width,height,GL_COLOR_BUFFER_BIT,GL_NEAREST);
                         // Metadata, too, must be copied before releasing the shared slot.
                         incoming.fence=glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE,0);glFlush();incoming.state.set(4);
                         received++;
@@ -325,22 +368,33 @@ public final class AsyncPresenter {
                             var delta=incomingEye.subtract(historyEye);
                             toPrevious.set(historyVp).translate((float)delta.x,(float)delta.y,(float)delta.z).mul(toCurrent.set(incomingVp).invert());
                             toCurrent.set(toPrevious).invert();
-                            timer.start();flow.prepare(previous,current,toPrevious,toCurrent,cfg.search);timer.stop();gpuMs=timer.milliseconds();
+                            timer.start();flow.quality(cfg.refinement,cfg.protect).prepare(previous,current,toPrevious,toCurrent,cfg.search);timer.stop();gpuMs=timer.milliseconds();
                         }
-                        historyVp.set(incomingVp);historyEye=incomingEye;lastStamp=stamp;haveCurrent=true;
+                        if(fsr!=null){
+                            if(bypass){nativeHistory=false;}
+                            else {
+                                if(pair&&!nativeHistory)fsr.generate(previous,middle,new Matrix4f(),historyProjection,true,16.667f,cfg.debug);
+                                fsr.generate(current,middle,pair?toPrevious:new Matrix4f(),incomingProjection,!pair,
+                                    lastStamp==0?16.667f:(stamp-lastStamp)/1e6f,cfg.debug);
+                                nativeHistory=true;
+                            }
+                        }
+                        historyProjection.set(incomingProjection);historyVp.set(incomingVp);historyEye=incomingEye;lastStamp=stamp;haveCurrent=true;
                         int error=glGetError();if(error!=GL_NO_ERROR)throw new IllegalStateException("Parallel GPU error "+error);
                     }
                     long now=System.nanoTime();
                     if(haveCurrent&&now>=nextPresent) {
                         int nextPhase=timeline.phase(now,phases);
                         if(timeline.needsPresent(nextPhase)) {
-                            int image;
+                            GlImage image;
                             if(pair&&nextPhase>0&&nextPhase<phases) {
-                                timer.start();flow.synthesize(previous,current,output,nextPhase/(float)phases,cfg.rejection,null);timer.stop();
-                                image=output.fbo;generated++;
-                            } else image=pair&&nextPhase==0?previous.fbo:current.fbo;
-                            GlState.fullscreen();glBindFramebuffer(GL_READ_FRAMEBUFFER,image);glBindFramebuffer(GL_DRAW_FRAMEBUFFER,0);
-                            glDrawBuffer(GL_BACK);glBlitFramebuffer(0,0,width,height,0,0,width,height,GL_COLOR_BUFFER_BIT,GL_NEAREST);
+                                timer.start();flow.synthesize(previous,current,output,nextPhase/(float)phases,cfg.rejection,middle);timer.stop();
+                                image=output;generated++;
+                            } else image=pair&&nextPhase==0?previous:current;
+                            // Composite directly into the visible back buffer: no extra output
+                            // texture or full-screen copy for every generated frame.
+                            glBindFramebuffer(GL_DRAW_FRAMEBUFFER,0);glDrawBuffer(GL_BACK);
+                            compose.draw(image.texture,hud.texture,0,width,height);
                             gpuFence=glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE,0);glFlush();
                             long swapStart=System.nanoTime();
                             if(!GDI32.SwapBuffers(visibleDc))throw new IllegalStateException("Parallel SwapBuffers failed");
@@ -362,7 +416,8 @@ public final class AsyncPresenter {
                 if(WGL.wglGetCurrentContext()==workerRc) {
                     // Only at teardown: producer resources cannot be reclaimed while GPU reads them.
                     glFinish();if(gpuFence!=0)glDeleteSync(gpuFence);
-                    if(timer!=null)timer.close();if(flow!=null)flow.close();
+                    if(timer!=null)timer.close();if(flow!=null)flow.close();if(fsr!=null)fsr.close();if(compose!=null)compose.close();
+                    if(hud!=null)hud.close();if(middle!=null)middle.close();
                     if(previous!=null)previous.close();if(current!=null)current.close();if(output!=null)output.close();
                     if(sourceFbo!=0)glDeleteFramebuffers(sourceFbo);
                     WGL.wglMakeCurrent(0,0);GL.setCapabilities(null);

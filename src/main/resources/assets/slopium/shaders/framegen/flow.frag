@@ -5,6 +5,7 @@ uniform sampler2D previousColor,currentColor,previousDepth,currentDepth;
 uniform mat4 currentToPrevious,previousToCurrent;
 uniform vec2 size;
 uniform float searchPixels;
+uniform int refinement;
 vec2 cameraMotion(sampler2D depth,mat4 transform,vec2 p) {
     float d=texture(depth,p).r;
     vec4 q=transform*vec4(p*2.0-1.0,d*2.0-1.0,1.0);
@@ -35,6 +36,17 @@ vec2 estimate(sampler2D a,sampler2D b,sampler2D depth,mat4 transform) {
             float e=errorAt(a,b,uv,candidate,prior);
             if(e<cost){cost=e;best=candidate;}
         }
+    }
+    // Optional subpixel refinement around the best residual displacement.
+    float sub=.5;
+    for(int level=0;level<refinement;level++){
+        vec2 center=best;
+        for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
+            vec2 candidate=center+vec2(x,y)*sub/size;
+            float e=errorAt(a,b,uv,candidate,prior);
+            if(e<cost){cost=e;best=candidate;}
+        }
+        sub*=.5;
     }
     return best;
 }

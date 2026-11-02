@@ -25,6 +25,8 @@ public final class SlopiumConfig {
     public boolean frameGenerationAmortize = false;
     public int frameGenerationGridStep = 4;
     public int frameGenerationFlowCell = 8;
+    public int frameGenerationRefinement = 1;
+    public boolean frameGenerationProtect = true;
     public int frameGenerationSearchPixels = 16;
     public int frameGenerationRejectionPixels = 4;
     public boolean frameGenerationFsrDebug = false;
@@ -141,8 +143,9 @@ public final class SlopiumConfig {
         frameGenerationInputFps=Math.clamp(frameGenerationInputFps,0,240);
         frameGenerationMultiplier=Math.clamp(frameGenerationMultiplier,2,32);
         frameGenerationGridStep=Math.clamp(frameGenerationGridStep,1,16);
-        frameGenerationFlowCell=Math.clamp(frameGenerationFlowCell,4,16);
-        frameGenerationSearchPixels=Math.clamp(frameGenerationSearchPixels,4,32);
+        frameGenerationFlowCell=Math.clamp(frameGenerationFlowCell,1,16);
+        frameGenerationSearchPixels=Math.clamp(frameGenerationSearchPixels,4,128);
+        frameGenerationRefinement=Math.clamp(frameGenerationRefinement,0,4);
         frameGenerationRejectionPixels=Math.clamp(frameGenerationRejectionPixels,1,16);
         factoryItemDistance = Math.clamp(factoryItemDistance, 0, 512);
         particleRenderDistance = Math.clamp(particleRenderDistance, 0, 512);

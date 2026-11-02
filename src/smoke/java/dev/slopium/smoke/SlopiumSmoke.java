@@ -21,7 +21,7 @@ import net.neoforged.neoforge.common.NeoForge;
 @Mod(value = "slopium_smoke", dist = Dist.CLIENT)
 public final class SlopiumSmoke {
     private int frames, pageIndex = 1, capturedPages;
-    private boolean opened, captured;
+    private boolean opened, captured, languageRequested;
 
     public SlopiumSmoke() {
         if(Boolean.getBoolean("slopium.worldSmoke")){new SmokeWorldFrames();return;}
@@ -32,6 +32,10 @@ public final class SlopiumSmoke {
     private void tick(ClientTickEvent.Post event) {
         Minecraft client = Minecraft.getInstance();
         if (opened || !(client.screen instanceof TitleScreen)) return;
+        if(Boolean.getBoolean("slopium.englishSmoke")&&!languageRequested){
+            languageRequested=true;client.getLanguageManager().setSelected("en_us");client.options.languageCode="en_us";client.reloadResourcePacks();return;
+        }
+        if(client.getOverlay()!=null)return;
         var options = ConfigManager.CONFIG.getModOptions().stream()
             .filter(mod -> mod.configId().equals("slopium")).findFirst().orElseThrow();
         if (options.pages().size() != 7) throw new IllegalStateException("Missing Slopium pages");
@@ -123,10 +127,21 @@ public final class SlopiumSmoke {
         if (!opened || captured || Minecraft.getInstance().getOverlay() != null || ++frames < 60) return;
         captured = true;
         Minecraft client = Minecraft.getInstance();
-        Screenshot.grab(client.gameDirectory, "slopium-beta5-page-" + pageIndex + ".png", client.getMainRenderTarget(), message -> {
+        Screenshot.grab(client.gameDirectory, capturedPages==7?"beta9-number-entry.png":"slopium-beta9-page-" + pageIndex + ".png", client.getMainRenderTarget(), message -> {
             LogUtils.getLogger().info("SLOPIUM_SMOKE: screenshot saved; success");
             client.execute(() -> {
-                if (++capturedPages == 7) { client.stop(); return; }
+                if (++capturedPages == 8) {
+                    client.screen.keyPressed(org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER,0,0);
+                    if(client.screen instanceof dev.slopium.client.NumberEntryScreen||!SmokeOptionsChecks.option("frame_generation_input").getValidatedValue().equals(2))throw new AssertionError("Numeric entry lost value on return to actual options screen");
+                    client.stop(); return;
+                }
+                if(capturedPages==7){
+                    SmokeOptionsChecks.value("frame_generation_mode",dev.slopium.framegen.FrameGenerationMode.SIMPLE);
+                    var option=(net.caffeinemc.mods.sodium.client.config.structure.IntegerOption)SmokeOptionsChecks.option("frame_generation_input");
+                    client.setScreen(new dev.slopium.client.NumberEntryScreen(client.screen,option));
+                    ((net.minecraft.client.gui.components.EditBox)client.screen.children().stream().filter(x->x instanceof net.minecraft.client.gui.components.EditBox).findFirst().orElseThrow()).setValue("2");
+                    frames=0;captured=false;return;
+                }
                 pageIndex = (pageIndex + 1) % 7;
                 showPage(client); frames = 0; captured = false;
             });

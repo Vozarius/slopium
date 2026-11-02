@@ -2,6 +2,15 @@ package dev.slopium.framegen;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 class FrameScheduleTest {
+    @Test void adaptiveReservesPreparationWithoutRemovingSourcePriority() {
+        var s=new FrameSchedule();s.adaptive(33_000_000,60,5_000_000);
+        assertEquals(39_000_000,s.period());
+        s.begin(1);s.captured(1);
+        assertTrue(s.canGenerate(35_000_001,32));
+        s.adaptive(33_000_000,60,100_000_000);
+        assertEquals(41_250_000,s.period()); // overhead remains bounded at 25% of source cost
+        assertTrue(s.due(42_000_001));
+    }
     @Test void x32At240OutputDoesNotDivideThirtyRealFpsByMultiplier() {
         var s=new FrameSchedule();s.configure(30);int real=0,synthetic=0;
         for(long now=1;now<1_000_000_001L;now+=4_166_667L) {

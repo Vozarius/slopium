@@ -1,0 +1,38 @@
+{
+  "version": "1-beta.9",
+  "displayVersion": "Бета 9",
+  "date": "2026-11-01",
+  "jar": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-9.jar",
+  "sha256": "8f47feb855f83f9d996fb414b05ae890586ef5590ef9ad66f1e92f98a9535d85",
+  "bytes": 30832155,
+  "sources": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-9-sources.jar",
+  "sourcesSha256": "67ef310290ae513a83e8f8660343fef209a42db26ba94c2b40e8b1d167c231e8",
+  "tests": {
+    "tests": 42,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "options": 64,
+  "verifiedLogs": [
+    "build/beta9-release-legacy.log",
+    "build/beta9-parallel-fsr-full.log",
+    "build/beta9-final-parallel.log",
+    "build/beta9-final-ui-full-budget.log"
+  ],
+  "userModsModified": false,
+  "features": [
+    "Separate world and hand/HUD layers for parallel Simple and FSR",
+    "Native FSR worker context with lifecycle reset",
+    "Right-click exact integer entry without early config save",
+    "Motion grid 1–16, search 4–128, subpixel refinement 0–4, distortion protection",
+    "Concise Russian and English options"
+  ],
+  "limitations": [
+    "Hand/HUD stay at source update rate; world interpolation adds about one source frame of latency",
+    "No perfect reconstruction at 1–2 real FPS or behind newly revealed surfaces",
+    "Highest quality costs substantial GPU work and VRAM",
+    "Invert-color crosshair is white; custom destination-dependent HUD blending may differ",
+    "Parallel mode is Windows-only and excludes shader packs, Fabulous and camera post-effects"
+  ]
+}

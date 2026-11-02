@@ -6,6 +6,7 @@ import static org.lwjgl.opengl.GL33C.*;
 /** Real GPU checks, intentionally outside the distributable JAR. */
 final class SmokeFrameGenerationChecks {
     static void screenSpace() {
+        hudAndQuality();
         try(var state=new GlState();var a=new GlImage(128,128,GL_RGBA8,0);var b=new GlImage(128,128,GL_RGBA8,0);
             var out=new GlImage(128,128,GL_RGBA8,0);var flow=new SimpleInterpolator(128,128,4,true)) {
             float[] clear=new float[4];glGetFloatv(GL_COLOR_CLEAR_VALUE,clear);
@@ -45,6 +46,11 @@ final class SmokeFrameGenerationChecks {
                         if(Math.abs(red(out,84)-fraction)>.02f||Math.abs(red(out,36)-(1-fraction))>.02f)
                             throw new AssertionError("Uncertain motion jumps to the endpoint at "+fraction);
                     }
+                    shader.integer("protectImage",1);
+                    for(float fraction:new float[]{.25f,.75f}) {
+                        shader.scalar("fraction",fraction);shader.draw();
+                        if(Math.abs(red(out,84)-(fraction<.5f?0:1))>.02f)throw new AssertionError("Protected fallback smears invalid motion");
+                    }
                 }
                 com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_PARALLEL: large camera motion, world-depth prior and continuous invalid-flow fallback passed");
                 if(glGetError()!=GL_NO_ERROR)throw new AssertionError("Screen-space shader GL error");
@@ -53,6 +59,7 @@ final class SmokeFrameGenerationChecks {
         }
     }
     static void run() {
+        hudAndQuality();
         try(var state=new GlState();var a=new GlImage(128,128,GL_RGBA8,GL_DEPTH_COMPONENT32F);
             var b=new GlImage(128,128,GL_RGBA8,GL_DEPTH_COMPONENT32F);var out=new GlImage(128,128,GL_RGBA8,0);
             var simple=new SimpleInterpolator(128,128,4)) {
@@ -99,6 +106,32 @@ final class SmokeFrameGenerationChecks {
             } finally {glClearColor(clear[0],clear[1],clear[2],clear[3]);glClearDepth(depthClear);glDepthMask(depthMask);}
         }
         int error=glGetError();if(error!=GL_NO_ERROR)throw new AssertionError("FG resource cleanup GL error "+error);
+    }
+    private static void hudAndQuality(){
+        try(var state=new GlState();var a=new GlImage(128,128,GL_RGBA8,GL_DEPTH_COMPONENT32F);
+            var b=new GlImage(128,128,GL_RGBA8,GL_DEPTH_COMPONENT32F);var out=new GlImage(128,128,GL_RGBA8,0);
+            var hud=new GlImage(128,128,GL_RGBA8,0);var composed=new GlImage(128,128,GL_RGBA8,0);var compositor=new HudCompositor()){
+            float[] clear=new float[4];glGetFloatv(GL_COLOR_CLEAR_VALUE,clear);
+            try{
+                patch(a,32);patch(b,80);
+                hud.bind();GlState.fullscreen();glClearColor(0,0,0,0);glClear(GL_COLOR_BUFFER_BIT);
+                glEnable(GL_SCISSOR_TEST);glScissor(4,0,4,128);glClearColor(.25f,0,0,.25f);glClear(GL_COLOR_BUFFER_BIT);
+                glScissor(100,0,4,128);glClearColor(.9f,1,1,1);glClear(GL_COLOR_BUFFER_BIT);glDisable(GL_SCISSOR_TEST);
+                for(boolean async:new boolean[]{false,true})try(var flow=new SimpleInterpolator(128,128,1,async)){
+                    var back=new Matrix4f().translation(-96f/128,0,0).m20(.5f);
+                    flow.quality(4,true).prepare(a,b,back,new Matrix4f(back).invert(),128);
+                    for(float fraction:new float[]{.25f,.75f}){
+                        flow.synthesize(a,b,out,fraction,4,null);
+                        if(red(out,(int)(40+48*fraction))<.8f)throw new AssertionError("Fine grid/protected camera interpolation lost moving object");
+                        compositor.draw(out.texture,hud.texture,composed.fbo,128,128);
+                        if(Math.abs(red(composed,6)-.25f)>.02f||Math.abs(red(composed,102)-.9f)>.02f||Math.abs(red(composed,70)-red(out,70))>.02f)
+                            throw new AssertionError("HUD alpha/motion isolation failed");
+                    }
+                }
+                if(glGetError()!=GL_NO_ERROR)throw new AssertionError("Quality/compositor GL error");
+                com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: 1px grid, 1/16px refinement, 128px search, protected depth motion and stable premultiplied HUD passed on both shaders");
+            }finally{glClearColor(clear[0],clear[1],clear[2],clear[3]);}
+        }
     }
     private static void benchmark() {
         try(var state=new GlState();var a=new GlImage(1280,720,GL_RGBA8,GL_DEPTH_COMPONENT32F);

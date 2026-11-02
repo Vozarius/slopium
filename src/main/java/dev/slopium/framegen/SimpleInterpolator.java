@@ -6,6 +6,9 @@ import static org.lwjgl.opengl.GL33C.*;
 public final class SimpleInterpolator implements AutoCloseable {
     private GlProgram flowProgram,interpolation;
     private GlImage flow;
+    private int refinement;private boolean protect;
+    private final Matrix4f backward=new Matrix4f(),forward=new Matrix4f();
+    public SimpleInterpolator quality(int refinement,boolean protect){this.refinement=Math.clamp(refinement,0,4);this.protect=protect;return this;}
     public SimpleInterpolator(int w,int h,int cell) {
         this(w,h,cell,false);
     }
@@ -20,9 +23,11 @@ public final class SimpleInterpolator implements AutoCloseable {
         synthesize(previous,current,output,.5f,rejection,null);
     }
     public void prepare(GlImage previous,GlImage current,Matrix4f currentToPrevious,Matrix4f previousToCurrent,int search) {
+        backward.set(currentToPrevious);forward.set(previousToCurrent);
         GlState.fullscreen();flow.bind();flowProgram.use();
         flowProgram.texture("previousColor",0,previous.texture);flowProgram.texture("currentColor",1,current.texture);
         flowProgram.texture("previousDepth",2,previous.depth);flowProgram.texture("currentDepth",3,current.depth);
+        flowProgram.integer("refinement",refinement);
         flowProgram.integer("hasDepth",previous.depth!=0&&current.depth!=0?1:0);
         flowProgram.matrix("currentToPrevious",currentToPrevious);flowProgram.matrix("previousToCurrent",previousToCurrent);
         flowProgram.vector("size",current.width,current.height);flowProgram.scalar("searchPixels",search);flowProgram.draw();
@@ -31,6 +36,9 @@ public final class SimpleInterpolator implements AutoCloseable {
         GlState.fullscreen();
         output.bind();interpolation.use();interpolation.texture("previousColor",0,previous.texture);
         interpolation.texture("currentColor",1,current.texture);interpolation.texture("flow",2,flow.texture);
+        interpolation.texture("previousDepth",4,previous.depth);interpolation.texture("currentDepth",5,current.depth);
+        interpolation.integer("hasDepth",previous.depth!=0&&current.depth!=0?1:0);interpolation.integer("protectImage",protect?1:0);
+        interpolation.matrix("currentToPrevious",backward);interpolation.matrix("previousToCurrent",forward);
         interpolation.scalar("fraction",fraction);interpolation.integer("useFsrMiddle",fsrMiddle==null?0:1);
         interpolation.texture("fsrMiddle",3,fsrMiddle==null?current.texture:fsrMiddle.texture);
         interpolation.vector("size",current.width,current.height);interpolation.scalar("consistencyPixels",rejection);interpolation.draw();

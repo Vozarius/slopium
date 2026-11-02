@@ -10,12 +10,17 @@ public final class FrameSchedule {
         if(target!=fps){target=fps;reset();}
     }
     public void adaptive(long sourcePeriod,int outputTarget) {
+        adaptive(sourcePeriod,outputTarget,0);
+    }
+    public void adaptive(long sourcePeriod,int outputTarget,long preparationCost) {
         if(target!=-2){target=-2;reset();}
         probing=false;
         long extra=Math.max(1,AdaptiveFrameTarget.framesPerSource(sourcePeriod,outputTarget)-1);
         // A shared render thread cannot synthesize during a world draw. Reserve only bounded
         // measured synthesis work; never drain a mandatory multiplier at the expense of input.
-        period=sourcePeriod+Math.min(sourcePeriod/4,(Math.max(100_000,generatedCost)+1_000_000L)*extra);
+        long generation=Math.max(100_000,generatedCost);
+        long reserve=Math.max((generation+1_000_000L)*extra,Math.max(0,preparationCost)+generation);
+        period=sourcePeriod+Math.min(sourcePeriod/4,reserve);
     }
     public void reset() {
         period=target>0?(1_000_000_000L+target-1)/target:0;

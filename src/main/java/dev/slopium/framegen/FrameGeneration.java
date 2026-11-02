@@ -30,7 +30,8 @@ public final class FrameGeneration {
     private static String lastNotice="";
     private static FsrInterpolator fsr;
     private static GpuTimer timer;
-    private static double gpuMilliseconds;
+    private static GpuTimer preparationTimer;
+    private static double gpuMilliseconds,preparationMilliseconds;
     private static Matrix4f previousVp;
     private static boolean lastWorldReal;
     private static long fastFailedRevision=-1;
@@ -50,14 +51,20 @@ public final class FrameGeneration {
         var mc=Minecraft.getInstance();var c=SlopiumConfig.get();
         if(!c.enabled||c.frameGenerationMode==FrameGenerationMode.OFF||mc.level==null||mc.screen!=null)return;
         if(AsyncPresenter.active()) {
-            if(c.frameGenerationCounter)event.getGuiGraphics().drawString(mc.font,AsyncPresenter.overlay(),8,event.getGuiGraphics().guiHeight()-64,0xFFFFFFFF);
+            if(c.frameGenerationCounter){
+                var gui=event.getGuiGraphics();int y=gui.guiHeight()-64;
+                gui.drawString(mc.font,AsyncPresenter.title(),8,y,0xFFFFFFFF);
+                gui.drawString(mc.font,AsyncPresenter.overlay(),8,y+11,0xFFFFFFFF);
+            }
             return;
         }
         if(c.frameGenerationParallel&&AsyncPresenter.failureNotice()!=null)
             event.getGuiGraphics().drawString(mc.font,AsyncPresenter.failureNotice(),8,event.getGuiGraphics().guiHeight()-80,0xFFFFAA55);
         // Errors must remain visible even with diagnostics and the optional counter off.
         if(!c.frameGenerationCounter&&active)return;
-        var line=net.minecraft.network.chat.Component.literal("Slopium FG: "+state);
+        var line=active?net.minecraft.network.chat.Component.translatable("slopium.frame_generation.sequential_title",
+            net.minecraft.network.chat.Component.translatable("slopium.value.FrameGenerationMode."+mode))
+            :net.minecraft.network.chat.Component.literal("Slopium FG: "+state);
         var gui=event.getGuiGraphics();int y=gui.guiHeight()-64;
         gui.drawString(mc.font,line,8,y,active?0xFFFFFFFF:0xFFFFAA55);
         if(active) {
@@ -99,6 +106,8 @@ public final class FrameGeneration {
             if(simple!=null){simple.close();simple=null;}if(fsr!=null){fsr.close();fsr=null;}
             if(reprojection!=null){reprojection.close();reprojection=null;}
             if(timer!=null){gpuMilliseconds=timer.milliseconds();timer.close();timer=null;}
+            if(preparationTimer!=null){preparationTimer.close();preparationTimer=null;}
+            preparationMilliseconds=0;
             if(previous!=null){previous.close();previous=null;}if(current!=null){current.close();current=null;}if(generated!=null){generated.close();generated=null;}
             if(fsrMiddle!=null){fsrMiddle.close();fsrMiddle=null;}
         }
@@ -162,7 +171,7 @@ public final class FrameGeneration {
                 state="FPS amortization: source sufficient / measuring (target "+AdaptiveFrameTarget.target(c.frameGenerationInputFps)+")";
                 return;
             }
-            if(c.frameGenerationAmortize)SCHEDULE.adaptive(AMORTIZER.period(),AdaptiveFrameTarget.target(c.frameGenerationInputFps));
+            if(c.frameGenerationAmortize)SCHEDULE.adaptive(AMORTIZER.period(),AdaptiveFrameTarget.target(c.frameGenerationInputFps),mode==FrameGenerationMode.FSR?(long)(preparationMilliseconds*1e6):0);
             else SCHEDULE.configure(c.frameGenerationInputFps);
             SCHEDULE.begin(now);
             if(SCHEDULE.probing()) {
@@ -198,19 +207,20 @@ public final class FrameGeneration {
             try(var ignored=new GlState()) {
                 // The adaptive FSR budget needs delayed GPU costs even when the debug overlay is off.
                 if(timer==null)timer=new GpuTimer();
-                if(timer!=null)timer.start();
+                if(preparationTimer==null)preparationTimer=new GpuTimer();
+                preparationTimer.start();
                 try {
                 var swap=previous;previous=current;current=swap;
                 GlState.fullscreen();glBindFramebuffer(GL_READ_FRAMEBUFFER,main.frameBufferId);glBindFramebuffer(GL_DRAW_FRAMEBUFFER,current.fbo);
                 glBlitFramebuffer(0,0,main.width,main.height,0,0,main.width,main.height,GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT,GL_NEAREST);
-                if(System.nanoTime()-now+Math.max(1_000_000,(long)(gpuMilliseconds*1e6))<SCHEDULE.period()) {
+                if(System.nanoTime()-now+Math.max(1_000_000,(long)(preparationMilliseconds*1e6))<SCHEDULE.period()) {
                     fsr.generate(current,fsrMiddle==null?generated:fsrMiddle,toPrevious,projection,!interpolate,lastCapture==0?16.667f:(now-lastCapture)/1e6f,c.frameGenerationFsrDebug);
-                    if(interpolate&&simple!=null)simple.prepare(previous,current,toPrevious,new Matrix4f(toPrevious).invert(),c.frameGenerationSearchPixels);
+                    if(interpolate&&simple!=null)simple.quality(c.frameGenerationRefinement,c.frameGenerationProtect).prepare(previous,current,toPrevious,new Matrix4f(toPrevious).invert(),c.frameGenerationSearchPixels);
                 } else {CADENCE.reset();interpolate=false;}
                 // Start the delayed pair at its older endpoint. Intermediate fractions follow time.
                 heldSource=interpolate?previous.fbo:current.fbo;
                 present(heldSource,main.frameBufferId,main.width,main.height,false);
-                } finally {if(timer!=null){timer.stop();gpuMilliseconds=timer.milliseconds();}}
+                } finally {preparationTimer.stop();preparationMilliseconds=preparationTimer.milliseconds();}
             }
             previousVp=vp;eye=camera.getPosition();rotation=new Quaternionf(camera.rotation());lastCapture=now;
             SCHEDULE.captured(now);lastWorldReal=true;
