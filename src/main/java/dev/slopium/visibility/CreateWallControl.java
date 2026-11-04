@@ -13,8 +13,9 @@ public final class CreateWallControl {
     }
     public static Boolean decision(BlockEntity be, boolean anyBlock) { return decision(be,anyBlock,false); }
     private static Boolean decision(BlockEntity be, boolean anyBlock, boolean queued) {
+        if(!ProcessedBlocks.allows(be))return false;
         var mc = Minecraft.getInstance();
-        if (!mc.isSameThread() || !(be instanceof SmartBlockEntity smart) || smart.isVirtual()
+        if (!mc.isSameThread() || (be instanceof SmartBlockEntity smart && smart.isVirtual())
                 || be.getLevel() == null || !be.getLevel().isClientSide || be.getLevel() != mc.level
                 || mc.player == null) return false;
         var pos = be.getBlockPos();
@@ -24,7 +25,7 @@ public final class CreateWallControl {
     }
     public static boolean outsideCamera(BlockEntity be) {
         var mc=Minecraft.getInstance();
-        if(!SlopiumConfig.get().cameraCulling||!mc.isSameThread()||be.getLevel()!=mc.level||mc.level==null
+        if(!ProcessedBlocks.allows(be)||!SlopiumConfig.get().cameraCulling||!mc.isSameThread()||be.getLevel()!=mc.level||mc.level==null
             ||SableGuard.protects(mc.level,be.getBlockPos())) return false;
         var renderer=mc.getBlockEntityRenderDispatcher().getRenderer(be);
         return renderer!=null && VisibilityPool.outsideCamera(net.minecraft.world.phys.Vec3.atCenterOf(be.getBlockPos()),true,renderer.getRenderBoundingBox(be).inflate(.25));
@@ -32,6 +33,7 @@ public final class CreateWallControl {
     public static boolean skipTick(BlockEntity be, SlopiumConfig c) {
         var level = be.getLevel();
         if (level == null || !level.isClientSide) return false;
+        if(!ProcessedBlocks.allows(be))return false;
         var mc = Minecraft.getInstance();
         var tracked = (TrackedBlockEntity)be;
         if (mc.player == null || mc.isPaused() || !((CreateState)be).slopium$initialized()

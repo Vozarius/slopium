@@ -14,6 +14,8 @@ final class SmokeFrameGenerationChecks {
                 patch(a,40);patch(b,48);flow.prepare(a,b,new Matrix4f(),new Matrix4f(),16);
                 flow.synthesize(a,b,out,.25f,6,null);float quarter=red(out,44);
                 flow.synthesize(a,b,out,.75f,6,null);float threeQuarter=red(out,44);
+                flow.synthesize(a,b,out,1.5f,6,null);
+                if(red(out,66)<.8f)throw new AssertionError("Responsive prediction did not advance newest source image");
                 if(quarter<.8f||threeQuarter>.25f)throw new AssertionError("Screen-space worker shader repeats endpoints: "+quarter+", "+threeQuarter);
                 // Movement far beyond the residual search radius: the camera prior must carry it.
                 // Sample only the area covered by both camera views; disoccluded borders use fallback.

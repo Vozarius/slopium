@@ -12,6 +12,7 @@ public final class InstanceVisibility implements Consumer<Instance> {
     private final Set<Instance> owned = Collections.newSetFromMap(new IdentityHashMap<>());
     private final Set<Instance> present = Collections.newSetFromMap(new IdentityHashMap<>());
     private int newlyHidden;
+    private OwnedInstances owner;
 
     public void accept(Instance instance) {
         if (instance == null) return;
@@ -44,7 +45,12 @@ public final class InstanceVisibility implements Consumer<Instance> {
     }
 
     public int size() { return owned.size(); }
+    public int hide(OwnedInstances instances){
+        owner=instances;instances.hiding(true);instances.drainHidden(owned::add);
+        present.clear();newlyHidden=0;instances.forEach(this);owned.retainAll(present);present.clear();return newlyHidden;
+    }
     public void restore() {
+        if(owner!=null){owner.hiding(false);owner.drainHidden(owned::add);owner=null;}
         for (var instance : owned) {
             // In Flywheel 1.0.6 deleting a Hidden handle leaves its state as Hidden,
             // but clears its index. Do not recreate that retired instance.

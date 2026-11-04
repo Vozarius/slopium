@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 public final class FactoryDetailControl {
     private FactoryDetailControl() {}
     public static boolean far(FactoryPanelBlockEntity panel, int distance) {
+        if(!ProcessedBlocks.allows(panel))return false;
         var mc = Minecraft.getInstance(); var level = panel.getLevel(); var pos = panel.getBlockPos();
         if (level == null || !level.isClientSide || level != mc.level || mc.screen != null || panel.isVirtual()
                 || SableGuard.protects(level,pos)) return false;

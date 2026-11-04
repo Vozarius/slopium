@@ -45,6 +45,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
                     .addOption(integer(builder,"frame_generation_input",v->c.frameGenerationInputFps=v,()->c.frameGenerationInputFps,0,0,240,1))
                     .addOption(bool(builder,"frame_generation_fast",v->c.frameGenerationFastPath=v,()->c.frameGenerationFastPath,false,true))
                     .addOption(bool(builder,"frame_generation_parallel",v->c.frameGenerationParallel=v,()->c.frameGenerationParallel,false,dev.slopium.framegen.AsyncPresenter.supported()))
+                    .addOption(bool(builder,"frame_generation_low_latency",v->c.frameGenerationLowLatency=v,()->c.frameGenerationLowLatency,true,true))
                     .addOption(bool(builder,"frame_generation_mark",v->c.frameGenerationMarkFrames=v,()->c.frameGenerationMarkFrames,false,true))
                     .addOption(bool(builder,"frame_generation_counter",v->c.frameGenerationCounter=v,()->c.frameGenerationCounter,true,true))
                     .addOption(integer(builder,"frame_generation_target",v->c.frameGenerationTargetFps=v,()->c.frameGenerationTargetFps,0,0,240,10)))
@@ -68,6 +69,9 @@ public final class SlopiumOptions implements ConfigEntryPoint {
                     .addOption(bool(builder, "particle_budget", v -> c.particleBudget = v, () -> c.particleBudget, false, true))
                     .addOption(integer(builder, "particles_per_tick", v -> c.particlesPerTick = v, () -> c.particlesPerTick, 128, 0, 1024, 16))))
             .addPage(builder.createOptionPage().setName(text("page.create_render"))
+                .addOptionGroup(builder.createOptionGroup().setName(text("group.processed_blocks"))
+                    .addOption(builder.createExternalButtonOption(id("processed_blocks")).setName(text("processed_blocks")).setTooltip(text("processed_blocks.tooltip"))
+                        .setScreenConsumer(parent->net.minecraft.client.Minecraft.getInstance().setScreen(new ProcessedBlocksScreen(parent)))))
                 .addOptionGroup(builder.createOptionGroup().setName(text("group.create_visibility"))
                     .addOption(wall(builder, "create_visibility", v -> c.occludeCreateRendering = v, () -> c.occludeCreateRendering, v -> c.createRenderAnyBlock = v, () -> c.createRenderAnyBlock, v -> c.hideAllCreateModels = v, () -> c.hideAllCreateModels, Slopium.loaded("create")))
                     .addOption(wall(builder, "flywheel_visibility", v -> c.occludeFlywheel = v, () -> c.occludeFlywheel, v -> c.flywheelAnyBlock = v, () -> c.flywheelAnyBlock, v -> c.disableFlywheelRendering = v, () -> c.disableFlywheelRendering, Slopium.loaded("flywheel"))))
@@ -75,11 +79,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
                     .addOption(wall(builder, "animation_visibility", v -> c.occludeCreateAnimations = v, () -> c.occludeCreateAnimations, v -> c.animationAnyBlock = v, () -> c.animationAnyBlock, v -> c.freezeCreateAnimations = v, () -> c.freezeCreateAnimations, Slopium.loaded("create") && Slopium.loaded("flywheel")))
                     .addOption(bool(builder, "create_visuals", v -> c.throttleCreateVisuals = v, () -> c.throttleCreateVisuals, false, Slopium.loaded("create") && Slopium.loaded("flywheel")))
                     .addOption(integer(builder, "create_visual_distance", v -> c.createVisualDistance = v, () -> c.createVisualDistance, 24, 0, 512, 1))
-                    .addOption(integer(builder, "create_visual_interval", v -> c.createVisualInterval = v, () -> c.createVisualInterval, 3, 2, 10, 1)))
-                .addOptionGroup(builder.createOptionGroup().setName(text("group.flywheel_distance"))
-                    .addOption(bool(builder, "flywheel_distance", v -> c.throttleFlywheelDistance = v, () -> c.throttleFlywheelDistance, false, Slopium.loaded("flywheel")))
-                    .addOption(integer(builder, "flywheel_distance_radius", v -> c.flywheelFullRateDistance = v, () -> c.flywheelFullRateDistance, 32, 0, 512, 1))
-                    .addOption(integer(builder, "flywheel_interval", v -> c.flywheelFrameInterval = v, () -> c.flywheelFrameInterval, 3, 2, 8, 1))))
+                    .addOption(integer(builder, "create_visual_interval", v -> c.createVisualInterval = v, () -> c.createVisualInterval, 3, 2, 10, 1))))
             .addPage(builder.createOptionPage().setName(text("page.factory"))
                 .addOptionGroup(builder.createOptionGroup().setName(text("group.factory_items"))
                     .addOption(bool(builder, "factory_items", v -> c.factoryItemRange = v, () -> c.factoryItemRange, false, Slopium.loaded("create")))
@@ -174,9 +174,11 @@ public final class SlopiumOptions implements ConfigEntryPoint {
         return null;
     }
     private static ResourceLocation[] dependencies(String key) {
+        if(key.equals("frame_generation_low_latency"))return new ResourceLocation[]{id("frame_generation_mode")};
         var result = new java.util.ArrayList<ResourceLocation>();
         if (!key.equals("enabled") && !key.equals("diagnostics")&&!key.startsWith("frame_generation_")) result.add(id("enabled"));
         if(key.startsWith("frame_generation_")&&!key.equals("frame_generation_mode"))result.add(id("frame_generation_mode"));
+        if(key.startsWith("frame_generation_")&&!key.equals("frame_generation_mode")&&!key.equals("frame_generation_low_latency"))result.add(id("frame_generation_low_latency"));
         if(key.startsWith("frame_generation_")&&!key.equals("frame_generation_mode")&&!key.equals("frame_generation_parallel"))result.add(id("frame_generation_parallel"));
         if(key.equals("frame_generation_cell")||key.equals("frame_generation_search")||key.equals("frame_generation_rejection")||key.equals("frame_generation_refinement")||key.equals("frame_generation_protect"))result.add(id("frame_generation_multiplier"));
         if(key.startsWith("frame_generation_")&&!key.equals("frame_generation_mode")&&!key.equals("frame_generation_amortize")&&!key.equals("frame_generation_parallel"))result.add(id("frame_generation_amortize"));
@@ -195,6 +197,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
         if(key.startsWith("frame_generation_")&&!key.equals("frame_generation_mode")) {
             var fg=state.readEnumOption(id("frame_generation_mode"),FrameGenerationMode.class);
             if(key.equals("frame_generation_parallel"))return fg!=FrameGenerationMode.OFF;
+            if(key.equals("frame_generation_low_latency"))return fg!=FrameGenerationMode.OFF;
             if(key.equals("frame_generation_amortize"))return fg!=FrameGenerationMode.OFF;
             boolean amortize=state.readBooleanOption(id("frame_generation_amortize"));
             if(key.equals("frame_generation_multiplier"))return fg!=FrameGenerationMode.OFF&&!amortize;
@@ -204,8 +207,8 @@ public final class SlopiumOptions implements ConfigEntryPoint {
             if(parallel&&(key.equals("frame_generation_cell")||key.equals("frame_generation_search")||key.equals("frame_generation_rejection")||key.equals("frame_generation_refinement")||key.equals("frame_generation_protect")))return true;
             if(key.equals("frame_generation_target")||key.equals("frame_generation_input")||key.equals("frame_generation_multiplier")||key.equals("frame_generation_mark")||key.equals("frame_generation_counter")||key.equals("frame_generation_fast"))return fg!=FrameGenerationMode.OFF;
             if(key.equals("frame_generation_grid"))return fg==FrameGenerationMode.SIMPLE;
-            if(key.equals("frame_generation_fsr_debug"))return fg==FrameGenerationMode.FSR;
-            return fg==FrameGenerationMode.FSR&&(amortize||state.readIntOption(id("frame_generation_multiplier"))>2);
+            if(key.equals("frame_generation_fsr_debug"))return fg==FrameGenerationMode.FSR&&!state.readBooleanOption(id("frame_generation_low_latency"));
+            return fg==FrameGenerationMode.FSR&&(state.readBooleanOption(id("frame_generation_low_latency"))||amortize||state.readIntOption(id("frame_generation_multiplier"))>2);
         }
         String parent = PARENTS.get(key), override = override(key);
         if (parent != null && !state.readBooleanOption(id(parent))) return false;

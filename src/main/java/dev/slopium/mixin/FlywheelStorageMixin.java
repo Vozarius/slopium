@@ -15,8 +15,11 @@ public abstract class FlywheelStorageMixin implements CullingStorage {
     private void slopium$add(Visual visual, float partialTick, CallbackInfo ci) { slopium$index.add(visual); }
     @WrapOperation(method={"remove", "lambda$recreateAll$4"}, at=@At(value="INVOKE",target="Ldev/engine_room/flywheel/api/visual/Visual;delete()V"))
     private void slopium$remove(Visual visual, Operation<Void> original) {
-        original.call(visual); slopium$index.remove(visual);
+        original.call(visual); OwnedInstances.remove(visual);slopium$index.remove(visual);
     }
-    @Inject(method="invalidate", at=@At("TAIL"))
-    private void slopium$clear(CallbackInfo ci) { slopium$index.clear(); }
+    @Inject(method="invalidate", at=@At("HEAD"))
+    private void slopium$clear(CallbackInfo ci) {
+        for(Visual visual:((dev.engine_room.flywheel.impl.visualization.storage.Storage<?>)(Object)this).getAllVisuals())OwnedInstances.remove(visual);
+        slopium$index.clear();
+    }
 }

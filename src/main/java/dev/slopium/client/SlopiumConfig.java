@@ -22,6 +22,7 @@ public final class SlopiumConfig {
     public boolean frameGenerationCounter = true;
     public boolean frameGenerationFastPath = false;
     public boolean frameGenerationParallel = false;
+    public boolean frameGenerationLowLatency = true;
     public boolean frameGenerationAmortize = false;
     public int frameGenerationGridStep = 4;
     public int frameGenerationFlowCell = 8;
@@ -31,6 +32,8 @@ public final class SlopiumConfig {
     public int frameGenerationRejectionPixels = 4;
     public boolean frameGenerationFsrDebug = false;
     public volatile boolean cameraCulling = false;
+    public dev.slopium.visibility.BlockSelectionMode processedBlockMode = dev.slopium.visibility.BlockSelectionMode.ALL;
+    public java.util.List<String> processedBlockIds = new java.util.ArrayList<>();
     public volatile boolean gpuGlassCulling = false;
     public volatile boolean indexedLighting = true;
     public volatile boolean lightQueryCache = true;
@@ -138,6 +141,14 @@ public final class SlopiumConfig {
     }
 
     private void validate() {
+        if(throttleFlywheelDistance){
+            createVisualDistance=throttleCreateVisuals?Math.min(createVisualDistance,flywheelFullRateDistance):flywheelFullRateDistance;
+            createVisualInterval=throttleCreateVisuals?Math.max(createVisualInterval,flywheelFrameInterval):flywheelFrameInterval;
+            throttleCreateVisuals=true;throttleFlywheelDistance=false;
+        }
+        if(processedBlockMode==null)processedBlockMode=dev.slopium.visibility.BlockSelectionMode.ALL;
+        if(processedBlockIds==null)processedBlockIds=new java.util.ArrayList<>();
+        processedBlockIds.removeIf(java.util.Objects::isNull);
         if(frameGenerationMode==null)frameGenerationMode=dev.slopium.framegen.FrameGenerationMode.OFF;
         frameGenerationTargetFps=Math.clamp(frameGenerationTargetFps,0,240);
         frameGenerationInputFps=Math.clamp(frameGenerationInputFps,0,240);

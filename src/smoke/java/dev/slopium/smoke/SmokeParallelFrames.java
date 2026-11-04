@@ -44,6 +44,7 @@ final class SmokeParallelFrames {
         double seconds=(System.nanoTime()-began)/1e9;
         LogUtils.getLogger().info("SLOPIUM_PARALLEL: phase {} actual real {} FPS, phase output {} FPS; {}; progressing stalls={}",phase,frames/seconds,AsyncPresenter.active()?(AsyncPresenter.outputs()-startOutput)/seconds:0,AsyncPresenter.status(),progressDuringStalls);
         if(phase==1||phase==2){
+            if(Boolean.getBoolean("slopium.responsiveSmoke")&&AsyncPresenter.sourceWaitMs()>150)throw new AssertionError("Completed source frames queued too long: "+AsyncPresenter.status());
             var rates=FrameMetrics.display();
             if(Math.abs(rates.source()-frames/seconds)>Math.max(1,frames/seconds*.2)||Math.abs(rates.output()-(AsyncPresenter.outputs()-startOutput)/seconds)>10)
                 throw new AssertionError("Current FPS disagrees with measured world/swap rate: "+rates);
@@ -90,6 +91,7 @@ final class SmokeParallelFrames {
     private void next(){
         var mc=Minecraft.getInstance();var c=SlopiumConfig.get();
         c.enabled=false;
+        c.frameGenerationLowLatency=Boolean.getBoolean("slopium.responsiveSmoke");
         if(++phase==4){
             LogUtils.getLogger().info("SLOPIUM_PARALLEL: all blocked-render-thread phases passed; starting lifecycle checks");
             c.frameGenerationMode=mode;c.frameGenerationParallel=true;

@@ -16,18 +16,12 @@
     "BlockEntityRenderCutMixin",
     "ParticleCutMixin",
     "AmbientCutMixin",
-    "FlywheelInstancedCutMixin",
-    "FlywheelIndirectCutMixin",
-    "FlywheelCrumblingCutMixin",
     "ItemRenderBudgetMixin",
     "XaeroBenchmarkMixin",
     "EntityShadowCutMixin",
     "SodiumBlockEntityBudgetMixin",
-    "FlywheelDistanceBudgetMixin",
-    "FlywheelBandedBudgetMixin",
     "ParticleBudgetMixin",
     "TextureInterpolationMixin",
-    "CreateVisualFrameMixin",
     "VisualBlockEntityAccess",
     "ParticleLightCacheMixin",
     "ParticleRangeMixin",
@@ -57,7 +51,12 @@
     "AsyncVignetteMixin",
     "SlopiumSliderMixin",
     "ReeseNumberInputMixin",
-    "FrameDebugMixin"
+    "FrameDebugMixin",
+    "BlockEntityTypeBlocksAccess",
+    "FlywheelOwnershipMixin",
+    "FlywheelUpdatePolicyMixin",
+    "ScrollInstancePauseMixin",
+    "ScrollWriterPauseMixin"
   ],
   "injectors": {
     "defaultRequire": 1

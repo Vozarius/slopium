@@ -10,6 +10,7 @@ public final class CreateFreezeControl {
     private CreateFreezeControl() {}
     public static boolean isCandidate(BlockEntity be) { return be instanceof SmartBlockEntity; }
     public static boolean skip(BlockEntity be, boolean diagnostics) {
+        if(!ProcessedBlocks.allows(be))return false;
         var level = be.getLevel();
         if (level == null || !level.isClientSide) return false;
         if (level != Minecraft.getInstance().level || ((SmartBlockEntity) be).isVirtual()

@@ -10,6 +10,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 public final class CreateDistanceControl {
     private CreateDistanceControl() {}
     public static boolean skip(BlockEntity be, SlopiumConfig c) {
+        if(!ProcessedBlocks.allows(be))return false;
         var level = be.getLevel();
         if (level == null || !level.isClientSide) return false;
         var client = Minecraft.getInstance();

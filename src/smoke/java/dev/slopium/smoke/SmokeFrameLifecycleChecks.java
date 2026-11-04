@@ -10,7 +10,7 @@ final class SmokeFrameLifecycleChecks {
     static void run() throws ReflectiveOperationException {
         var mc=Minecraft.getInstance();var c=SlopiumConfig.get();
         var oldWorld=mc.level;var oldScreen=mc.screen;var overlay=mc.getOverlay();boolean focus=mc.isWindowActive(),enabled=c.enabled,diagnostics=c.diagnostics;
-        var oldMode=c.frameGenerationMode;int oldMultiplier=c.frameGenerationMultiplier;boolean oldMark=c.frameGenerationMarkFrames;var graphics=mc.options.graphicsMode().get();
+        boolean oldLatency=c.frameGenerationLowLatency;c.frameGenerationLowLatency=false;var oldMode=c.frameGenerationMode;int oldMultiplier=c.frameGenerationMultiplier;boolean oldMark=c.frameGenerationMarkFrames;var graphics=mc.options.graphicsMode().get();
         int oldInput=c.frameGenerationInputFps,oldTarget=c.frameGenerationTargetFps;boolean oldAmortize=c.frameGenerationAmortize;
         c.frameGenerationAmortize=false;
         try(var state=new GlState()) {
@@ -111,7 +111,7 @@ final class SmokeFrameLifecycleChecks {
                 if(java.util.Arrays.stream(Minecraft.class.getDeclaredMethods()).noneMatch(m->m.getName().contains("slopium$finiteHighLimit")))throw new AssertionError("High-rate hook absent");
                 if(java.util.Arrays.stream(net.minecraft.client.renderer.GameRenderer.class.getDeclaredMethods()).noneMatch(m->m.getName().contains("slopium$worldFrame")))throw new AssertionError("Frame hook absent");
             } finally {
-                FrameGeneration.release();FrameGeneration.resetCounters();c.frameGenerationMode=oldMode;c.enabled=enabled;c.diagnostics=diagnostics;c.frameGenerationMultiplier=oldMultiplier;c.frameGenerationMarkFrames=oldMark;
+                FrameGeneration.release();FrameGeneration.resetCounters();c.frameGenerationLowLatency=oldLatency;c.frameGenerationMode=oldMode;c.enabled=enabled;c.diagnostics=diagnostics;c.frameGenerationMultiplier=oldMultiplier;c.frameGenerationMarkFrames=oldMark;
                 c.frameGenerationInputFps=oldInput;c.frameGenerationTargetFps=oldTarget;c.frameGenerationAmortize=oldAmortize;
                 mc.level=oldWorld;mc.screen=oldScreen;mc.setOverlay(overlay);mc.setWindowActive(focus);mc.options.graphicsMode().set(graphics);
                 glClearColor(clear[0],clear[1],clear[2],clear[3]);glClearDepth(clearDepth);glDepthMask(mask);

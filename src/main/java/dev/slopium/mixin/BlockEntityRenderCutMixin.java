@@ -13,7 +13,7 @@ public abstract class BlockEntityRenderCutMixin {
     private void slopium$cut(CallbackInfo ci, @com.llamalad7.mixinextras.sugar.Local(argsOnly = true) net.minecraft.world.level.block.entity.BlockEntity be) {
         var config = SlopiumConfig.get();
         if (config.enabled && (config.disableBlockEntityRendering || (config.hideAllCreateModels
-                && net.minecraft.core.registries.BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(be.getType()).getNamespace().equals("create")))) {
+                && dev.slopium.visibility.ProcessedBlocks.allows(be)))) {
             if (config.diagnostics) SlopiumStats.blockEntityDrawsSkipped++;
             ci.cancel();
         }

@@ -26,7 +26,7 @@ final class SmokeOptionsChecks {
                 if(!ids.add(id.get(o)))throw new AssertionError("Duplicate UI option "+id.get(o));
                 if(o.getName().getString().startsWith("slopium.") || o.getTooltip().getString().startsWith("slopium."))throw new AssertionError("Missing translation "+id.get(o));
             }
-            value("enabled",true);value("particle_visibility",enumValue("particle_visibility","OFF"));value("particle_range",false);
+            value("frame_generation_low_latency",false);value("enabled",true);value("particle_visibility",enumValue("particle_visibility","OFF"));value("particle_range",false);
             value("frame_generation_mode",enumValue("frame_generation_mode","OFF"));
             if(option("frame_generation_target").isEnabled()||option("frame_generation_input").isEnabled()||option("frame_generation_fast").isEnabled())throw new AssertionError("Inactive FG target enabled");
             value("frame_generation_mode",enumValue("frame_generation_mode","SIMPLE"));

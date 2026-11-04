@@ -62,7 +62,7 @@ public final class FrameGeneration {
             event.getGuiGraphics().drawString(mc.font,AsyncPresenter.failureNotice(),8,event.getGuiGraphics().guiHeight()-80,0xFFFFAA55);
         // Errors must remain visible even with diagnostics and the optional counter off.
         if(!c.frameGenerationCounter&&active)return;
-        var line=active?net.minecraft.network.chat.Component.translatable("slopium.frame_generation.sequential_title",
+        var line=active&&mode==FrameGenerationMode.FSR&&c.frameGenerationLowLatency?net.minecraft.network.chat.Component.translatable("slopium.frame_generation.predict_title"):active?net.minecraft.network.chat.Component.translatable("slopium.frame_generation.sequential_title",
             net.minecraft.network.chat.Component.translatable("slopium.value.FrameGenerationMode."+mode))
             :net.minecraft.network.chat.Component.literal("Slopium FG: "+state);
         var gui=event.getGuiGraphics();int y=gui.guiHeight()-64;
@@ -152,11 +152,11 @@ public final class FrameGeneration {
                     int depthFormat=glGetTexLevelParameteri(GL_TEXTURE_2D,0,GL_TEXTURE_INTERNAL_FORMAT);
                     current=new GlImage(main.width,main.height,GL_RGBA8,depthFormat);
                     if(mode==FrameGenerationMode.SIMPLE){reprojection=new dev.slopium.framegen.reference.Reprojector();generated=new GlImage(main.width,main.height,GL_RGBA8,depthFormat);}
-                    if(mode==FrameGenerationMode.FSR&&multiplier>2)simple=new SimpleInterpolator(main.width,main.height,c.frameGenerationFlowCell);
+                    if(mode==FrameGenerationMode.FSR&&(multiplier>2||c.frameGenerationLowLatency))simple=new SimpleInterpolator(main.width,main.height,c.frameGenerationFlowCell,c.frameGenerationLowLatency);
                     if(mode==FrameGenerationMode.FSR) {
                         previous=new GlImage(main.width,main.height,GL_RGBA8,depthFormat);
                         generated=new GlImage(main.width,main.height,GL_RGBA8,0);
-                        fsr=new FsrInterpolator(main.width,main.height);
+                        if(!c.frameGenerationLowLatency)fsr=new FsrInterpolator(main.width,main.height);
                         if(multiplier>2)fsrMiddle=new GlImage(main.width,main.height,GL_RGBA8,0);
                     }
                 }
@@ -213,18 +213,18 @@ public final class FrameGeneration {
                 GlState.fullscreen();glBindFramebuffer(GL_READ_FRAMEBUFFER,main.frameBufferId);glBindFramebuffer(GL_DRAW_FRAMEBUFFER,current.fbo);
                 glBlitFramebuffer(0,0,main.width,main.height,0,0,main.width,main.height,GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT,GL_NEAREST);
                 if(System.nanoTime()-now+Math.max(1_000_000,(long)(preparationMilliseconds*1e6))<SCHEDULE.period()) {
-                    fsr.generate(current,fsrMiddle==null?generated:fsrMiddle,toPrevious,projection,!interpolate,lastCapture==0?16.667f:(now-lastCapture)/1e6f,c.frameGenerationFsrDebug);
+                    if(!c.frameGenerationLowLatency)fsr.generate(current,fsrMiddle==null?generated:fsrMiddle,toPrevious,projection,!interpolate,lastCapture==0?16.667f:(now-lastCapture)/1e6f,c.frameGenerationFsrDebug);
                     if(interpolate&&simple!=null)simple.quality(c.frameGenerationRefinement,c.frameGenerationProtect).prepare(previous,current,toPrevious,new Matrix4f(toPrevious).invert(),c.frameGenerationSearchPixels);
                 } else {CADENCE.reset();interpolate=false;}
                 // Start the delayed pair at its older endpoint. Intermediate fractions follow time.
-                heldSource=interpolate?previous.fbo:current.fbo;
+                heldSource=interpolate&&!c.frameGenerationLowLatency?previous.fbo:current.fbo;
                 present(heldSource,main.frameBufferId,main.width,main.height,false);
                 } finally {preparationTimer.stop();preparationMilliseconds=preparationTimer.milliseconds();}
             }
             previousVp=vp;eye=camera.getPosition();rotation=new Quaternionf(camera.rotation());lastCapture=now;
             SCHEDULE.captured(now);lastWorldReal=true;
             recordOutput(now,true);realFrames++;active=true;
-            state=backend="FSR "+fsr.provider+(c.frameGenerationAmortize?" + Slopium: FPS amortization -> "+AdaptiveFrameTarget.target(c.frameGenerationInputFps):(multiplier>2?" + Slopium":"")+" up to x"+multiplier);
+            state=backend=c.frameGenerationLowLatency?"Slopium motion prediction (real frames first)":"FSR "+fsr.provider+(c.frameGenerationAmortize?" + Slopium: FPS amortization -> "+AdaptiveFrameTarget.target(c.frameGenerationInputFps):(multiplier>2?" + Slopium":"")+" up to x"+multiplier);
         } catch(RuntimeException|LinkageError failure) {
             if(drawing)throw failure;
             failedRevision=Slopium.configRevision();state=failureState="disabled: "+failure.getMessage();active=false;
@@ -255,7 +255,7 @@ public final class FrameGeneration {
         // Skip obsolete fractions rather than delaying the next real frame to drain a pair.
         if(!CADENCE.sample(now-lastCapture,SCHEDULE.period())||!SCHEDULE.canGenerate(now,multiplier)) {hold(main,now);return;}
         try(var ignored=new GlState()) {
-            if(CADENCE.endpoint()) {heldSource=current.fbo;present(current.fbo,main.frameBufferId,main.width,main.height,true);endpointFrames++;}
+            if(CADENCE.endpoint()) {if(c.frameGenerationLowLatency){hold(main,now);return;}heldSource=current.fbo;present(current.fbo,main.frameBufferId,main.width,main.height,true);endpointFrames++;}
             else {
                 if(timer!=null)timer.start();
                 try {
@@ -320,9 +320,9 @@ public final class FrameGeneration {
     }
     private static void presentGenerated(com.mojang.blaze3d.pipeline.RenderTarget main,SlopiumConfig c) {
         int source;
-        if(fsr!=null&&CADENCE.midpoint())source=(fsrMiddle==null?generated:fsrMiddle).fbo;
+        if(fsr!=null&&!c.frameGenerationLowLatency&&CADENCE.midpoint())source=(fsrMiddle==null?generated:fsrMiddle).fbo;
         else {
-            simple.synthesize(previous,current,generated,CADENCE.fraction(),c.frameGenerationRejectionPixels,fsrMiddle);
+            simple.synthesize(previous,current,generated,(c.frameGenerationLowLatency?1f:0f)+CADENCE.fraction(),c.frameGenerationRejectionPixels,c.frameGenerationLowLatency?null:fsrMiddle);
             source=generated.fbo;
         }
         heldSource=source;present(source,main.frameBufferId,main.width,main.height,false);

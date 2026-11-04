@@ -122,26 +122,6 @@ final class SmokeBudgetChecks {
                 c.enabled = true; c.pauseXaeroBenchmark = false;
                 if ((boolean) guard.invoke(uploader, false)) throw new AssertionError("Xaero resume failed");
             }
-            if (Slopium.loaded("flywheel")) {
-                for (String name : new String[]{"NonLimiter", "BandedPrimeLimiter"}) {
-                    var type = Class.forName("dev.engine_room.flywheel.impl.visual." + name);
-                    Object limiter = type.getConstructor().newInstance();
-                    var tick = type.getMethod("tick"); var update = type.getMethod("shouldUpdate", double.class);
-                    c.throttleFlywheelDistance = true; c.flywheelFullRateDistance = 16; c.flywheelFrameInterval = 3;
-                    int allowed = 0;
-                    for (int i = 0; i < 9; i++) {
-                        tick.invoke(limiter);
-                        if ((boolean) update.invoke(limiter, 500d)) allowed++;
-                        if (!(boolean) update.invoke(limiter, 0d)) throw new AssertionError("Near visual throttled");
-                    }
-                    if (allowed != 3) throw new AssertionError("Flywheel interval/starvation: " + allowed);
-                    c.throttleFlywheelDistance = false;
-                    boolean normal = (boolean) update.invoke(limiter, 500d);
-                    c.throttleFlywheelDistance = true; c.enabled = false;
-                    if ((boolean) update.invoke(limiter, 500d) != normal) throw new AssertionError("Flywheel global off");
-                    c.enabled = true;
-                }
-            }
             LogUtils.getLogger().info("SLOPIUM_SMOKE: render budget: actual item LOD/range, stack preservation, exception cleanup, early Sodium pass, optional Xaero and Flywheel policies passed");
         } finally {
             for (var e : saved.entrySet()) e.getKey().set(c, e.getValue());

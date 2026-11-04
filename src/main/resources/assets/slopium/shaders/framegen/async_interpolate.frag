@@ -35,6 +35,19 @@ vec2 vectorAt(vec2 at,bool ahead){
 }
 vec4 safeEndpoint(){return fraction<.5?texture(previousColor,uv):texture(currentColor,uv);}
 void main() {
+    // Responsive mode predicts from the newest endpoint. Never blend back to old imagery.
+    if(fraction>1.0){
+        float ahead=min(fraction-1.0,1.0);vec2 at=uv;
+        for(int i=0;i<6;i++)at=uv+ahead*vectorAt(at,false);
+        vec2 back=vectorAt(at,false),old=at+back;
+        bool inside=all(greaterThanEqual(at,vec2(0)))&&all(lessThanEqual(at,vec2(1)))
+            &&all(greaterThanEqual(old,vec2(0)))&&all(lessThanEqual(old,vec2(1)));
+        float error=length((back+vectorAt(old,true))*size);
+        float residual=length((at-ahead*back-uv)*size);
+        color=inside&&error<=consistencyPixels&&residual<=consistencyPixels
+            ?texture(currentColor,at):texture(currentColor,uv);
+        return;
+    }
     vec2 p=uv,c=uv;
     for(int i=0;i<6;i++){p=uv-fraction*vectorAt(p,true);c=uv-(1.0-fraction)*vectorAt(c,false);}
     vec2 f=vectorAt(p,true),b=vectorAt(c,false);

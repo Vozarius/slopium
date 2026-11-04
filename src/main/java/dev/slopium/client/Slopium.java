@@ -19,8 +19,9 @@ public final class Slopium {
     private static volatile long frame;
     private static boolean hadLevel;
 
-    public Slopium() {
+    public Slopium(net.neoforged.bus.api.IEventBus modBus) {
         SlopiumConfig.get();
+        modBus.addListener((net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent event)->event.enqueueWork(dev.slopium.visibility.ProcessedBlocks::discover));
         NeoForge.EVENT_BUS.addListener(Slopium::registerCommands);
         NeoForge.EVENT_BUS.addListener(dev.slopium.framegen.FrameGeneration::overlay);
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) -> {
@@ -57,6 +58,8 @@ public final class Slopium {
     public static void applyOptions() {
         SlopiumConfig.get().save();
         configRevision++;
+        dev.slopium.visibility.ProcessedBlocks.rebuild();
+        dev.slopium.visibility.VisibilityPool.clear();
         dev.slopium.framegen.FrameGeneration.release();
         dev.slopium.framegen.FrameGeneration.resetCounters();
         if(loaded("flywheel")&&(!SlopiumConfig.get().enabled||!SlopiumConfig.get().gpuGlassCulling))

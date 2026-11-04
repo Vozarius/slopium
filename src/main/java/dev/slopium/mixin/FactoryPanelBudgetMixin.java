@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(value = FactoryPanelRenderer.class, remap = false)
 public abstract class FactoryPanelBudgetMixin {
     @Unique private static boolean slopium$far(FactoryPanelBehaviour panel, int distance) {
+        if(!dev.slopium.visibility.ProcessedBlocks.allows(panel.blockEntity))return false;
         var client = Minecraft.getInstance();
         var level = panel.getWorld();
         if (level == null || !level.isClientSide || level != client.level || client.screen != null
@@ -30,7 +31,7 @@ public abstract class FactoryPanelBudgetMixin {
             float partialTick, com.mojang.blaze3d.vertex.PoseStack pose,
             net.minecraft.client.renderer.MultiBufferSource buffers, int light, int overlay, CallbackInfo ci) {
         var c = SlopiumConfig.get();
-        if (c.enabled && c.hideFactoryConnections) {
+        if (c.enabled && c.hideFactoryConnections && dev.slopium.visibility.ProcessedBlocks.allows(panel.blockEntity)) {
             if (c.diagnostics) SlopiumStats.factoryPathsSkipped++;
             ci.cancel(); return;
         }

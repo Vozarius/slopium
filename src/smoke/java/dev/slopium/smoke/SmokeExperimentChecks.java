@@ -30,24 +30,6 @@ final class SmokeExperimentChecks {
             checkHandlers(mc.particleEngine, "disableParticles");
             // Uninitialized fixtures are used only for injected HEAD guards. No world or GL body may run.
             checkHandlers(allocate("net.minecraft.client.multiplayer.ClientLevel"), "disableAmbientEffects");
-            if (Slopium.loaded("flywheel")) {
-                for (String name : new String[]{
-                    "dev.engine_room.flywheel.backend.engine.instancing.InstancedDraw",
-                    "dev.engine_room.flywheel.backend.engine.indirect.IndirectCullingGroup",
-                    "dev.engine_room.flywheel.backend.engine.EngineImpl"}) {
-                    Object target = allocate(name);
-                    checkHandlers(target, "disableFlywheelRendering");
-                    c.enabled = c.disableFlywheelRendering = true;
-                    for (var method : target.getClass().getDeclaredMethods()) {
-                        if (!java.util.Set.of("render", "renderOne", "submitSolid", "submitTransparent", "renderCrumbling").contains(method.getName())) continue;
-                        // EngineImpl.render must run normally; only its crumbling entry is cut.
-                        if (name.endsWith("EngineImpl") && method.getName().equals("render")) continue;
-                        before = SlopiumStats.flywheelDrawsSkipped;
-                        method.invoke(target, new Object[method.getParameterCount()]);
-                        if (SlopiumStats.flywheelDrawsSkipped != before + 1) throw new AssertionError("Flywheel draw cut not reached: " + method);
-                    }
-                }
-            }
             LogUtils.getLogger().info("SLOPIUM_SMOKE: experimental draw/particle entry points and all opt-in/global-off guards passed");
         } finally {
             c.enabled = enabled; c.diagnostics = diagnostics;
