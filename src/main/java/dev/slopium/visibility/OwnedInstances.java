@@ -12,6 +12,7 @@ import java.util.function.Consumer;
 public final class OwnedInstances implements VisualOcclusionState {
     public final net.minecraft.world.level.block.entity.BlockEntity block;
     private volatile boolean frozen;
+    public volatile boolean sectionHidden;
     private volatile long frozenUntil;
     public OwnedInstances(net.minecraft.world.level.block.entity.BlockEntity block){this.block=block;}
     public void slopium$setOccluded(boolean value,long frame){slopium$setOccludedUntil(value,frame,frame);}

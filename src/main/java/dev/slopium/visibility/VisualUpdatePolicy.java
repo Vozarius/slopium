@@ -6,9 +6,10 @@ import dev.slopium.mixin.VisualBlockEntityAccess;
 public final class VisualUpdatePolicy {
     public static boolean allow(Visual visual,DynamicVisual.Context context){
         var c=SlopiumConfig.get();if(!c.enabled)return true;
-        if(!c.freezeCreateAnimations&&!c.occludeCreateAnimations
+        if(!c.visibleSections&&!c.freezeCreateAnimations&&!c.occludeCreateAnimations
                 &&(context==null||!c.throttleCreateVisuals&&!c.throttleFlywheelDistance))return true;
         var owner=OwnedInstances.get(visual);
+        if(context!=null&&c.visibleSections&&owner!=null&&owner.sectionHidden)return skipped(c);
         for(int n=0;n<8&&visual instanceof WrappedVisualAccess wrapper;n++){var next=wrapper.slopium$delegateVisual();if(next==null||next==visual)return true;visual=next;}
         var be=owner!=null?owner.block:visual instanceof VisualBlockEntityAccess access?access.slopium$getBlockEntity():null;
         if(!ProcessedBlocks.allows(be))return true;

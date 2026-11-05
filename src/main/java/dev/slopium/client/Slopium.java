@@ -56,6 +56,7 @@ public final class Slopium {
     }
 
     public static void applyOptions() {
+        SlopiumConfig.get().minimumSections=dev.slopium.visibility.SectionVisibility.minimum();
         SlopiumConfig.get().save();
         configRevision++;
         dev.slopium.visibility.ProcessedBlocks.rebuild();
@@ -87,6 +88,7 @@ public final class Slopium {
     private static void registerCommands(RegisterClientCommandsEvent event) {
         event.getDispatcher().register(Commands.literal("slopium")
             .then(Commands.literal("status").executes(context -> {
+                context.getSource().sendSuccess(()->Component.literal(dev.slopium.visibility.SectionVisibility.status()),false);
                 context.getSource().sendSuccess(() -> Component.literal(
                     "Slopium | sources=" + SlopiumStats.indexedSources
                     + " | queries=" + SlopiumStats.lightQueries + " | cache hits=" + SlopiumStats.lightCacheHits

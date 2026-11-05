@@ -29,6 +29,7 @@ public abstract class SodiumBlockEntityBudgetMixin {
             @Local(argsOnly = true, ordinal = 1) double y,
             @Local(argsOnly = true, ordinal = 2) double z) {
         var c = SlopiumConfig.get();
+        if(dev.slopium.visibility.SectionVisibility.hidden(be)){ci.cancel();return;}
         if (c.enabled && dev.slopium.visibility.ProcessedBlocks.allows(be)
                 && (c.hideAllCreateModels
                 || (c.cameraCulling && dev.slopium.visibility.CreateWallControl.outsideCamera(be))

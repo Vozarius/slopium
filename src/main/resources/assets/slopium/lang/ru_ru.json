@@ -1,5 +1,5 @@
 {
-  "slopium.version": "Бета 11",
+  "slopium.version": "Бета 12",
   "slopium.page.frame_generation": "Генерация кадров",
   "slopium.frame_generation.unavailable": "Slopium: генерация кадров отключена: %s. Обычная отрисовка сохранена. Повторная попытка — после применения настроек.",
   "slopium.group.frame_generation": "Режим и частота вывода",
@@ -251,5 +251,14 @@
   "slopium.blocks.count": "Найдено: %s · Отмечено: %s · %s/%s",
   "slopium.frame_generation_low_latency": "Настоящие кадры сразу",
   "slopium.frame_generation_low_latency.tooltip": "Не ждать окончания интерполяции. Между настоящими кадрами Slopium прогнозирует движение; при резкой смене движения возможны скачки. FSR-интерполяция требует выключить этот режим. GPU и VSync всё ещё могут задерживать вывод.",
-  "slopium.frame_generation.predict_title": "Slopium: прогноз движения · настоящие кадры сразу"
+  "slopium.frame_generation.predict_title": "Slopium: прогноз движения · настоящие кадры сразу",
+  "slopium.group.sections": "Куллинг чанков",
+  "slopium.visible_sections": "Прогрузка только видимых чанков",
+  "slopium.visible_sections.tooltip": "Не рисовать полностью закрытые секции 16×16×16 вне минимального радиуса. Данные и тики сохраняются. Общий кеш с Create; неизвестные секции видимы.",
+  "slopium.minimum_sections": "Минимально прогружаемые чанки",
+  "slopium.minimum_sections.tooltip": "Радиус без дополнительного отсечения, включая высоту. 0 защищает секцию камеры. Всегда меньше дальности прорисовки.",
+  "slopium.section_obstacles": "Препятствия для чанков",
+  "slopium.section_obstacles.tooltip": "Какие формы блоков могут скрывать секцию. «Любые» включает стекло и жидкости; отверстия не заполняются.",
+  "slopium.value.SectionObstacles.OPAQUE": "За непрозрачными блоками",
+  "slopium.value.SectionObstacles.ANY": "За любыми блоками"
 }

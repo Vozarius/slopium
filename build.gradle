@@ -46,6 +46,8 @@ neoForge {
             if (project.hasProperty('englishSmoke')) jvmArgument '-Dslopium.englishSmoke=true'
             if (project.hasProperty('asyncSmoke')) jvmArgument '-Dslopium.asyncSmoke=true'
             if (project.hasProperty('responsiveSmoke')) jvmArgument '-Dslopium.responsiveSmoke=true'
+            if (project.hasProperty('sectionSmoke')) jvmArgument '-Dslopium.sectionSmoke=true'
+            if (project.hasProperty('sectionSmokeReuse')) jvmArgument "-Dslopium.sectionSmokeReuse=${project.property('sectionSmokeReuse')}"
             programArguments.addAll('--width', '1280', '--height', '720')
         }
     }
@@ -133,7 +135,7 @@ def nativeFsr = tasks.register('buildNativeFsr', Exec) {
 }
 tasks.named('processResources') { dependsOn nativeFsr }
 tasks.named('jar') {
-    archiveVersion = 'beta-11'
+    archiveVersion = 'beta-12'
     from('LICENSE') { rename { 'LICENSE-slopium' } }
     from('licenses') { into 'licenses' }
     from('src/main/java/dev/slopium/framegen/reference') { into 'sources/dev/slopium/framegen/reference' }
@@ -142,7 +144,7 @@ tasks.named('jar') {
 
 java.withSourcesJar()
 tasks.named('sourcesJar') {
-    archiveVersion = 'beta-11'
+    archiveVersion = 'beta-12'
     from('LICENSE'); from('README.md')
     from('licenses') { into 'licenses' }
     from('native') { into 'native' }

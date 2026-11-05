@@ -32,6 +32,11 @@ public final class SlopiumOptions implements ConfigEntryPoint {
                     .addOption(bool(builder, "diagnostics", v -> c.diagnostics = v, () -> c.diagnostics, false, true))
                     .addOption(bool(builder, "cull_breaking", v -> c.cullBreakingOverlays = v, () -> c.cullBreakingOverlays, true, true))
                     .addOption(bool(builder, "pause_xaero_benchmark", v -> c.pauseXaeroBenchmark = v, () -> c.pauseXaeroBenchmark, false, Slopium.loaded("xaeroworldmap"))))
+                .addOptionGroup(builder.createOptionGroup().setName(text("group.sections"))
+                    .addOption(bool(builder,"visible_sections",v->c.visibleSections=v,()->c.visibleSections,false,true))
+                    .addOption(integer(builder,"minimum_sections",v->c.minimumSections=v,()->dev.slopium.visibility.SectionVisibility.minimum(),2,0,31,1)
+                        .setRangeProvider(state->new net.caffeinemc.mods.sodium.api.config.option.Range(0,Math.max(0,state.readIntOption(ResourceLocation.parse("sodium:general.render_distance"))-1),1),ResourceLocation.parse("sodium:general.render_distance")))
+                    .addOption(mode(builder,"section_obstacles",SectionObstacles.class,v->c.sectionsAnyBlock=v==SectionObstacles.ANY,()->c.sectionsAnyBlock?SectionObstacles.ANY:SectionObstacles.OPAQUE,SectionObstacles.OPAQUE,true)))
                 .addOptionGroup(builder.createOptionGroup().setName(text("group.lights"))
                     .addOption(bool(builder, "indexed_lighting", v -> c.indexedLighting = v, () -> c.indexedLighting, true, lights))
                     .addOption(bool(builder, "light_cache", v -> c.lightQueryCache = v, () -> c.lightQueryCache, true, lights))
@@ -161,6 +166,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
             .setValueFormatter(value -> key.equals("frame_generation_multiplier")?Component.translatable("slopium.frame_generation_multiplier.value",value,value-1):key.equals("frame_generation_target")&&value==0?text("frame_generation_target.unlimited"):key.equals("frame_generation_input")&&value==0?text("frame_generation_input.unlimited"):Component.literal(Integer.toString(value)));
     }
     private static final java.util.Map<String,String> PARENTS = java.util.Map.ofEntries(
+        java.util.Map.entry("minimum_sections","visible_sections"),java.util.Map.entry("section_obstacles","visible_sections"),
         java.util.Map.entry("particle_render_distance", "particle_range"), java.util.Map.entry("particles_per_tick", "particle_budget"),
         java.util.Map.entry("factory_item_distance", "factory_items"), java.util.Map.entry("factory_bulb_distance", "factory_bulbs"),
         java.util.Map.entry("item_render_distance", "item_range"), java.util.Map.entry("item_lod_distance", "item_lod"),
@@ -173,6 +179,7 @@ public final class SlopiumOptions implements ConfigEntryPoint {
         if (key.startsWith("create_visual")) return "animation_visibility";
         return null;
     }
+    public enum SectionObstacles { OPAQUE,ANY }
     private static ResourceLocation[] dependencies(String key) {
         if(key.equals("frame_generation_low_latency"))return new ResourceLocation[]{id("frame_generation_mode")};
         var result = new java.util.ArrayList<ResourceLocation>();

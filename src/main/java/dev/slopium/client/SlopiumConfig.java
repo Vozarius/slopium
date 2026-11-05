@@ -32,6 +32,9 @@ public final class SlopiumConfig {
     public int frameGenerationRejectionPixels = 4;
     public boolean frameGenerationFsrDebug = false;
     public volatile boolean cameraCulling = false;
+    public volatile boolean visibleSections = false;
+    public int minimumSections = 2;
+    public volatile boolean sectionsAnyBlock = false;
     public dev.slopium.visibility.BlockSelectionMode processedBlockMode = dev.slopium.visibility.BlockSelectionMode.ALL;
     public java.util.List<String> processedBlockIds = new java.util.ArrayList<>();
     public volatile boolean gpuGlassCulling = false;
@@ -141,6 +144,7 @@ public final class SlopiumConfig {
     }
 
     private void validate() {
+        minimumSections=Math.max(0,minimumSections);
         if(throttleFlywheelDistance){
             createVisualDistance=throttleCreateVisuals?Math.min(createVisualDistance,flywheelFullRateDistance):flywheelFullRateDistance;
             createVisualInterval=throttleCreateVisuals?Math.max(createVisualInterval,flywheelFrameInterval):flywheelFrameInterval;

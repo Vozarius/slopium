@@ -9,6 +9,13 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 /** Use outline geometry, not a full collision cube requirement. Never fill holes in a shape. */
 public final class OccluderShapes {
     private OccluderShapes() {}
+    public static net.minecraft.world.phys.shapes.VoxelShape volume(BlockState state,BlockGetter world,BlockPos pos,boolean any){
+        if(state.isAir())return net.minecraft.world.phys.shapes.Shapes.empty();
+        if(state.isSolidRender(world,pos))return net.minecraft.world.phys.shapes.Shapes.block();
+        var shape=any||state.canOcclude()?state.getShape(world,pos,CollisionContext.empty()):net.minecraft.world.phys.shapes.Shapes.empty();
+        if(any&&!state.getFluidState().isEmpty())shape=net.minecraft.world.phys.shapes.Shapes.or(shape,state.getFluidState().getShape(world,pos));
+        return shape;
+    }
     public static boolean blocks(BlockState state, BlockGetter world, BlockPos pos, Vec3 from, Vec3 to, boolean anyBlock) {
         return (mask(state,world,pos,from,to)&(anyBlock?2:1))!=0;
     }

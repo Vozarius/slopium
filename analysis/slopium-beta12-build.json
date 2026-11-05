@@ -1,0 +1,43 @@
+{
+  "version": "1-beta.12",
+  "displayVersion": "Beta 12",
+  "date": "2026-11-05",
+  "jar": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-12.jar",
+  "sha256": "47e67a300d9a236d1af58650a984e1522a61eac764723748c0134f59b6b56400",
+  "bytes": 30879369,
+  "sources": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-12-sources.jar",
+  "sourcesSha256": "f2193f59255ab0ad3f343a15a165db33b8a94aed9aaf6e7fe88331ee24d996ac",
+  "tests": {
+    "tests": 52,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "verifiedLogs": [
+    "build/beta12-sections-verified.log",
+    "build/beta12-full-ui.log",
+    "build/beta12-full-world-diagnostic2.log",
+    "build/beta12-final-build.log"
+  ],
+  "userModsModified": false,
+  "features": [
+    "Sodium 16x16x16 section culling with protected 3D radius and opaque/any obstacle policy",
+    "Shared visibility scheduler and section results consumed before block-entity and Flywheel model tests",
+    "Conservative full-volume wall coverage proof, mesh readiness guard and column-revision cache",
+    "Dynamic Sodium minimum-radius limit follows pending view distance; Russian and English controls"
+  ],
+  "limitations": [
+    "CPU cache is read every frame; expensive proofs are budgeted and may be deferred",
+    "No guarantee of a net FPS gain, especially in open terrain; no 32-chunk user-world benchmark",
+    "Complex occluder arrangements may remain visible; uncertain results fail open",
+    "Flywheel restoration uses its existing bounded queue and may take multiple frames",
+    "Entities, particles, moving virtual worlds and Distant Horizons LOD are outside section-mask scope"
+  ],
+  "integration": {
+    "legacyWorldScenarios": 11,
+    "fullReferenceWorldScenarios": 11,
+    "fullReferenceOptionsAndGeometry": "passed",
+    "freshWorldAttempts": "Initial attempts timed out before reliable section visibility; passed after preparing and reopening the isolated test world",
+    "details": "docs/BETA12_TESTS.ru.md"
+  }
+}

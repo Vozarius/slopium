@@ -90,6 +90,7 @@ public final class FlywheelCullingIndex {
     }
     private void schedule(Entry e,long frame) { e.next=frame; e.order=order++; due.add(e); }
     private void restore(Entry e,float seconds) {
+        if(e.owner!=null)e.owner.sectionHidden=false;
         if(e.visibility!=null) { e.visibility.restore(); e.visibility=null; }
         if(e.paused) instances(e,instance->{
             if(instance instanceof PausedRotation rotation) rotation.slopium$pauseRotation(false,seconds);
@@ -105,14 +106,14 @@ public final class FlywheelCullingIndex {
         gpuModels=c.enabled && ProcessedBlocks.all() && c.occludeFlywheel && nativeDepth && (!c.flywheelAnyBlock||GpuGlassDepth.available());
         SlopiumStats.flywheelNativeDepth=nativeDepth;
         SlopiumStats.flywheelGpuModels=gpuModels;
-        boolean active=c.enabled&&(c.disableFlywheelRendering||(c.occludeFlywheel&&!gpuModels)||c.occludeCreateAnimations||c.freezeCreateAnimations||(c.cameraCulling&&!nativeDepth));
+        boolean active=c.enabled&&(c.visibleSections||c.disableFlywheelRendering||(c.occludeFlywheel&&!gpuModels)||c.occludeCreateAnimations||c.freezeCreateAnimations||(c.cameraCulling&&!nativeDepth));
         if(!active && altered.isEmpty() && changes.isEmpty()) return;
         long started=System.nanoTime(), frame=Slopium.frame();
         BUDGET.begin(frame);
         var mc=Minecraft.getInstance();
         float seconds=(((LevelRendererAccessor)mc.levelRenderer).slopium$ticks()+mc.getTimer().getGameTimeDeltaPartialTick(true))/20f;
         int nextPolicy=(c.enabled?1:0)|(c.occludeFlywheel?2:0)|(c.occludeCreateAnimations?4:0)|(c.freezeCreateAnimations?8:0)
-            |(c.flywheelAnyBlock?16:0)|(c.animationAnyBlock?32:0)|(nativeDepth?64:0)|(gpuModels?128:0)|(c.cameraCulling?256:0)|(c.disableFlywheelRendering?512:0);
+            |(c.flywheelAnyBlock?16:0)|(c.animationAnyBlock?32:0)|(nativeDepth?64:0)|(gpuModels?128:0)|(c.cameraCulling?256:0)|(c.disableFlywheelRendering?512:0)|(c.visibleSections?1024:0);
         try {
             if(policy!=nextPolicy || world!=mc.level || selectionRevision!=ProcessedBlocks.revision()) {
                 policy=nextPolicy;world=mc.level;selectionRevision=ProcessedBlocks.revision();
@@ -166,6 +167,13 @@ public final class FlywheelCullingIndex {
         }
     }
     private void evaluate(Entry e,SlopiumConfig c,float seconds,long frame) {
+        if(SectionVisibility.hidden(e.block)){
+            if(e.owner!=null)e.owner.sectionHidden=true;
+            if(e.visibility==null)e.visibility=new InstanceVisibility();
+            if(e.owner!=null)e.visibility.hide(e.owner);else e.visibility.hide(e.visual);
+            altered.add(e);e.reason="hidden section";e.checked=frame;return;
+        }
+        if(e.owner!=null)e.owner.sectionHidden=false;
         if(!ProcessedBlocks.allows(e.block)){restore(e,seconds);altered.remove(e);e.reason="excluded by block filter";return;}
         if(c.diagnostics) SlopiumStats.flywheelVisualsChecked++;
         var mc=Minecraft.getInstance();

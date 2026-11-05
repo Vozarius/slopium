@@ -1,5 +1,5 @@
 {
-  "slopium.version": "Beta 11",
+  "slopium.version": "Beta 12",
   "slopium.page.frame_generation": "Frame generation",
   "slopium.frame_generation.unavailable": "Slopium: frame generation disabled: %s. Normal rendering continues. Apply settings to retry.",
   "slopium.group.frame_generation": "Mode and presentation rate",
@@ -251,5 +251,14 @@
   "slopium.blocks.count": "Found: %s · Selected: %s · %s/%s",
   "slopium.frame_generation_low_latency": "Present real frames immediately",
   "slopium.frame_generation_low_latency.tooltip": "Do not wait for interpolation. Slopium predicts motion between real frames; sudden motion changes may jump. Turn off for native FSR interpolation. GPU work and VSync can still delay output.",
-  "slopium.frame_generation.predict_title": "Slopium: motion prediction · real frames first"
+  "slopium.frame_generation.predict_title": "Slopium: motion prediction · real frames first",
+  "slopium.group.sections": "Section culling",
+  "slopium.visible_sections": "Load only visible chunks",
+  "slopium.visible_sections.tooltip": "Skip fully occluded 16×16×16 sections outside the minimum radius. Data and ticks stay loaded. Shared Create cache; unknown sections remain visible.",
+  "slopium.minimum_sections": "Minimum loaded chunks",
+  "slopium.minimum_sections.tooltip": "Radius without extra culling, including height. 0 protects the camera section. Always less than render distance.",
+  "slopium.section_obstacles": "Section obstacles",
+  "slopium.section_obstacles.tooltip": "Shapes that may occlude a whole section. Any includes glass and fluids; holes are preserved.",
+  "slopium.value.SectionObstacles.OPAQUE": "Behind opaque blocks",
+  "slopium.value.SectionObstacles.ANY": "Behind any blocks"
 }

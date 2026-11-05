@@ -63,6 +63,8 @@ public final class SlopiumSmoke {
         }
         // Preview the longest labels without writing user/config values.
         SmokeOptionsChecks.value("enabled", true);
+        SmokeOptionsChecks.value("visible_sections",true);
+        SmokeOptionsChecks.value("section_obstacles",SmokeOptionsChecks.enumValue("section_obstacles","ANY"));
         SmokeOptionsChecks.value("block_models", SmokeOptionsChecks.enumValue("block_models", "SHOW"));
         for (String key : java.util.List.of("particle_visibility", "create_visibility", "flywheel_visibility", "animation_visibility", "create_tick_mode"))
             SmokeOptionsChecks.value(key, SmokeOptionsChecks.enumValue(key, "ANY"));
@@ -84,6 +86,7 @@ public final class SlopiumSmoke {
             SmokeRadicalChecks.run();
             SmokeTargetedChecks.run();
             SmokeWallChecks.run();
+            SmokeSectionChecks.run();
             SmokeParticleOcclusionChecks.run();
             SmokeOptionsChecks.run();
             SmokeFrameGenerationChecks.run();
@@ -128,7 +131,7 @@ public final class SlopiumSmoke {
         captured = true;
         Minecraft client = Minecraft.getInstance();
         if(capturedPages==0&&pageIndex==1)SmokeNumberRouting.run();
-        Screenshot.grab(client.gameDirectory, capturedPages==8?"beta11-processed-blocks.png":capturedPages==7?"beta11-number-entry.png":"slopium-beta11-page-" + pageIndex + ".png", client.getMainRenderTarget(), message -> {
+        Screenshot.grab(client.gameDirectory, capturedPages==8?"beta12-processed-blocks.png":capturedPages==7?"beta12-number-entry.png":"slopium-beta12-page-" + pageIndex + ".png", client.getMainRenderTarget(), message -> {
             LogUtils.getLogger().info("SLOPIUM_SMOKE: screenshot saved; success");
             client.execute(() -> {
                 if (++capturedPages == 8) {

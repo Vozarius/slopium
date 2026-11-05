@@ -57,7 +57,11 @@
     "FlywheelUpdatePolicyMixin",
     "ScrollInstancePauseMixin",
     "ScrollWriterPauseMixin",
-    "InstanceOwnershipMixin"
+    "InstanceOwnershipMixin",
+    "SectionRegionMixin",
+    "SectionDrawMixin",
+    "SodiumSectionAccess",
+    "SectionManagerAccess"
   ],
   "injectors": {
     "defaultRequire": 1

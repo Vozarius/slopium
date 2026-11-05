@@ -17,6 +17,7 @@ import net.neoforged.neoforge.common.NeoForge;
 
 /** Actual integrated-server world + normal GameRenderer/swap loop; no simulated world draw. */
 final class SmokeWorldFrames {
+    private final SmokeSectionWorld sections=Boolean.getBoolean("slopium.sectionSmoke")?new SmokeSectionWorld():null;
     private final SmokeWorldOwnership ownership=new SmokeWorldOwnership();
     private final SmokeParallelFrames parallel=Boolean.getBoolean("slopium.asyncSmoke")?new SmokeParallelFrames():null;
     private boolean started;
@@ -42,11 +43,20 @@ final class SmokeWorldFrames {
     SmokeWorldFrames(){NeoForge.EVENT_BUS.addListener(this::tick);NeoForge.EVENT_BUS.addListener(this::frame);NeoForge.EVENT_BUS.addListener(this::simulatedRenderLoad);NeoForge.EVENT_BUS.addListener(this::hud);}
     private void tick(ClientTickEvent.Post event) {
         var mc=Minecraft.getInstance();
+        if(sections!=null&&System.getProperty("slopium.sectionSmokeReuse")!=null&&mc.screen instanceof net.minecraft.client.gui.screens.BackupConfirmScreen backup){
+            String skip=net.minecraft.network.chat.Component.translatable("selectWorld.backupJoinSkipButton").getString();
+            for(var child:backup.children())if(child instanceof net.minecraft.client.gui.components.Button button&&button.getMessage().getString().equals(skip)){button.onPress();return;}
+        }
         if(!started&&mc.screen instanceof TitleScreen&&mc.getOverlay()==null) {
             started=true;mc.options.pauseOnLostFocus=false;mc.options.enableVsync().set(false);mc.options.framerateLimit().set(260);
             mc.options.renderDistance().set(4);mc.options.simulationDistance().set(5);mc.options.bobView().set(false);
             mc.options.graphicsMode().set(net.minecraft.client.GraphicsStatus.FANCY);
             var c=SlopiumConfig.get();c.frameGenerationMode=FrameGenerationMode.OFF;
+            String reuse=System.getProperty("slopium.sectionSmokeReuse");
+            if(sections!=null&&reuse!=null){
+                if(!reuse.matches("framegen-beta2-[0-9]+"))throw new AssertionError("Only isolated generated test worlds may be reused");
+                mc.createWorldOpenFlows().openWorld(reuse,()->{throw new AssertionError("Unable to reopen test world");});return;
+            }
             mc.createWorldOpenFlows().createFreshLevel("framegen-beta2-"+System.currentTimeMillis(),
                 new LevelSettings("Slopium frame generation test",GameType.CREATIVE,false,Difficulty.PEACEFUL,true,new GameRules(),WorldDataConfiguration.DEFAULT),
                 new WorldOptions(42,false,false),r->r.registryOrThrow(Registries.WORLD_PRESET).getOrThrow(WorldPresets.FLAT).createWorldDimensions(),mc.screen);
@@ -70,6 +80,7 @@ final class SmokeWorldFrames {
                     for(int x=-12;x<=12;x++)for(int y=301;y<313;y++)
                         level.setBlock(new net.minecraft.core.BlockPos(x,y,14),(x%2==0?net.minecraft.world.level.block.Blocks.BRICKS:net.minecraft.world.level.block.Blocks.GOLD_BLOCK).defaultBlockState(),3);
                     SmokeWorldOwnership.place(level);
+                    if(sections!=null)SmokeSectionWorld.scene(level);
                     player.clearFire();player.teleportTo(0,301,0);sceneReady=true;
                     } catch(Throwable failure){sceneFailure=failure;}
                 });
@@ -94,7 +105,8 @@ final class SmokeWorldFrames {
         if(sceneFailure!=null)throw new AssertionError("Test scene setup failed",sceneFailure);
         var mc=Minecraft.getInstance();
         if(!started||mc.level==null||mc.player==null||mc.screen!=null||warmup<200||!sceneReady||mc.player.getY()<290||
-            !mc.level.getBlockState(new net.minecraft.core.BlockPos(0,301,14)).is(net.minecraft.world.level.block.Blocks.BRICKS))return;
+            (sections==null&&!mc.level.getBlockState(new net.minecraft.core.BlockPos(0,301,14)).is(net.minecraft.world.level.block.Blocks.BRICKS)))return;
+        if(sections!=null){sections.frame();return;}
         if(!ownership.frame())return;
         if(parallel!=null){parallel.frame();return;}
         if(phase<0){next();return;}

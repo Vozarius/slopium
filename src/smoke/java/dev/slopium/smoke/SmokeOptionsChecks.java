@@ -20,6 +20,15 @@ final class SmokeOptionsChecks {
         var c=SlopiumConfig.get();var saved=new HashMap<java.lang.reflect.Field,Object>();
         for(var f:SlopiumConfig.class.getFields())saved.put(f,f.get(c));
         try {
+            var render=(IntegerOption)ConfigManager.CONFIG.getOption(ResourceLocation.parse("sodium:general.render_distance"));
+            render.modifyValue(12);value("enabled",true);value("visible_sections",true);
+            var minimum=(IntegerOption)option("minimum_sections");
+            if(minimum.getSteppedValidator().max()!=11||!minimum.isEnabled())throw new AssertionError("Section range is not bound to pending view distance");
+            minimum.modifyValue(11);render.modifyValue(5);
+            if(minimum.getSteppedValidator().max()!=4||minimum.getValidatedValue()>4)throw new AssertionError("Reduced view distance did not clamp sections");
+            minimum.modifyValue(0);if(minimum.getValidatedValue()!=0)throw new AssertionError("Zero section radius rejected");
+            value("visible_sections",false);if(minimum.isEnabled()||option("section_obstacles").isEnabled())throw new AssertionError("Section child controls remain enabled");
+            ConfigManager.CONFIG.resetAllOptionsFromBindings();
             var mod=ConfigManager.CONFIG.getModOptions().stream().filter(m->m.configId().equals("slopium")).findFirst().orElseThrow();
             var ids=new HashSet<Object>();var id=Option.class.getDeclaredField("id");id.setAccessible(true);
             for(var page:mod.pages())for(var group:((OptionPage)page).groups())for(var o:group.options()){
