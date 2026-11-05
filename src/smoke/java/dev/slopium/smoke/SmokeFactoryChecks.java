@@ -25,7 +25,7 @@ final class SmokeFactoryChecks {
         if (dev.slopium.visibility.CreateWallControl.skipTick(panel,c)) throw new AssertionError("Wall policy altered server tick");
         c.hideFactoryConnections=true;
         long skippedPaths=SlopiumStats.factoryPathsSkipped;
-        FactoryPanelRenderer.renderPath(null,null,0,null,null,0,0);
+        FactoryPanelRenderer.renderPath(panel.panels.values().iterator().next(),null,0,null,null,0,0);
         c.hideFactoryConnections=false;
         if(SlopiumStats.factoryPathsSkipped!=skippedPaths+1)throw new AssertionError("Unconditional factory line cut failed");
         if (Slopium.sableAvailable()) return;

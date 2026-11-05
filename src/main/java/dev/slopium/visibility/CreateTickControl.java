@@ -8,8 +8,6 @@ import dev.tr7zw.entityculling.EntityCullingModBase;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-import java.util.Set;
-
 public final class CreateTickControl {
     private CreateTickControl() {}
 

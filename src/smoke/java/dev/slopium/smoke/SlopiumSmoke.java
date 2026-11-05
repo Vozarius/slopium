@@ -128,14 +128,17 @@ public final class SlopiumSmoke {
         captured = true;
         Minecraft client = Minecraft.getInstance();
         if(capturedPages==0&&pageIndex==1)SmokeNumberRouting.run();
-        Screenshot.grab(client.gameDirectory, capturedPages==7?"beta9-number-entry.png":"slopium-beta9-page-" + pageIndex + ".png", client.getMainRenderTarget(), message -> {
+        Screenshot.grab(client.gameDirectory, capturedPages==8?"beta11-processed-blocks.png":capturedPages==7?"beta11-number-entry.png":"slopium-beta11-page-" + pageIndex + ".png", client.getMainRenderTarget(), message -> {
             LogUtils.getLogger().info("SLOPIUM_SMOKE: screenshot saved; success");
             client.execute(() -> {
                 if (++capturedPages == 8) {
                     client.screen.keyPressed(org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER,0,0);
                     if(client.screen instanceof dev.slopium.client.NumberEntryScreen||!SmokeOptionsChecks.option("frame_generation_input").getValidatedValue().equals(2))throw new AssertionError("Numeric entry lost value on return to actual options screen");
-                    client.stop(); return;
+                    client.setScreen(new dev.slopium.client.ProcessedBlocksScreen(client.screen));
+                    ((net.minecraft.client.gui.components.EditBox)client.screen.children().stream().filter(x->x instanceof net.minecraft.client.gui.components.EditBox).findFirst().orElseThrow()).setValue("chain");
+                    frames=0;captured=false;return;
                 }
+                if(capturedPages==9){client.screen.onClose();client.stop();return;}
                 if(capturedPages==7){
                     SmokeOptionsChecks.value("frame_generation_mode",dev.slopium.framegen.FrameGenerationMode.SIMPLE);
                     var option=(net.caffeinemc.mods.sodium.client.config.structure.IntegerOption)SmokeOptionsChecks.option("frame_generation_input");

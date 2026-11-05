@@ -1,0 +1,39 @@
+{
+  "version": "1-beta.11",
+  "displayVersion": "Beta 11",
+  "date": "2026-11-05",
+  "jar": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-11.jar",
+  "sha256": "cfac94d187b027f5fd05b8f94b6293ba78055f444ab631e7d4812948d0a5c11d",
+  "bytes": 30858947,
+  "sources": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-11-sources.jar",
+  "sourcesSha256": "5c0902710bb01e1bbef2aad194a445486c45898f21e4569d16d727629012130c",
+  "tests": {
+    "tests": 47,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "verifiedLogs": [
+    "build/beta11-release-ui.log",
+    "build/beta11-responsive-world.log",
+    "build/beta11-owners-legacy-world.log",
+    "build/beta11-owners-full-retry.log",
+    "build/beta11-chain-sequential-retry.log",
+    "build/beta11-final-build.log"
+  ],
+  "userModsModified": false,
+  "features": [
+    "Immediate source presentation with bounded motion prediction; delayed native FSR remains selectable",
+    "Single dense block-selection table for Create/Flywheel models, visual updates, factory details and client tick policies",
+    "Registry-discovered all/whitelist/blacklist block selector with ID/name search",
+    "Full visualization-context instance ownership, including embeddings and transferred/late-created instances",
+    "Unified distant visual update policy and concise Russian/English descriptions"
+  ],
+  "limitations": [
+    "Prediction is not native FSR interpolation; abrupt motion and disocclusion can produce artifacts",
+    "Shared GPU, capture and presentation/VSync overhead can still add latency",
+    "Selection does not remove static chunk geometry or entity visuals; custom time-driven shaders need separate support",
+    "Visibility restoration is budgeted and can take multiple frames",
+    "Final aimed-target full-hide/freeze guard was compiled/unit-tested but not separately game-tested"
+  ]
+}

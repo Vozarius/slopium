@@ -52,6 +52,41 @@ final class SmokeInstanceBackendChecks {
         preHidden.delete(); instancer.parallelUpdate();
         var retired=instancer.createInstance();owner.accept(retired);retired.delete();owner.restore();instancer.parallelUpdate();
         if(instancer.instanceCount()!=0)throw new AssertionError("Deleted hidden instance was resurrected");
+        ownership(manager,model,indirect);
         com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: real Flywheel handles/list compaction 2 -> 0 -> 1 -> 0, pre-hidden instance preserved; indirect={}",indirect);
+    }
+    private static void ownership(MemoryManager manager,dev.engine_room.flywheel.api.model.Model model,boolean indirect) {
+        var context=new dev.engine_room.flywheel.api.visualization.VisualEmbedding(){
+            public InstancerProvider instancerProvider(){return new InstancerProvider(){
+                public <I extends Instance> Instancer<I> instancer(InstanceType<I> type,dev.engine_room.flywheel.api.model.Model m,int bias){return manager.getInstancer(new InstancerKey<>(null,type,m,bias));}
+            };}
+            public net.minecraft.core.Vec3i renderOrigin(){return net.minecraft.core.Vec3i.ZERO;}
+            public dev.engine_room.flywheel.api.visualization.VisualEmbedding createEmbedding(net.minecraft.core.Vec3i origin){return this;}
+            public void transforms(org.joml.Matrix4fc pose,org.joml.Matrix3fc normal){}
+            public void delete(){}
+        };
+        var a=new dev.slopium.visibility.OwnedInstances(null);
+        var b=new dev.slopium.visibility.OwnedInstances(null);
+        var type=com.simibubi.create.foundation.render.AllInstanceTypes.ROTATING;
+        var first=a.wrap(context).instancerProvider().instancer(type,model,1);
+        var second=b.wrap(context).createEmbedding(net.minecraft.core.Vec3i.ZERO).instancerProvider().instancer(type,model,2);
+        var moved=first.createInstance();var authoredHidden=first.createInstance();authoredHidden.setVisible(false);
+        var av=new InstanceVisibility();var bv=new InstanceVisibility();av.hide(a);bv.hide(b);
+        var late=first.createInstance();
+        if(late.handle().isVisible())throw new AssertionError("New instance flashed while owner hidden");
+        second.stealInstance(moved);
+        av.restore();
+        if(moved.handle().isVisible()||authoredHidden.handle().isVisible())throw new AssertionError("Old owner restored transferred/authored-hidden instance");
+        // Public isVisible is broken for the indirect backend; inspect the real list instead.
+        var firstList=manager.getInstancer(new InstancerKey<>(null,type,model,1));
+        var secondList=manager.getInstancer(new InstancerKey<>(null,type,model,2));
+        firstList.parallelUpdate();secondList.parallelUpdate();
+        if(secondList.instanceCount()!=0)throw new AssertionError("Old owner resurrected transferred instance in native backend");
+        bv.restore();secondList.parallelUpdate();
+        if(firstList.instanceCount()!=1||secondList.instanceCount()!=1)throw new AssertionError("Owned/embedded instances lost on transfer or restore");
+        av.hide(a);late.delete();av.restore();firstList.parallelUpdate();
+        if(firstList.instanceCount()!=0)throw new AssertionError("Deleted late instance resurrected");
+        moved.delete();authoredHidden.delete();secondList.parallelUpdate();
+        com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: context/embedding ownership, late creation, cross-owner transfer, authored invisibility and deletion passed; indirect={}",indirect);
     }
 }

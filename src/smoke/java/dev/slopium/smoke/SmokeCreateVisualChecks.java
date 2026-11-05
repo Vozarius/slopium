@@ -12,14 +12,16 @@ import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import java.util.*;
 final class SmokeCreateVisualChecks {
-    static class Fixture implements BlockEntityVisual<BlockEntity>,DynamicVisual {
-        int frames;
+    static class Fixture implements BlockEntityVisual<BlockEntity>,DynamicVisual,TickableVisual {
+        int frames,ticks;
         public void update(float dt){} public void delete(){}
         public void collectCrumblingInstances(java.util.function.Consumer<dev.engine_room.flywheel.api.instance.Instance> c){}
         public Plan<DynamicVisual.Context> planFrame(){return SimplePlan.of((dev.engine_room.flywheel.lib.task.functional.RunnableWithContext<DynamicVisual.Context>)ctx->frames++);}
+        public Plan<TickableVisual.Context> planTick(){return SimplePlan.of((dev.engine_room.flywheel.lib.task.functional.RunnableWithContext<TickableVisual.Context>)ctx->ticks++);}
     }
-    static final class SimpleFixture extends Fixture implements SimpleDynamicVisual {
+    static final class SimpleFixture extends Fixture implements SimpleDynamicVisual,dev.engine_room.flywheel.lib.visual.SimpleTickableVisual {
         public void beginFrame(DynamicVisual.Context ctx){frames++;}
+        public void tick(TickableVisual.Context ctx){ticks++;}
     }
     static final class Storage extends dev.engine_room.flywheel.impl.visualization.storage.Storage<Object>{
         Fixture next;
@@ -54,6 +56,8 @@ final class SmokeCreateVisualChecks {
                     c.processedBlockMode=mode;c.processedBlockIds=listed?new ArrayList<>(List.of("create:chain_conveyor")):new ArrayList<>();ProcessedBlocks.rebuild();
                     int before=visual.frames;boolean[] finished={false};plan.execute(executor,ctx,()->finished[0]=true);
                     if(!finished[0]||visual.frames-before!=(mode.allows(listed)?0:1))throw new AssertionError("Storage did not honor shared filter: "+mode+"/"+listed+"/"+visual.getClass());
+                    before=visual.ticks;finished[0]=false;storage.tickPlan().execute(executor,null,()->finished[0]=true);
+                    if(!finished[0]||visual.ticks-before!=(mode.allows(listed)?0:1))throw new AssertionError("Tick plan did not honor shared filter: "+mode+"/"+listed);
                 }
                 c.enabled=false;int before=visual.frames;plan.execute(executor,ctx);if(visual.frames!=before+1)throw new AssertionError("Disabled optimization still pauses visual");c.enabled=true;
                 storage.invalidate();if(OwnedInstances.get(visual)!=null)throw new AssertionError("Owner leaked on invalidate");

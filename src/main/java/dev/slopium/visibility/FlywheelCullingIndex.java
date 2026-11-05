@@ -135,10 +135,10 @@ public final class FlywheelCullingIndex {
                 } else if(change.add) register(change.visual); else unregister(change.visual);
             }
             if(!active) return;
-            // Immediately prioritize the mechanism under the crosshair without scanning the index.
+            // Prioritize an aimed mechanism, but never flash it on in explicit full-hide/freeze modes.
             BlockEntity target=mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult hit && mc.level!=null
                 ? mc.level.getBlockEntity(hit.getBlockPos()) : null;
-            if(target!=aimed && target!=null) {
+            if(target!=aimed && target!=null && !c.disableFlywheelRendering && !c.freezeCreateAnimations) {
                 Entry e=byBlock.get(target);
                 if(e!=null && altered.contains(e)) {
                     if(!BUDGET.take()) return;
@@ -169,6 +169,11 @@ public final class FlywheelCullingIndex {
         if(!ProcessedBlocks.allows(e.block)){restore(e,seconds);altered.remove(e);e.reason="excluded by block filter";return;}
         if(c.diagnostics) SlopiumStats.flywheelVisualsChecked++;
         var mc=Minecraft.getInstance();
+        if(e.block.getLevel()!=mc.level || mc.level==null
+                || (e.block instanceof com.simibubi.create.foundation.blockEntity.SmartBlockEntity smart && smart.isVirtual())
+                || SableGuard.protects(mc.level,e.block.getBlockPos())) {
+            restore(e,seconds);altered.remove(e);e.reason="protected world / virtual block";return;
+        }
         Boolean hidden=c.disableFlywheelRendering?Boolean.TRUE:c.cameraCulling&&!nativeDepth&&CreateWallControl.outsideCamera(e.block)?Boolean.TRUE:c.occludeFlywheel&&!gpuModels?CreateWallControl.decision(e.block,c.flywheelAnyBlock):Boolean.FALSE;
         final Boolean paused;
         if(c.freezeCreateAnimations) {

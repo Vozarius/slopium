@@ -26,12 +26,32 @@ public final class OwnedInstances implements VisualOcclusionState {
     public static OwnedInstances get(Visual visual){return OWNERS.get(visual);}
     public static void remove(Visual visual){OWNERS.remove(visual);}
     public void hiding(boolean value){hiding=value;}
-    public void drainHidden(Consumer<Instance> action){Instance next;while((next=hiddenAtCreation.poll())!=null)action.accept(next);}
-    private <I extends Instance> I track(I instance){added.add(instance);if(hiding){instance.setVisible(false);hiddenAtCreation.add(instance);}return instance;}
+    public boolean owns(Instance instance) {
+        return !(instance.handle() instanceof InstanceOwnership tag) || tag.slopium$owner()==this;
+    }
+    public void drainHidden(Consumer<Instance> action){Instance next;while((next=hiddenAtCreation.poll())!=null)if(owns(next))action.accept(next);}
+    private <I extends Instance> I track(I instance){
+        if(instance.handle() instanceof InstanceOwnership tag) {
+            var old=tag.slopium$owner();
+            if(old!=this) {
+                if(tag.slopium$hidden()) { instance.setVisible(true);tag.slopium$hidden(false); }
+                if(old!=null && instance instanceof PausedRotation rotation)rotation.slopium$pauseRotation(false,0);
+                tag.slopium$owner(this);
+            }
+        }
+        added.add(instance);
+        if(hiding&&InstanceVisibility.isVisible(instance)){
+            instance.setVisible(false);
+            if(instance.handle() instanceof InstanceOwnership tag)tag.slopium$hidden(true);
+            hiddenAtCreation.add(instance);
+        }
+        return instance;
+    }
     public void forEach(Consumer<Instance> action){
         Instance next;while((next=added.poll())!=null)live.add(next);
         var it=live.iterator();while(it.hasNext()){
             Instance instance=it.next();
+            if(!owns(instance)){it.remove();continue;}
             if(instance.handle() instanceof dev.engine_room.flywheel.backend.engine.InstanceHandleImpl<?> h&&h.index<0){it.remove();continue;}
             action.accept(instance);
         }

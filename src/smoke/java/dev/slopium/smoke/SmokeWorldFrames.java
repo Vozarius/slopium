@@ -17,6 +17,7 @@ import net.neoforged.neoforge.common.NeoForge;
 
 /** Actual integrated-server world + normal GameRenderer/swap loop; no simulated world draw. */
 final class SmokeWorldFrames {
+    private final SmokeWorldOwnership ownership=new SmokeWorldOwnership();
     private final SmokeParallelFrames parallel=Boolean.getBoolean("slopium.asyncSmoke")?new SmokeParallelFrames():null;
     private boolean started;
     private int warmup,phase=-1,frames,phaseTicks;
@@ -24,6 +25,7 @@ final class SmokeWorldFrames {
     private int settlingFrames;
     private boolean measuring;
     private volatile boolean sceneReady;
+    private volatile Throwable sceneFailure;
     private final FrameGenerationMode[] modes={FrameGenerationMode.OFF,FrameGenerationMode.SIMPLE,FrameGenerationMode.SIMPLE,FrameGenerationMode.FSR,FrameGenerationMode.FSR};
     private final int[] factors={2,6,6,6,6};
     private final int[] inputs={0,30,30,30,30};
@@ -56,6 +58,7 @@ final class SmokeWorldFrames {
             if(warmup++==100) {
                 var server=mc.getSingleplayerServer();
                 server.execute(()->{
+                    try {
                     var level=server.overworld();
                     var player=server.getPlayerList().getPlayers().getFirst();
                     // Worldgen mods may replace FLAT. Build a known scene above terrain rather
@@ -66,7 +69,9 @@ final class SmokeWorldFrames {
                     }
                     for(int x=-12;x<=12;x++)for(int y=301;y<313;y++)
                         level.setBlock(new net.minecraft.core.BlockPos(x,y,14),(x%2==0?net.minecraft.world.level.block.Blocks.BRICKS:net.minecraft.world.level.block.Blocks.GOLD_BLOCK).defaultBlockState(),3);
+                    SmokeWorldOwnership.place(level);
                     player.clearFire();player.teleportTo(0,301,0);sceneReady=true;
+                    } catch(Throwable failure){sceneFailure=failure;}
                 });
             }
         }
@@ -86,9 +91,11 @@ final class SmokeWorldFrames {
         LogUtils.getLogger().info("SLOPIUM_WORLD: starting {} x{}",modes[phase],factors[phase]);
     }
     private void frame(RenderFrameEvent.Post event) {
+        if(sceneFailure!=null)throw new AssertionError("Test scene setup failed",sceneFailure);
         var mc=Minecraft.getInstance();
         if(!started||mc.level==null||mc.player==null||mc.screen!=null||warmup<200||!sceneReady||mc.player.getY()<290||
             !mc.level.getBlockState(new net.minecraft.core.BlockPos(0,301,14)).is(net.minecraft.world.level.block.Blocks.BRICKS))return;
+        if(!ownership.frame())return;
         if(parallel!=null){parallel.frame();return;}
         if(phase<0){next();return;}
         if(!measuring) {

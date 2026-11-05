@@ -29,7 +29,7 @@ public final class ProcessedBlocksScreen extends Screen {
         int pages=Math.max(1,(visible.size()+rows()-1)/rows());page=Math.clamp(page,0,pages-1);
         for(int i=0;i<rows()&&page*rows()+i<visible.size();i++){
             var e=visible.get(page*rows()+i);int y=85+i*28;
-            var button=Button.builder(Component.literal((ids.contains(e.id())?"[x] ":"[ ] ")+e.id()),b->{if(!ids.add(e.id()))ids.remove(e.id());init();})
+            var button=Button.builder(Component.literal((mode==BlockSelectionMode.ALL||ids.contains(e.id())?"[x] ":"[ ] ")+e.id()),b->{if(!ids.add(e.id()))ids.remove(e.id());init();})
                 .bounds(width/2-200,y,400,20).tooltip(Tooltip.create(e.block().getName().copy().append(e.flywheel()?" · Flywheel":" · Create"))).build();
             button.active=mode!=BlockSelectionMode.ALL;addRenderableWidget(button);
         }
@@ -40,5 +40,5 @@ public final class ProcessedBlocksScreen extends Screen {
     }
     @Override public void onClose(){minecraft.setScreen(parent);}
     @Override public void render(GuiGraphics g,int x,int y,float dt){renderBackground(g,x,y,dt);super.render(g,x,y,dt);g.drawCenteredString(font,title,width/2,12,0xffffff);
-        g.drawCenteredString(font,text("count",visible.size(),ids.size(),page+1,Math.max(1,(visible.size()+rows()-1)/rows())),width/2,height-54,0xaaaaaa);}
+        g.drawCenteredString(font,text("count",visible.size(),mode==BlockSelectionMode.ALL?ProcessedBlocks.catalog().size():ids.size(),page+1,Math.max(1,(visible.size()+rows()-1)/rows())),width/2,height-54,0xaaaaaa);}
 }

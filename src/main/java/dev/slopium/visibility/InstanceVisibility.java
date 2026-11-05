@@ -19,12 +19,13 @@ public final class InstanceVisibility implements Consumer<Instance> {
         present.add(instance);
         if (isVisible(instance)) {
             instance.setVisible(false);
+            if(owner!=null && instance.handle() instanceof InstanceOwnership tag)tag.slopium$hidden(true);
             owned.add(instance);
             newlyHidden++;
         }
     }
 
-    private static boolean isVisible(Instance instance) {
+    static boolean isVisible(Instance instance) {
         var handle = instance.handle();
         // Flywheel 1.0.6 isVisible() checks only AbstractInstancer. Indirect uses
         // InstancePage as its live handle state, so the public method reports false.
@@ -50,14 +51,17 @@ public final class InstanceVisibility implements Consumer<Instance> {
         present.clear();newlyHidden=0;instances.forEach(this);owned.retainAll(present);present.clear();return newlyHidden;
     }
     public void restore() {
-        if(owner!=null){owner.hiding(false);owner.drainHidden(owned::add);owner=null;}
+        if(owner!=null){owner.hiding(false);owner.drainHidden(owned::add);}
         for (var instance : owned) {
+            if(owner!=null&&!owner.owns(instance))continue;
             // In Flywheel 1.0.6 deleting a Hidden handle leaves its state as Hidden,
             // but clears its index. Do not recreate that retired instance.
             if (instance.handle() instanceof dev.engine_room.flywheel.backend.engine.InstanceHandleImpl<?> flywheel
                     && flywheel.index < 0) continue;
             instance.setVisible(true);
+            if(instance.handle() instanceof InstanceOwnership tag)tag.slopium$hidden(false);
         }
+        owner=null;
         owned.clear(); present.clear();
     }
 }

@@ -76,6 +76,26 @@ final class SmokeFrameLifecycleChecks {
                     if(rate<baseline*.8)throw new AssertionError("Automatic x32 starved source frames: "+mode+" "+rate+" vs baseline "+baseline);
                     com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: automatic {} x32 with simulated 33 ms world work: {} real FPS, baseline {}; {}",mode,rate,baseline,FrameGeneration.status());
                 }
+                c.frameGenerationLowLatency=true;
+                for(int factor:new int[]{2,8}) {
+                    FrameGeneration.release();FrameGeneration.resetCounters();c.frameGenerationMode=FrameGenerationMode.FSR;
+                    c.frameGenerationMultiplier=factor;c.frameGenerationInputFps=10;c.frameGenerationTargetFps=0;
+                    int[] draws={0};
+                    Runnable colored=()->{draws[0]++;GlState.fullscreen();glClearColor((draws[0]%2)==0?1:0,0,0,1);glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);};
+                    long until=System.nanoTime()+800_000_000L;
+                    do {
+                        long before=FrameGeneration.realFrames;
+                        mc.getMainRenderTarget().bindWrite(true);FrameGeneration.render(camera,view,projection,colored);
+                        if(FrameGeneration.realFrames>before){
+                            float[] pixel=new float[4];glBindFramebuffer(GL_READ_FRAMEBUFFER,mc.getMainRenderTarget().frameBufferId);glReadPixels(64,64,1,1,GL_RGBA,GL_FLOAT,pixel);
+                            if(Math.abs(pixel[0]-((draws[0]%2)==0?1:0))>.01)throw new AssertionError("Immediate source replayed the older frame");
+                        }
+                        java.util.concurrent.locks.LockSupport.parkNanos(8_000_000L);
+                    }while(System.nanoTime()<until);
+                    if(FrameGeneration.realFrames<5||FrameGeneration.generatedFrames==0)throw new AssertionError("Immediate sequential synthesis absent");
+                    com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: immediate sequential x{} presents newest source color, generates predictions and preserves real cadence",factor);
+                }
+                c.frameGenerationLowLatency=false;
                 for(var adaptiveMode:new FrameGenerationMode[]{FrameGenerationMode.SIMPLE,FrameGenerationMode.FSR}) {
                     FrameGeneration.release();FrameGeneration.resetCounters();c.frameGenerationMode=adaptiveMode;
                     c.frameGenerationAmortize=true;c.frameGenerationInputFps=60;c.frameGenerationTargetFps=0;c.frameGenerationMultiplier=2;

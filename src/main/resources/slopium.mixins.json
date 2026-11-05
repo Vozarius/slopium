@@ -56,7 +56,8 @@
     "FlywheelOwnershipMixin",
     "FlywheelUpdatePolicyMixin",
     "ScrollInstancePauseMixin",
-    "ScrollWriterPauseMixin"
+    "ScrollWriterPauseMixin",
+    "InstanceOwnershipMixin"
   ],
   "injectors": {
     "defaultRequire": 1
