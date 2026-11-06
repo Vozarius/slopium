@@ -48,6 +48,7 @@ final class SmokeWorldFrames {
             for(var child:backup.children())if(child instanceof net.minecraft.client.gui.components.Button button&&button.getMessage().getString().equals(skip)){button.onPress();return;}
         }
         if(!started&&mc.screen instanceof TitleScreen&&mc.getOverlay()==null) {
+            if(sections!=null)SmokeSectionProofChecks.run();
             started=true;mc.options.pauseOnLostFocus=false;mc.options.enableVsync().set(false);mc.options.framerateLimit().set(260);
             mc.options.renderDistance().set(4);mc.options.simulationDistance().set(5);mc.options.bobView().set(false);
             mc.options.graphicsMode().set(net.minecraft.client.GraphicsStatus.FANCY);
@@ -64,7 +65,7 @@ final class SmokeWorldFrames {
         if(mc.level!=null&&mc.player!=null) {
             mc.setWindowActive(true);
             // Continuous slow rotation exercises changing camera matrices on generated frames.
-            mc.player.setYRot((float)(6*Math.sin(++phaseTicks*Math.PI/80)));mc.player.setXRot(0);
+            mc.player.setYRot(sections!=null&&sections.fixedYaw()!=null?sections.fixedYaw():(float)(6*Math.sin(++phaseTicks*Math.PI/80)));mc.player.setXRot(0);
             if(warmup++==100) {
                 var server=mc.getSingleplayerServer();
                 server.execute(()->{

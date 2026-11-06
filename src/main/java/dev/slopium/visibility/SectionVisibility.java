@@ -14,6 +14,8 @@ public final class SectionVisibility {
         final long key;final AABB bounds;final Vec3 center;
         long requested,checked=Long.MIN_VALUE,epoch=-1;Vec3 eye;boolean hidden,queued;
         long generation;
+        SectionProof job;Vec3 jobEye;long jobEpoch,jobView,view;boolean viewDependent;
+        String reason="queued";
         final it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap walls=new it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap();
         Entry(int x,int y,int z){key=SectionPos.asLong(x,y,z);bounds=new AABB(x*16.,y*16.,z*16.,x*16.+16,y*16.+16,z*16.+16).inflate(.001);center=bounds.getCenter();}
     }
@@ -21,10 +23,11 @@ public final class SectionVisibility {
     private static final ArrayDeque<Entry> queue=new ArrayDeque<>(),sweep=new ArrayDeque<>();
     private static Object world;private static Vec3 eye=Vec3.ZERO;private static long frame=Long.MIN_VALUE;
     private static int radius,minimum,policy=-1;
-    public static long proofs,cells,nanos,reads,hits,hiddenDraws,frames,regionNanos,regions;
-    public static void resetCounters(){proofs=cells=nanos=reads=hits=hiddenDraws=frames=regionNanos=regions=0;}
+    public static long proofs,cells,nanos,reads,hits,hiddenDraws,frames,regionNanos,regions,deferred;
+    public static void resetCounters(){proofs=cells=nanos=reads=hits=hiddenDraws=frames=regionNanos=regions=deferred=0;}
     private SectionVisibility(){}
     public static boolean active(){var c=SlopiumConfig.get();return c.enabled&&c.visibleSections;}
+    public static boolean hasPending(){return active()&&!queue.isEmpty();}
     public static int minimum(){return SectionRange.minimum(SlopiumConfig.get().minimumSections,Minecraft.getInstance().options.renderDistance().get());}
     public static void clear(){entries.clear();queue.clear();sweep.clear();world=null;frame=Long.MIN_VALUE;policy=-1;}
     public static void begin(Vec3 camera){
@@ -39,6 +42,7 @@ public final class SectionVisibility {
     private static boolean eligible(int x,int y,int z){return active()&&world!=null&&SectionRange.eligible(x,y,z,SectionPos.blockToSectionCoord(eye.x),SectionPos.blockToSectionCoord(eye.y),SectionPos.blockToSectionCoord(eye.z),minimum,radius);}
     private static boolean valid(Entry e){
         if(e==null||!eye.equals(e.eye))return false;
+        if(e.viewDependent&&e.view!=VisibilityPool.sectionViewRevision())return false;
         long epoch=WallOcclusion.epoch();if(e.epoch==epoch)return true;
         if(!e.hidden||e.generation!=VisibilityGeometry.generation())return false;
         for(var wall:e.walls.long2LongEntrySet())if(VisibilityGeometry.version(wall.getLongKey())!=wall.getLongValue())return false;
@@ -51,7 +55,7 @@ public final class SectionVisibility {
         if(e.requested!=frame||e.checked==Long.MIN_VALUE){
             e.requested=frame;
             if(!valid(e)||!e.hidden&&frame-e.checked>=20){
-                VisibilityPool.requestSection(e.center,eye,SlopiumConfig.get().sectionsAnyBlock,radius*28+32);
+                if(e.job==null)VisibilityPool.requestSection(e.center,eye,SlopiumConfig.get().sectionsAnyBlock,radius*28+32);
                 if(!e.queued){e.queued=true;queue.add(e);}
             }
         }
@@ -64,15 +68,34 @@ public final class SectionVisibility {
         for(int i=0;i<count&&System.nanoTime()<deadline;i++){
             Entry e=queue.removeFirst();e.queued=false;
             if(frame-e.requested>120)continue;
-            BlockPos witness=VisibilityPool.sectionWitness(e.center,SlopiumConfig.get().sectionsAnyBlock);
-            boolean hidden=false;
-            e.walls.clear();e.generation=VisibilityGeometry.generation();
-            if(witness!=null){proofs++;hidden=SectionOcclusion.hidden(Minecraft.getInstance().level,e.bounds,eye,witness,SlopiumConfig.get().sectionsAnyBlock,()->{cells++;return System.nanoTime()<deadline;},pos->{
+            boolean any=SlopiumConfig.get().sectionsAnyBlock;
+            java.util.function.Consumer<BlockPos> observe=pos->{
                 long column=net.minecraft.world.level.ChunkPos.asLong(pos.getX()>>4,pos.getZ()>>4);
-                e.walls.put(column,VisibilityGeometry.version(column));return SectionMeshes.ready(pos);
-            });}
-            // An unfinished proof never hides a section. Geometry/camera changes fail open immediately.
-            e.hidden=hidden;e.eye=eye;e.epoch=WallOcclusion.epoch();e.checked=witness==null?frame-19:frame;
+                e.walls.put(column,VisibilityGeometry.version(column));
+            };
+            java.util.function.Predicate<BlockPos> ready=pos->{observe.accept(pos);return SectionMeshes.ready(pos);};
+            java.util.function.BooleanSupplier budget=()->{cells++;return System.nanoTime()<deadline;};
+            if(e.job!=null&&(!eye.equals(e.jobEye)||e.jobEpoch!=WallOcclusion.epoch()||e.jobView!=VisibilityPool.sectionViewRevision()))e.job=null;
+            boolean hidden=false,dependent=false;String reason="covered";
+            if(e.job==null){
+                e.walls.clear();e.generation=VisibilityGeometry.generation();
+                if(VisibilityPool.sectionOutside(e.bounds)){hidden=true;dependent=true;reason="outside camera";}
+                else{
+                    BlockPos witness=VisibilityPool.sectionWitness(e.center,any);
+                    if(witness!=null){proofs++;hidden=SectionOcclusion.hidden(Minecraft.getInstance().level,e.bounds,eye,witness,any,budget,ready);}
+                    if(!hidden){
+                        e.jobEye=eye;e.jobEpoch=WallOcclusion.epoch();e.jobView=VisibilityPool.sectionViewRevision();
+                        e.job=new SectionProof(Minecraft.getInstance().level,e.bounds,eye,any,VisibilityPool::sectionOutside,observe);
+                    }
+                }
+            }
+            if(e.job!=null){
+                var result=e.job.step(budget,ready);
+                if(result==SectionProof.Result.PENDING){e.queued=true;queue.addLast(e);e.reason="budget: proof pending";deferred++;continue;}
+                hidden=result==SectionProof.Result.HIDDEN;dependent=e.job.viewDependent()||!hidden;reason=e.job.reason();e.job=null;
+            }
+            e.hidden=hidden;e.eye=eye;e.epoch=WallOcclusion.epoch();e.checked=frame;
+            e.viewDependent=dependent;e.view=VisibilityPool.sectionViewRevision();e.reason=reason;
         }
         for(int i=0,n=Math.min(64,sweep.size());i<n;i++){Entry e=sweep.removeFirst();if(!e.queued&&frame-e.requested>120)entries.remove(e.key);else sweep.addLast(e);}
         nanos+=System.nanoTime()-started;
@@ -94,5 +117,17 @@ public final class SectionVisibility {
         var renderer=Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(be);
         return renderer!=null&&hidden(renderer.getRenderBoundingBox(be));
     }
-    public static String status(){return "Sections | reads="+reads+" | hits="+hits+" | proofs="+proofs+" | cells="+cells+" | skipped commands="+hiddenDraws+" | proof ms="+String.format(java.util.Locale.ROOT,"%.3f",nanos/1e6)+" | lists ms/frame="+String.format(java.util.Locale.ROOT,"%.3f",regionNanos/1e6/Math.max(1,frames))+" | entries="+entries.size();}
+    public static String describe(BlockPos pos){
+        int x=pos.getX()>>4,y=pos.getY()>>4,z=pos.getZ()>>4;
+        String prefix="Section "+x+", "+y+", "+z+" | minimum="+minimum()+" | ";
+        if(!active())return prefix+"section culling off";
+        int cx=SectionPos.blockToSectionCoord(eye.x),cy=SectionPos.blockToSectionCoord(eye.y),cz=SectionPos.blockToSectionCoord(eye.z);
+        long distance=Math.max(Math.max(Math.abs((long)x-cx),Math.abs((long)y-cy)),Math.abs((long)z-cz));
+        if(distance==0)return prefix+"camera section: whole section must stay visible";
+        if(distance<=minimum())return prefix+"inside protected minimum radius";
+        if(!eligible(x,y,z))return prefix+"outside section culling range";
+        Entry e=entries.get(SectionPos.asLong(x,y,z));
+        return prefix+(e==null?"not requested by terrain renderer":(valid(e)?e.hidden?"hidden":"visible":"stale / pending")+" | "+e.reason);
+    }
+    public static String status(){return "Sections | reads="+reads+" | hits="+hits+" | proofs="+proofs+" | deferred="+deferred+" | cells="+cells+" | skipped commands="+hiddenDraws+" | proof ms="+String.format(java.util.Locale.ROOT,"%.3f",nanos/1e6)+" | lists ms/frame="+String.format(java.util.Locale.ROOT,"%.3f",regionNanos/1e6/Math.max(1,frames))+" | entries="+entries.size();}
 }

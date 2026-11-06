@@ -1,5 +1,5 @@
 {
-  "slopium.version": "Бета 12",
+  "slopium.version": "Бета 13",
   "slopium.page.frame_generation": "Генерация кадров",
   "slopium.frame_generation.unavailable": "Slopium: генерация кадров отключена: %s. Обычная отрисовка сохранена. Повторная попытка — после применения настроек.",
   "slopium.group.frame_generation": "Режим и частота вывода",
@@ -254,9 +254,9 @@
   "slopium.frame_generation.predict_title": "Slopium: прогноз движения · настоящие кадры сразу",
   "slopium.group.sections": "Куллинг чанков",
   "slopium.visible_sections": "Прогрузка только видимых чанков",
-  "slopium.visible_sections.tooltip": "Не рисовать полностью закрытые секции 16×16×16 вне минимального радиуса. Данные и тики сохраняются. Общий кеш с Create; неизвестные секции видимы.",
+  "slopium.visible_sections.tooltip": "Не рисовать закрытые секции 16×16×16 вне минимального радиуса. Учитывает поле зрения и несколько препятствий. Данные и тики сохраняются.",
   "slopium.minimum_sections": "Минимально прогружаемые чанки",
-  "slopium.minimum_sections.tooltip": "Радиус без дополнительного отсечения, включая высоту. 0 защищает секцию камеры. Всегда меньше дальности прорисовки.",
+  "slopium.minimum_sections.tooltip": "Радиус без дополнительного отсечения по X/Y/Z. 0 защищает секцию камеры; 2 — также два ряда секций вокруг. Меньше дальности прорисовки.",
   "slopium.section_obstacles": "Препятствия для чанков",
   "slopium.section_obstacles.tooltip": "Какие формы блоков могут скрывать секцию. «Любые» включает стекло и жидкости; отверстия не заполняются.",
   "slopium.value.SectionObstacles.OPAQUE": "За непрозрачными блоками",

@@ -33,6 +33,10 @@ public final class VisibilityPool {
     private static final ArrayDeque<Entry> CREATE=new ArrayDeque<>(), PARTICLES=new ArrayDeque<>(), SWEEP=new ArrayDeque<>();
     private static ClientLevel world;
     private static net.minecraft.client.renderer.culling.Frustum cameraFrustum;
+    private static net.minecraft.client.renderer.culling.Frustum sectionFrustum;
+    private static final org.joml.Matrix4f sectionView=new org.joml.Matrix4f(),sectionProjection=new org.joml.Matrix4f();
+    private static Vec3 sectionEye;
+    private static long sectionRevision;
     private static long cameraFrame=Long.MIN_VALUE, cameraRevision;
     private static long processed=Long.MIN_VALUE;
     private static boolean particleTurn;
@@ -46,6 +50,7 @@ public final class VisibilityPool {
         VisibilityGeometry.reset();
         SectionVisibility.clear();
         cameraFrustum=null;cameraFrame=Long.MIN_VALUE;
+        sectionFrustum=null;sectionEye=null;sectionRevision++;
         world=level; processed=Long.MIN_VALUE; createEntries=particleEntries=0;
     }
     public static void clear() { world(null); }
@@ -57,14 +62,24 @@ public final class VisibilityPool {
         if(e.queued) return;
         e.queued=true; (e.key.mechanism?CREATE:PARTICLES).addLast(e);
     }
-    public static void captureCamera(org.joml.Matrix4f view,org.joml.Matrix4f projection,Vec3 eye) {
+    public static void captureCamera(org.joml.Matrix4fc view,org.joml.Matrix4fc projection,Vec3 eye) {
         world(Minecraft.getInstance().level);
+        if(cameraFrame==Slopium.frame()&&view.equals(sectionView)&&projection.equals(sectionProjection)&&eye.equals(sectionEye))return;
         cameraFrame=Slopium.frame();cameraRevision++;
         cameraFrustum=null;
-        if(!SlopiumConfig.get().enabled||!SlopiumConfig.get().cameraCulling) return;
-        cameraFrustum=new net.minecraft.client.renderer.culling.Frustum(view,projection);
-        cameraFrustum.prepare(eye.x,eye.y,eye.z);
+        sectionFrustum=null;
+        var c=SlopiumConfig.get();
+        if(!c.enabled||!c.cameraCulling&&!c.visibleSections)return;
+        if(!view.equals(sectionView)||!projection.equals(sectionProjection)||!eye.equals(sectionEye)){
+            sectionRevision++;sectionView.set(view);sectionProjection.set(projection);sectionEye=eye;
+        }
+        var frustum=new net.minecraft.client.renderer.culling.Frustum(sectionView,sectionProjection);
+        frustum.prepare(eye.x,eye.y,eye.z);
+        if(c.cameraCulling)cameraFrustum=frustum;
+        if(c.visibleSections)sectionFrustum=frustum;
     }
+    public static long sectionViewRevision(){return sectionRevision;}
+    public static boolean sectionOutside(net.minecraft.world.phys.AABB box){return sectionFrustum!=null&&cameraFrame==Slopium.frame()&&!sectionFrustum.isVisible(box);}
     /** Camera and wall results occupy the same entry, but have independent lifetimes. */
     public static boolean outsideCamera(Vec3 point,boolean mechanism,net.minecraft.world.phys.AABB bounds) {
         var mc=Minecraft.getInstance();var c=SlopiumConfig.get();
@@ -129,7 +144,7 @@ public final class VisibilityPool {
         world(mc.level);
         if(world==null||!finite(eye)||processed==Slopium.frame()) return;
         processed=Slopium.frame();
-        if(TABLE.isEmpty()) return;
+        if(TABLE.isEmpty()&&!SectionVisibility.hasPending()) return;
         long start=System.nanoTime();long totalDeadline=start+750_000;deadline=totalDeadline-(SectionVisibility.active()?250_000:0);steps=32768;
         // Snapshot queue lengths: requests are never processed twice in the same frame.
         int count=Math.min(512,CREATE.size()+PARTICLES.size());

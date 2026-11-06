@@ -1,0 +1,44 @@
+{
+  "version": "1-beta.13",
+  "displayVersion": "Beta 13",
+  "date": "2026-11-06",
+  "jar": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-13.jar",
+  "sha256": "4db0cc249e7ef7dc02cd24597442a8b5aa7f557df9bdfef738582c65b70ae65a",
+  "bytes": 30887075,
+  "sources": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-13-sources.jar",
+  "sourcesSha256": "a0c930fe70972e35067f6a2c580232d9f64b09e0a3a08bab4e872e2414d9512d",
+  "tests": {
+    "tests": 52,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "verifiedLogs": [
+    "build/beta13-proof-ui.log",
+    "build/beta13-window-world.log",
+    "build/beta13-full-window-world.log",
+    "build/beta13-frustum-world-retry.log",
+    "build/beta13-final-build.log"
+  ],
+  "userModsModified": false,
+  "languageKeys": 262,
+  "mixins": 57,
+  "features": [
+    "Adaptive coverage of section faces by multiple obstacles with conservative volume proofs",
+    "Shared budget, resumable jobs and camera-aware cache invalidation",
+    "Actual Create window panes and section reason in /slopium inspect"
+  ],
+  "integration": {
+    "legacyWorldScenarios": 14,
+    "fullReferenceWorldScenarios": 18,
+    "details": "docs/BETA13_TESTS.ru.md",
+    "startupRetry": "First full frustum run failed in foreign content registration before testing; retry passed",
+    "postRuntimeChange": "Pending section queue is serviced even if point table expires; included in final build"
+  },
+  "limitations": [
+    "Current camera section and sections containing visible geometry cannot be removed as a whole",
+    "Pending or unproven coverage remains visible; no guaranteed immediate hiding or FPS gain",
+    "No benchmark in user server world; small isolated scenes only",
+    "Distant Horizons LOD, entities, particles and moving virtual worlds are outside section mask scope"
+  ]
+}

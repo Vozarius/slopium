@@ -18,6 +18,7 @@ public final class CullingInspector {
             +" | BE="+(be==null?"none":be.getClass().getName());
         if(be!=null && Slopium.loaded("flywheel")) result+="\n"+FlywheelCullingProbe.describe(be);
         result+="\n"+VisibilityPool.describe(pos);
+        result+="\n"+SectionVisibility.describe(pos);
         Vec3 from=mc.gameRenderer.getMainCamera().getPosition(),to=Vec3.atCenterOf(pos);
         if(from.distanceToSqr(to)>128*128) return result+"\nOutside 128-block occlusion range";
         if(SableGuard.protects(level,pos)||SableGuard.protects(level,BlockPos.containing(from))) return result+"\nProtected Sable position";

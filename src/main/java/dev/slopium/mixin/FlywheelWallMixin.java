@@ -12,8 +12,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class FlywheelWallMixin {
     @Shadow @Final private VisualManagerImpl<BlockEntity,BlockEntityStorage> blockEntities;
     @Inject(method="beginFrame",at=@At(value="INVOKE",target="Ldev/engine_room/flywheel/impl/task/Flag;lower()V"))
-    private void slopium$beforeFrame(CallbackInfo ci) {
-        var camera=net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+    private void slopium$beforeFrame(dev.engine_room.flywheel.api.backend.RenderContext context,CallbackInfo ci) {
+        var camera=context.camera().getPosition();
+        dev.slopium.visibility.VisibilityPool.captureCamera(context.modelView(),context.projection(),camera);
         dev.slopium.visibility.SectionVisibility.begin(camera);
         dev.slopium.visibility.VisibilityPool.process(camera);
         var engine=((dev.engine_room.flywheel.impl.visualization.VisualizationManagerImpl)(Object)this).getEngineImpl();

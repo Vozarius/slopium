@@ -87,6 +87,7 @@ public final class SlopiumSmoke {
             SmokeTargetedChecks.run();
             SmokeWallChecks.run();
             SmokeSectionChecks.run();
+            if(Slopium.loaded("create"))SmokeSectionProofChecks.run();
             SmokeParticleOcclusionChecks.run();
             SmokeOptionsChecks.run();
             SmokeFrameGenerationChecks.run();

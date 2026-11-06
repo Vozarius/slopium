@@ -11,6 +11,11 @@ import net.caffeinemc.mods.sodium.client.render.SodiumWorldRenderer;
 /** Actual Sodium draw-list and Flywheel integration, not just a ray/proof fixture. */
 final class SmokeSectionWorld {
     private int phase=-1;private long started;private volatile boolean ready;
+    Float fixedYaw(){
+        if(phase==14)return 180f;
+        if(phase==16){var mc=Minecraft.getInstance();return (float)Math.toDegrees(Math.atan(Math.tan(Math.toRadians(mc.options.fov().get())*.5)*mc.getWindow().getWidth()/mc.getWindow().getHeight()))-3f;}
+        return phase>=15?0f:null;
+    }
     static void scene(net.minecraft.server.level.ServerLevel level){
         // Worldgen mods can put terrain at Y=300. Leave an actual corridor and an empty
         // target section so native Sodium occlusion does not prevent its first mesh build.
@@ -28,11 +33,11 @@ final class SmokeSectionWorld {
         var manager=((SodiumSectionAccess)SodiumWorldRenderer.instance()).slopium$sections();
         var target=((SectionManagerAccess)manager).slopium$section(0,18,2);
         if(target==null||!target.isBuilt()){if(System.nanoTime()-started<60_000_000_000L)return;throw new AssertionError("Target section not built: section="+target+", client block="+mc.level.getBlockState(new BlockPos(4,301,40))+", camera="+mc.gameRenderer.getMainCamera().getPosition());}
-        boolean expected=phase==0||phase==2||phase==5||phase==7||phase==9;
+        boolean expected=phase==0||phase==2||phase==5||phase==7||phase==9||phase==11||phase==14||phase==16;
         boolean hidden=SectionVisibility.request(0,18,2);
         var region=(SectionRegionState)target.getRegion();
         boolean masked=region.slopium$hiddenSection(target.getSectionIndex());
-        if(hidden!=expected||masked!=expected){if(System.nanoTime()-started<15_000_000_000L)return;diagnose();throw new AssertionError("Section mode "+phase+" expected="+expected+" pool="+hidden+" mask="+masked+" "+SectionVisibility.status());}
+        if(hidden!=expected||phase!=14&&masked!=expected){if(System.nanoTime()-started<15_000_000_000L)return;diagnose();throw new AssertionError("Section mode "+phase+" expected="+expected+" pool="+hidden+" mask="+masked+" "+SectionVisibility.status());}
         if(phase<10&&SectionVisibility.request(0,18,0))throw new AssertionError("Camera section culled");
         var vm=dev.engine_room.flywheel.api.visualization.VisualizationManager.get(mc.level);
         var storage=(dev.engine_room.flywheel.impl.visualization.storage.BlockEntityStorage)((dev.engine_room.flywheel.impl.visualization.VisualManagerImpl<?,?>)vm.blockEntities()).getStorage();
@@ -41,7 +46,7 @@ final class SmokeSectionWorld {
         if(phase==0&&SectionVisibility.hiddenDraws==0)throw new AssertionError("Terrain draw commands not filtered");
         com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SECTIONS_WORLD: phase {} hidden={} terrain mask={} Flywheel={} {}",phase,hidden,masked,owner.sectionHidden,SectionVisibility.status());
         com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SECTIONS_COST: shared average={} ms, passes={}, section frames={}",SlopiumStats.visibilityNanos/1e6/Math.max(1,SlopiumStats.visibilityPasses),SlopiumStats.visibilityPasses,SectionVisibility.frames);
-        if(++phase==11){com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SECTIONS_WORLD: glass any/opaque, solid wall, protected radius, off/on, wall removal, mode round trip and camera movement passed");mc.stop();return;}
+        if(++phase==18){com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SECTIONS_WORLD: 18 phases passed, including Create windows, opening, outside frustum, partially visible section and camera restoration");mc.stop();return;}
         configure(c);started=System.nanoTime();
     }
     private void next(){phase=0;configure(SlopiumConfig.get());started=System.nanoTime();}
@@ -58,12 +63,22 @@ final class SmokeSectionWorld {
     }
     private void configure(SlopiumConfig c){
         SlopiumStats.reset();c.diagnostics=true;
-        c.enabled=true;c.visibleSections=phase!=4;c.minimumSections=phase==3?2:0;c.sectionsAnyBlock=phase==0||phase>=7&&phase!=8;
+        c.enabled=true;c.visibleSections=phase!=4;c.minimumSections=phase==3?2:0;c.sectionsAnyBlock=phase==0||phase>=7&&phase!=8&&phase!=12;
         c.occludeFlywheel=c.freezeCreateAnimations=c.occludeCreateAnimations=c.disableFlywheelRendering=c.hideAllCreateModels=false;
-        ready=phase!=2&&phase!=6&&phase!=7&&phase!=10;
+        ready=phase!=2&&phase!=6&&phase!=7&&phase!=10&&phase!=11&&phase!=13;
         if(!ready){var mc=Minecraft.getInstance();mc.getSingleplayerServer().execute(()->{
             var level=mc.getSingleplayerServer().overworld();
             if(phase==10){level.setBlock(new BlockPos(24,300,0),Blocks.STONE.defaultBlockState(),3);var player=mc.getSingleplayerServer().getPlayerList().getPlayers().getFirst();player.teleportTo(24.5,301,.5);}
+            else if(phase==11){
+                var pane=net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(net.minecraft.resources.ResourceLocation.parse("create:weathered_iron_window_pane")).defaultBlockState()
+                    .setValue(net.minecraft.world.level.block.IronBarsBlock.WEST,true).setValue(net.minecraft.world.level.block.IronBarsBlock.EAST,true);
+                for(int x=-8;x<=8;x++)for(int y=286;y<=314;y++){
+                    level.setBlock(new BlockPos(x,y,4),x<=0?pane:Blocks.AIR.defaultBlockState(),2);
+                    level.setBlock(new BlockPos(x,y,5),x>=0?pane:Blocks.AIR.defaultBlockState(),2);
+                }
+                mc.getSingleplayerServer().getPlayerList().getPlayers().getFirst().teleportTo(0,301,0);
+            }
+            else if(phase==13)level.setBlock(new BlockPos(1,302,5),Blocks.AIR.defaultBlockState(),3);
             else for(int x=-8;x<=8;x++)for(int y=286;y<=314;y++)level.setBlock(new BlockPos(x,y,4),(phase==6?Blocks.AIR:phase==7?Blocks.GLASS:Blocks.STONE).defaultBlockState(),3);
             ready=true;
         });}
