@@ -26,6 +26,7 @@ public final class Slopium {
         NeoForge.EVENT_BUS.addListener(dev.slopium.framegen.FrameGeneration::overlay);
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) -> {
             dev.slopium.framegen.FrameGeneration.release();
+            dev.slopium.visibility.GpuSections.release();
             if(loaded("flywheel")) dev.slopium.visibility.GpuGlassDepth.release();
         });
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.ChunkEvent.Load event) -> {

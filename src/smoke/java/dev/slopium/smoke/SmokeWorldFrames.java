@@ -48,7 +48,7 @@ final class SmokeWorldFrames {
             for(var child:backup.children())if(child instanceof net.minecraft.client.gui.components.Button button&&button.getMessage().getString().equals(skip)){button.onPress();return;}
         }
         if(!started&&mc.screen instanceof TitleScreen&&mc.getOverlay()==null) {
-            if(sections!=null)SmokeSectionProofChecks.run();
+            if(sections!=null)SmokeGpuSectionChecks.run();
             started=true;mc.options.pauseOnLostFocus=false;mc.options.enableVsync().set(false);mc.options.framerateLimit().set(260);
             mc.options.renderDistance().set(4);mc.options.simulationDistance().set(5);mc.options.bobView().set(false);
             mc.options.graphicsMode().set(net.minecraft.client.GraphicsStatus.FANCY);

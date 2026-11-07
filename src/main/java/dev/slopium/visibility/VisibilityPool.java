@@ -15,7 +15,7 @@ public final class VisibilityPool {
         final Key key;
         Vec3 point;
         Vec3 eye, samplePoint;
-        BlockPos witness,opaqueWitness,anyWitness;
+        BlockPos witness;
         long geometryGeneration, traced;
         long[] columns, versions;
         int pathCount;
@@ -23,7 +23,7 @@ public final class VisibilityPool {
         long sampled=-1, epoch=-1, requested;
         int result, knownMask, wanted;
         int distanceLimit=128;
-        boolean known, queued, volume;
+        boolean known, queued;
         long cameraFrame=Long.MIN_VALUE;
         net.minecraft.world.phys.AABB bounds;
         boolean outside;
@@ -33,10 +33,8 @@ public final class VisibilityPool {
     private static final ArrayDeque<Entry> CREATE=new ArrayDeque<>(), PARTICLES=new ArrayDeque<>(), SWEEP=new ArrayDeque<>();
     private static ClientLevel world;
     private static net.minecraft.client.renderer.culling.Frustum cameraFrustum;
-    private static net.minecraft.client.renderer.culling.Frustum sectionFrustum;
-    private static final org.joml.Matrix4f sectionView=new org.joml.Matrix4f(),sectionProjection=new org.joml.Matrix4f();
-    private static Vec3 sectionEye;
-    private static long sectionRevision;
+    private static final org.joml.Matrix4f viewMatrix=new org.joml.Matrix4f(),projectionMatrix=new org.joml.Matrix4f();
+    private static Vec3 viewEye;
     private static long cameraFrame=Long.MIN_VALUE, cameraRevision;
     private static long processed=Long.MIN_VALUE;
     private static boolean particleTurn;
@@ -50,7 +48,7 @@ public final class VisibilityPool {
         VisibilityGeometry.reset();
         SectionVisibility.clear();
         cameraFrustum=null;cameraFrame=Long.MIN_VALUE;
-        sectionFrustum=null;sectionEye=null;sectionRevision++;
+        viewEye=null;
         world=level; processed=Long.MIN_VALUE; createEntries=particleEntries=0;
     }
     public static void clear() { world(null); }
@@ -64,22 +62,19 @@ public final class VisibilityPool {
     }
     public static void captureCamera(org.joml.Matrix4fc view,org.joml.Matrix4fc projection,Vec3 eye) {
         world(Minecraft.getInstance().level);
-        if(cameraFrame==Slopium.frame()&&view.equals(sectionView)&&projection.equals(sectionProjection)&&eye.equals(sectionEye))return;
+        if(cameraFrame==Slopium.frame()&&view.equals(viewMatrix)&&projection.equals(projectionMatrix)&&eye.equals(viewEye))return;
         cameraFrame=Slopium.frame();cameraRevision++;
         cameraFrustum=null;
-        sectionFrustum=null;
+
         var c=SlopiumConfig.get();
-        if(!c.enabled||!c.cameraCulling&&!c.visibleSections)return;
-        if(!view.equals(sectionView)||!projection.equals(sectionProjection)||!eye.equals(sectionEye)){
-            sectionRevision++;sectionView.set(view);sectionProjection.set(projection);sectionEye=eye;
+        if(!c.enabled||!c.cameraCulling)return;
+        if(!view.equals(viewMatrix)||!projection.equals(projectionMatrix)||!eye.equals(viewEye)){
+            viewMatrix.set(view);projectionMatrix.set(projection);viewEye=eye;
         }
-        var frustum=new net.minecraft.client.renderer.culling.Frustum(sectionView,sectionProjection);
+        var frustum=new net.minecraft.client.renderer.culling.Frustum(viewMatrix,projectionMatrix);
         frustum.prepare(eye.x,eye.y,eye.z);
         if(c.cameraCulling)cameraFrustum=frustum;
-        if(c.visibleSections)sectionFrustum=frustum;
     }
-    public static long sectionViewRevision(){return sectionRevision;}
-    public static boolean sectionOutside(net.minecraft.world.phys.AABB box){return sectionFrustum!=null&&cameraFrame==Slopium.frame()&&!sectionFrustum.isVisible(box);}
     /** Camera and wall results occupy the same entry, but have independent lifetimes. */
     public static boolean outsideCamera(Vec3 point,boolean mechanism,net.minecraft.world.phys.AABB bounds) {
         var mc=Minecraft.getInstance();var c=SlopiumConfig.get();
@@ -108,14 +103,9 @@ public final class VisibilityPool {
     }
     /** null means not sampled yet. Budget pressure never replaces a known answer with unknown. */
     public static Boolean read(Vec3 point,Vec3 eye,boolean mechanism,boolean any) {
-        return request(point,eye,mechanism,any,128,false);
+        return request(point,eye,mechanism,any,128);
     }
-    static void requestSection(Vec3 point,Vec3 eye,boolean any,int distance){request(point,eye,true,any,distance,true);}
-    static BlockPos sectionWitness(Vec3 point,boolean any){
-        Entry e=TABLE.get(new Key((int)Math.floor(point.x*8),(int)Math.floor(point.y*8),(int)Math.floor(point.z*8),true));
-        return e!=null&&(e.knownMask&(any?2:1))!=0&&(e.result&(any?2:1))!=0?(any?e.anyWitness:e.opaqueWitness):null;
-    }
-    private static Boolean request(Vec3 point,Vec3 eye,boolean mechanism,boolean any,int distanceLimit,boolean volume) {
+    private static Boolean request(Vec3 point,Vec3 eye,boolean mechanism,boolean any,int distanceLimit) {
         var mc=Minecraft.getInstance();
         if(!mc.isSameThread()||mc.level==null||!finite(point)||!finite(eye)) return false;
         world(mc.level);
@@ -124,7 +114,6 @@ public final class VisibilityPool {
         Entry e=entry(point,mechanism);
         if(e==null) return false;
         e.distanceLimit=Math.max(e.distanceLimit,distanceLimit);
-        e.volume|=volume;
         int mode=any?2:1; e.wanted|=mode;
         boolean stale=(e.knownMask&mode)==0||e.epoch!=WallOcclusion.epoch()||!eye.equals(e.eye)
             ||(!mechanism&&!point.equals(e.samplePoint))||now-e.sampled>=20;
@@ -144,8 +133,8 @@ public final class VisibilityPool {
         world(mc.level);
         if(world==null||!finite(eye)||processed==Slopium.frame()) return;
         processed=Slopium.frame();
-        if(TABLE.isEmpty()&&!SectionVisibility.hasPending()) return;
-        long start=System.nanoTime();long totalDeadline=start+750_000;deadline=totalDeadline-(SectionVisibility.active()?250_000:0);steps=32768;
+        if(TABLE.isEmpty()) return;
+        long start=System.nanoTime();long totalDeadline=start+750_000;deadline=totalDeadline;steps=32768;
         // Snapshot queue lengths: requests are never processed twice in the same frame.
         int count=Math.min(512,CREATE.size()+PARTICLES.size());
         try {
@@ -169,7 +158,6 @@ public final class VisibilityPool {
                 if(!e.queued && processed-e.requested>120) discard(e);
                 else if(TABLE.get(e.key)==e) SWEEP.addLast(e);
             }
-            SectionVisibility.process(totalDeadline);
         } finally {
             if(SlopiumConfig.get().diagnostics) {
                 long cost=System.nanoTime()-start;
@@ -198,7 +186,7 @@ public final class VisibilityPool {
         }
         // A fresh intersection with one remembered blocker proves occlusion even after camera movement.
         // Full-cube broad phase is necessary: isSolidRender alone assumes the ray visits this cell.
-        if(!e.volume && e.witness!=null && e.witness.distToCenterSqr(eye)>=16 && (!e.key.mechanism||!e.witness.equals(target)) && world.hasChunkAt(e.witness)
+        if(e.witness!=null && e.witness.distToCenterSqr(eye)>=16 && (!e.key.mechanism||!e.witness.equals(target)) && world.hasChunkAt(e.witness)
             && net.minecraft.world.phys.shapes.Shapes.block().clip(eye,point,e.witness)!=null) {
             if(SlopiumConfig.get().diagnostics) SlopiumStats.visibilityCells++;
             int mask=OccluderShapes.mask(world.getBlockState(e.witness),world,e.witness,eye,point);
@@ -208,7 +196,7 @@ public final class VisibilityPool {
                 return (mask&1)!=0?15:10;
             }
         }
-        e.pathValid=false; e.pathCount=0; e.witness=e.opaqueWitness=e.anyWitness=null;
+        e.pathValid=false; e.pathCount=0; e.witness=null;
         if(e.columns==null) { e.columns=new long[16]; e.versions=new long[16]; }
         if(SlopiumConfig.get().diagnostics) {
             SlopiumStats.visibilityRays++;
@@ -229,10 +217,9 @@ public final class VisibilityPool {
             if(SlopiumConfig.get().diagnostics) SlopiumStats.visibilityCells++;
             int mask=OccluderShapes.mask(world.getBlockState(pos),world,pos,eye,point);
             found[0]|=mask;
-            if((mask&1)!=0) { entry.witness=entry.opaqueWitness=pos.immutable();if(entry.anyWitness==null)entry.anyWitness=entry.witness;return 15; }
+            if((mask&1)!=0) { entry.witness=pos.immutable();return 15; }
             if((mask&2)!=0) {
                 entry.witness=pos.immutable();
-                if(entry.anyWitness==null)entry.anyWitness=entry.witness;
                 if(entry.wanted==2) return 10; // Opaque was not requested; do not traverse the factory behind the glass.
             }
             return null;

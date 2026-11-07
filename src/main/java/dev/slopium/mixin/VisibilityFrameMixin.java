@@ -12,7 +12,6 @@ public abstract class VisibilityFrameMixin {
             net.minecraft.client.renderer.GameRenderer gameRenderer,net.minecraft.client.renderer.LightTexture light,
             org.joml.Matrix4f view,org.joml.Matrix4f projection,CallbackInfo ci) {
         VisibilityPool.captureCamera(view,projection,camera.getPosition());
-        dev.slopium.visibility.SectionVisibility.begin(camera.getPosition());
         VisibilityPool.process(Minecraft.getInstance().gameRenderer.getMainCamera().getPosition());
     }
 }

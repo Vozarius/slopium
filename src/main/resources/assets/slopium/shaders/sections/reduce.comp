@@ -1,0 +1,6 @@
+#version 430 core
+layout(local_size_x=16,local_size_y=16) in;
+layout(r32f,binding=0) readonly uniform image2D sourceDepth;
+layout(r32f,binding=1) writeonly uniform image2D targetDepth;
+void main(){ivec2 p=ivec2(gl_GlobalInvocationID.xy);if(any(greaterThanEqual(p,imageSize(targetDepth))))return;
+ ivec2 q=p*2,lim=imageSize(sourceDepth)-1;float z=0.;for(int y=0;y<2;y++)for(int x=0;x<2;x++)z=max(z,imageLoad(sourceDepth,min(q+ivec2(x,y),lim)).r);imageStore(targetDepth,p,vec4(z));}

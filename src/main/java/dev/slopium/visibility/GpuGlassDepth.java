@@ -24,6 +24,7 @@ public final class GpuGlassDepth {
     private GpuGlassDepth() {}
     public static RenderContext context(RenderContext next) { var old=context;context=next;return old; }
     public static boolean available() {
+        if(GpuSections.requested()){state="shared section GPU pass";return false;}
         var c=SlopiumConfig.get();var mc=Minecraft.getInstance();
         if(!ProcessedBlocks.all()||!c.enabled||!c.gpuGlassCulling||!c.occludeFlywheel||!c.flywheelAnyBlock||c.disableFlywheelRendering) return false;
         if(Slopium.loaded("iris")||Slopium.loaded("oculus")) { state="shader integration: CPU fallback";return false; }

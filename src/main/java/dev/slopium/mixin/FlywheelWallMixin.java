@@ -15,7 +15,6 @@ public abstract class FlywheelWallMixin {
     private void slopium$beforeFrame(dev.engine_room.flywheel.api.backend.RenderContext context,CallbackInfo ci) {
         var camera=context.camera().getPosition();
         dev.slopium.visibility.VisibilityPool.captureCamera(context.modelView(),context.projection(),camera);
-        dev.slopium.visibility.SectionVisibility.begin(camera);
         dev.slopium.visibility.VisibilityPool.process(camera);
         var engine=((dev.engine_room.flywheel.impl.visualization.VisualizationManagerImpl)(Object)this).getEngineImpl();
         boolean nativeDepth=engine!=null && engine.drawManager() instanceof dev.engine_room.flywheel.backend.engine.indirect.IndirectDrawManager;

@@ -193,7 +193,18 @@ final class SmokeFlywheelWallChecks {
         var frame=dev.slopium.client.Slopium.class.getDeclaredField("frame");frame.setAccessible(true);
         frame.setLong(null,frame.getLong(null)+1);
         dev.slopium.visibility.VisibilityPool.process(net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera().getPosition());
-        hook.invoke(manager,new org.spongepowered.asm.mixin.injection.callback.CallbackInfo("frame",false));
+        var mc=net.minecraft.client.Minecraft.getInstance();
+        var context=new dev.engine_room.flywheel.api.backend.RenderContext(){
+            public net.minecraft.client.renderer.LevelRenderer renderer(){return mc.levelRenderer;}
+            public net.minecraft.client.multiplayer.ClientLevel level(){return mc.level;}
+            public net.minecraft.client.renderer.RenderBuffers buffers(){return mc.renderBuffers();}
+            public org.joml.Matrix4fc modelView(){return new org.joml.Matrix4f();}
+            public org.joml.Matrix4fc projection(){return new org.joml.Matrix4f();}
+            public org.joml.Matrix4fc viewProjection(){return new org.joml.Matrix4f();}
+            public net.minecraft.client.Camera camera(){return mc.gameRenderer.getMainCamera();}
+            public float partialTick(){return 0;}
+        };
+        hook.invoke(manager,context,new org.spongepowered.asm.mixin.injection.callback.CallbackInfo("frame",false));
     }
 
     private static void rotationWriter() {

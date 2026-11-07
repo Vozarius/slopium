@@ -1,0 +1,112 @@
+{
+  "legacy": {
+    "log": "build/beta14-gpu-ab8.log",
+    "rows": [
+      {
+        "phase": 0,
+        "enabled": false,
+        "samples": 5567,
+        "meanMs": 2.6955821986707384,
+        "p50Ms": 1.644,
+        "p95Ms": 8.6668,
+        "fps": 370.9773719729734,
+        "gpuFrameMs": 1.0297040647132842,
+        "passCpuMs": 0.0,
+        "passGpuMs": 0.0
+      },
+      {
+        "phase": 1,
+        "enabled": true,
+        "samples": 4299,
+        "meanMs": 3.490433542684345,
+        "p50Ms": 1.8872,
+        "p95Ms": 14.3297,
+        "fps": 286.4973613652997,
+        "gpuFrameMs": 1.114984031635264,
+        "passCpuMs": 0.188,
+        "passGpuMs": 0.289
+      },
+      {
+        "phase": 2,
+        "enabled": false,
+        "samples": 3447,
+        "meanMs": 4.351796402668987,
+        "p50Ms": 1.6558,
+        "p95Ms": 22.8877,
+        "fps": 229.79016191720112,
+        "gpuFrameMs": 1.3707676333043226,
+        "passCpuMs": 0.0,
+        "passGpuMs": 0.0
+      },
+      {
+        "phase": 3,
+        "enabled": true,
+        "samples": 4945,
+        "meanMs": 3.0336023053589485,
+        "p50Ms": 1.8296,
+        "p95Ms": 10.3187,
+        "fps": 329.6410997029737,
+        "gpuFrameMs": 1.0602208161779574,
+        "passCpuMs": 0.187,
+        "passGpuMs": 0.265
+      }
+    ],
+    "worldPhases": 22,
+    "success": true
+  },
+  "full": {
+    "log": "build/beta14-full-world-ab6.log",
+    "rows": [
+      {
+        "phase": 0,
+        "enabled": false,
+        "samples": 4606,
+        "meanMs": 3.2571368866695614,
+        "p50Ms": 2.9435,
+        "p95Ms": 6.3549,
+        "fps": 307.0181066361337,
+        "gpuFrameMs": 1.797673609734898,
+        "passCpuMs": 0.0,
+        "passGpuMs": 0.0
+      },
+      {
+        "phase": 1,
+        "enabled": true,
+        "samples": 4425,
+        "meanMs": 3.390580429378531,
+        "p50Ms": 3.1613,
+        "p95Ms": 6.7307,
+        "fps": 294.9347525678053,
+        "gpuFrameMs": 1.7312364185310736,
+        "passCpuMs": 0.126,
+        "passGpuMs": 0.102
+      },
+      {
+        "phase": 2,
+        "enabled": false,
+        "samples": 4711,
+        "meanMs": 3.184251432816812,
+        "p50Ms": 2.9572,
+        "p95Ms": 6.286,
+        "fps": 314.0455523373645,
+        "gpuFrameMs": 1.7232309335597538,
+        "passCpuMs": 0.0,
+        "passGpuMs": 0.0
+      },
+      {
+        "phase": 3,
+        "enabled": true,
+        "samples": 4157,
+        "meanMs": 3.608653692566755,
+        "p50Ms": 3.2452,
+        "p95Ms": 6.8703,
+        "fps": 277.1116558122047,
+        "gpuFrameMs": 1.8366084156843878,
+        "passCpuMs": 0.133,
+        "passGpuMs": 0.113
+      }
+    ],
+    "worldPhases": 22,
+    "success": true
+  }
+}

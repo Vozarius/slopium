@@ -79,6 +79,7 @@ public final class SlopiumSmoke {
 
     private static void validateOptionalMixins() {
         try {
+            SmokeGpuSectionChecks.run();
             SmokeTickChecks.run(Class.forName("net.minecraft.world.level.chunk.LevelChunk$BoundTickingBlockEntity"));
             SmokeBreakingChecks.run();
             SmokeExperimentChecks.run();
@@ -86,8 +87,6 @@ public final class SlopiumSmoke {
             SmokeRadicalChecks.run();
             SmokeTargetedChecks.run();
             SmokeWallChecks.run();
-            SmokeSectionChecks.run();
-            if(Slopium.loaded("create"))SmokeSectionProofChecks.run();
             SmokeParticleOcclusionChecks.run();
             SmokeOptionsChecks.run();
             SmokeFrameGenerationChecks.run();

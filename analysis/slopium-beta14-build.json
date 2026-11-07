@@ -1,0 +1,35 @@
+{
+  "version": "1-beta.14",
+  "displayVersion": "Beta 14",
+  "date": "2026-11-07",
+  "jar": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-14.jar",
+  "sha256": "48c3a7fbbe4ec2514fc45c9b9bf61369af9b5039e12a51b893ca66754f59bc21",
+  "bytes": 30895707,
+  "sources": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-14-sources.jar",
+  "sourcesSha256": "4662e399276c24e95ae09551b7ffbb394c1edd40b5c59a15d5e9227c075f9b9c",
+  "tests": {
+    "tests": 52,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "mixins": 62,
+  "languageKeys": 262,
+  "userModsModified": false,
+  "verifiedLogs": [
+    "build/beta14-gpu-ab8.log",
+    "build/beta14-full-world-ab6.log",
+    "build/beta14-final-ui-build2.log"
+  ],
+  "details": "docs/BETA14_TESTS.ru.md",
+  "benchmarks": "analysis/slopium-beta14-benchmarks.json",
+  "result": "22 legacy and 22 full-reference world scenarios passed. Final common encoder verified in full runtime and legacy material oracle. No proven FPS uplift; full reference A/B regressed.",
+  "limitations": [
+    "GPU mask is shared with supported Flywheel indirect instances only; generic batched Block Entity and uncertain mappings stay visible",
+    "No MSAA or Iris/Oculus section culling; custom framebuffer/viewport fails open",
+    "Conservative bounds and hierarchical depth can retain hidden sections; camera/visible-wall sections cannot be fully removed",
+    "Unknown modded cutout glass may retain its alpha holes",
+    "No performance measurement in user server world; no 60/400 FPS guarantee",
+    "No cross-frame GPU mask caching"
+  ]
+}

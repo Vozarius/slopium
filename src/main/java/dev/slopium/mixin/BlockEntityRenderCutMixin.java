@@ -12,7 +12,6 @@ public abstract class BlockEntityRenderCutMixin {
     @Inject(method = {"render"}, at = @At("HEAD"), cancellable = true)
     private void slopium$cut(CallbackInfo ci, @com.llamalad7.mixinextras.sugar.Local(argsOnly = true) net.minecraft.world.level.block.entity.BlockEntity be) {
         var config = SlopiumConfig.get();
-        if(dev.slopium.visibility.SectionVisibility.hidden(be)){ci.cancel();return;}
         if (config.enabled && (config.disableBlockEntityRendering || (config.hideAllCreateModels
                 && dev.slopium.visibility.ProcessedBlocks.allows(be)))) {
             if (config.diagnostics) SlopiumStats.blockEntityDrawsSkipped++;

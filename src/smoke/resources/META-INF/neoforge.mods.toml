@@ -6,3 +6,6 @@ modId="slopium_smoke"
 version="1"
 displayName="Slopium integration test (development only)"
 
+
+[[mixins]]
+config="slopium-smoke.mixins.json"

@@ -9,6 +9,7 @@ public abstract class FlywheelGpuContextMixin {
     @WrapMethod(method="render")
     private void slopium$depthContext(RenderContext context,Operation<Void> original) {
         var previous=GpuGlassDepth.context(context);
-        try {original.call(context);} finally {GpuGlassDepth.context(previous);}
+        boolean old=dev.slopium.visibility.GpuSections.flywheelWorld(context.level()==net.minecraft.client.Minecraft.getInstance().level&&dev.slopium.visibility.GpuSections.matches(context.modelView(),context.projection(),context.camera().getPosition()));
+        try {original.call(context);} finally {GpuGlassDepth.context(previous);dev.slopium.visibility.GpuSections.flywheelWorld(old);}
     }
 }

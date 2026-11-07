@@ -1,0 +1,1 @@
+{"required":true,"package":"dev.slopium.smoke.mixin","compatibilityLevel":"JAVA_21","client":["SmokeSectionMaterialProbe","SmokeSectionShaderProbe"],"injectors":{"defaultRequire":1}}

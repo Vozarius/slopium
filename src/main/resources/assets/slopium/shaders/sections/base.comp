@@ -1,0 +1,25 @@
+#version 430 core
+layout(local_size_x=16,local_size_y=16) in;
+layout(binding=0) uniform sampler2D sourceDepth;
+layout(binding=1) uniform usampler2D sourceId;
+layout(r32f,binding=0) writeonly uniform image2D targetDepth;
+layout(std430,binding=0) buffer Visibility { uint visible[]; };
+uniform ivec2 viewport;
+void main(){
+ ivec2 tile=ivec2(gl_GlobalInvocationID.xy);if(any(greaterThanEqual(tile,imageSize(targetDepth))))return;
+ // Read every original sample, retaining the farthest depth (holes included).
+ // This is conservative downsampling, not a lower-resolution occluder render.
+ float farthest=0.;
+ for(int y=0;y<4;y++)for(int x=0;x<4;x++){
+  ivec2 p=tile*4+ivec2(x,y);
+  farthest=max(farthest,texelFetch(sourceDepth,min(p,viewport-1),0).r);
+  if(all(lessThan(p,viewport))){
+   uint id=texelFetch(sourceId,p,0).r;
+   // Each finite equal-ID region has at least one top-left boundary pixel.
+   uint left=p.x>0?texelFetch(sourceId,p-ivec2(1,0),0).r:0u;
+   uint top=p.y>0?texelFetch(sourceId,p-ivec2(0,1),0).r:0u;
+   if(id>0u&&id<=visible.length()&&id!=left&&id!=top)atomicOr(visible[id-1u],1u);
+  }
+ }
+ imageStore(targetDepth,tile,vec4(farthest));
+}
