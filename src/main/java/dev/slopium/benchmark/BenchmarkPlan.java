@@ -78,15 +78,8 @@ public final class BenchmarkPlan {
         var result=new ArrayList<Trial>();
         var shuffled=new ArrayList<>(unique.values());Collections.shuffle(shuffled,new Random(15371L));
         result.add(new Trial("control", "reference: current settings, enabled, FG off",base.deepCopy(),true));
-        // Finish both repeats of a small batch before moving on: a stopped run can still be useful.
-        for(int offset=0;offset<shuffled.size();offset+=4) {
-            var batch=new ArrayList<>(shuffled.subList(offset,Math.min(offset+4,shuffled.size())));
-            for(int repeat=0;repeat<2;repeat++) {
-                if(repeat>0)Collections.shuffle(batch,new Random(15372L+offset));
-                result.addAll(batch);
-                result.add(new Trial("control","reference",base.deepCopy(),true));
-            }
-        }
+        // A-B-B-A per variant. The last A is also the next variant's initial control.
+        for(var trial:shuffled){result.add(trial);result.add(trial);result.add(new Trial("control","reference",base.deepCopy(),true));}
         return List.copyOf(result);
     }
     private static void addGroup(List<Trial> list,JsonObject base,String id,List<String> fields){

@@ -1,0 +1,1546 @@
+{
+  "note": "Provisional re-evaluation removing invalid ZGC cycle-as-pause filter only; raw report unchanged; foreground, terrain, chunk and within-run drift checks retained. Not a new measurement.",
+  "validWithoutGcFilter": 198,
+  "comparisons": {
+    "FG=FSR/parallel=true": [
+      {
+        "index": 2,
+        "delta": -2.5322518491570745,
+        "noise": 21.23360956872946,
+        "ok": false,
+        "controlDrift": 21.23360956872946,
+        "sourceFps": 18.849186433812918,
+        "terrain": 10.247349823321555
+      },
+      {
+        "index": 3,
+        "delta": -4.79746881425871,
+        "noise": 21.23360956872946,
+        "ok": false,
+        "controlDrift": 21.23360956872946,
+        "sourceFps": 18.411118481097347,
+        "terrain": 16.967509025270758
+      }
+    ],
+    "limitBlockEntityRendering=false": [
+      {
+        "index": 5,
+        "delta": -9.852942551736055,
+        "noise": 11.716258863134406,
+        "ok": false,
+        "controlDrift": 11.716258863134406,
+        "sourceFps": 20.4843184561315,
+        "terrain": 0.0
+      },
+      {
+        "index": 6,
+        "delta": 2.075438385639705,
+        "noise": 11.716258863134406,
+        "ok": false,
+        "controlDrift": 11.716258863134406,
+        "sourceFps": 23.194831263801174,
+        "terrain": 0.0
+      }
+    ],
+    "hideAllCreateModels=true": [
+      {
+        "index": 8,
+        "delta": 35.25188536854229,
+        "noise": 33.508168833079175,
+        "ok": false,
+        "controlDrift": 33.508168833079175,
+        "sourceFps": 27.86540916925055,
+        "terrain": 12.887828162291171
+      },
+      {
+        "index": 9,
+        "delta": 36.575042776848335,
+        "noise": 33.508168833079175,
+        "ok": false,
+        "controlDrift": 33.508168833079175,
+        "sourceFps": 28.138014038878108,
+        "terrain": 15.330188679245282
+      }
+    ],
+    "cameraCulling=false": [
+      {
+        "index": 11,
+        "delta": 30.424350230360808,
+        "noise": 33.816662170547026,
+        "ok": false,
+        "controlDrift": 33.816662170547026,
+        "sourceFps": 26.92069271608612,
+        "terrain": 18.765432098765434
+      },
+      {
+        "index": 12,
+        "delta": 41.02955526854046,
+        "noise": 33.816662170547026,
+        "ok": false,
+        "controlDrift": 33.816662170547026,
+        "sourceFps": 29.109697035599016,
+        "terrain": 0.0
+      }
+    ],
+    "factoryConnectionDistance=16": [
+      {
+        "index": 14,
+        "delta": 2.871436984506892,
+        "noise": 13.468702389904605,
+        "ok": false,
+        "controlDrift": 13.468702389904605,
+        "sourceFps": 23.257530643479296,
+        "terrain": 0.0
+      },
+      {
+        "index": 15,
+        "delta": -11.62141691418107,
+        "noise": 13.468702389904605,
+        "ok": false,
+        "controlDrift": 13.468702389904605,
+        "sourceFps": 19.980936055703015,
+        "terrain": 14.666666666666666
+      }
+    ],
+    "createVisualDistance=16": [
+      {
+        "index": 17,
+        "delta": 5.252501857541536,
+        "noise": 13.863586183877864,
+        "ok": false,
+        "controlDrift": 13.863586183877864,
+        "sourceFps": 20.75468228958524,
+        "terrain": 12.82051282051282
+      },
+      {
+        "index": 18,
+        "delta": 21.71288224046435,
+        "noise": 13.863586183877864,
+        "ok": false,
+        "controlDrift": 13.863586183877864,
+        "sourceFps": 24.000495540425376,
+        "terrain": 9.695290858725762
+      }
+    ],
+    "particlesPerTick=256": [
+      {
+        "index": 20,
+        "delta": -1.3855044054775334,
+        "noise": 22.46896415591647,
+        "ok": false,
+        "controlDrift": 22.46896415591647,
+        "sourceFps": 20.388321569405043,
+        "terrain": 0.0
+      },
+      {
+        "index": 21,
+        "delta": -2.310307233409614,
+        "noise": 22.46896415591647,
+        "ok": false,
+        "controlDrift": 22.46896415591647,
+        "sourceFps": 20.197120698473228,
+        "terrain": 0.0
+      }
+    ],
+    "sections=opaque": [
+      {
+        "index": 23,
+        "delta": 5.612286250399734,
+        "noise": 6.077594925564968,
+        "ok": true,
+        "controlDrift": 6.077594925564968,
+        "sourceFps": 23.57185803013498,
+        "terrain": 9.322033898305085
+      },
+      {
+        "index": 24,
+        "delta": 2.134680697938518,
+        "noise": 6.077594925564968,
+        "ok": false,
+        "controlDrift": 6.077594925564968,
+        "sourceFps": 22.795682953562252,
+        "terrain": 13.157894736842104
+      }
+    ],
+    "factoryConnectionRange=false": [
+      {
+        "index": 26,
+        "delta": -14.66505895183432,
+        "noise": 14.05077855720894,
+        "ok": false,
+        "controlDrift": 14.05077855720894,
+        "sourceFps": 19.86277347891927,
+        "terrain": 23.076923076923077
+      },
+      {
+        "index": 27,
+        "delta": -5.538665164573963,
+        "noise": 14.05077855720894,
+        "ok": false,
+        "controlDrift": 14.05077855720894,
+        "sourceFps": 21.987055634026767,
+        "terrain": 0.0
+      }
+    ],
+    "disableEntityShadows=true": [
+      {
+        "index": 29,
+        "delta": 14.226167340297202,
+        "noise": 24.280167652802668,
+        "ok": false,
+        "controlDrift": 24.280167652802668,
+        "sourceFps": 25.37491182467894,
+        "terrain": 0.0
+      },
+      {
+        "index": 30,
+        "delta": -2.8218641133191724,
+        "noise": 24.280167652802668,
+        "ok": false,
+        "controlDrift": 24.280167652802668,
+        "sourceFps": 21.587756000470026,
+        "terrain": 15.432098765432098
+      }
+    ],
+    "sableLight=false": [
+      {
+        "index": 32,
+        "delta": 12.119751164766935,
+        "noise": 37.51963031724857,
+        "ok": false,
+        "controlDrift": 37.51963031724857,
+        "sourceFps": 26.936486279425168,
+        "terrain": 15.802469135802468
+      },
+      {
+        "index": 33,
+        "delta": 10.419741005093375,
+        "noise": 37.51963031724857,
+        "ok": false,
+        "controlDrift": 37.51963031724857,
+        "sourceFps": 26.528063143758054,
+        "terrain": 14.285714285714285
+      }
+    ],
+    "FG=FSR/parallel=false": [
+      {
+        "index": 35,
+        "delta": -47.914066992796045,
+        "noise": 9.005187665450128,
+        "ok": false,
+        "controlDrift": 9.005187665450128,
+        "sourceFps": 14.220724057867397,
+        "terrain": 0.0
+      },
+      {
+        "index": 36,
+        "delta": -50.435795370118086,
+        "noise": 9.005187665450128,
+        "ok": false,
+        "controlDrift": 9.005187665450128,
+        "sourceFps": 13.532230997796253,
+        "terrain": 0.0
+      }
+    ],
+    "createVisualInterval=8": [
+      {
+        "index": 38,
+        "delta": 6.932926013444107,
+        "noise": 19.417324849378375,
+        "ok": false,
+        "controlDrift": 19.417324849378375,
+        "sourceFps": 25.41343483893853,
+        "terrain": 13.612565445026178
+      },
+      {
+        "index": 39,
+        "delta": -19.680972899151772,
+        "noise": 19.417324849378375,
+        "ok": false,
+        "controlDrift": 19.417324849378375,
+        "sourceFps": 19.088436440032677,
+        "terrain": 7.317073170731707
+      }
+    ],
+    "occludeFlywheel=false": [
+      {
+        "index": 41,
+        "delta": -11.90320817031012,
+        "noise": 16.236850886756862,
+        "ok": false,
+        "controlDrift": 16.236850886756862,
+        "sourceFps": 20.57451791091352,
+        "terrain": 17.475728155339805
+      },
+      {
+        "index": 42,
+        "delta": -4.183016388479488,
+        "noise": 16.236850886756862,
+        "ok": false,
+        "controlDrift": 16.236850886756862,
+        "sourceFps": 22.377525952319072,
+        "terrain": 0.0
+      }
+    ],
+    "FG=SIMPLE/parallel/x2": [
+      {
+        "index": 44,
+        "delta": -6.462765479699062,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 2.8866646807815957,
+        "sourceFps": 23.282537201054133,
+        "terrain": 0.2857142857142857
+      },
+      {
+        "index": 45,
+        "delta": 3.0801899917311193,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 2.8866646807815957,
+        "sourceFps": 25.657893035669428,
+        "terrain": 15.584415584415584
+      }
+    ],
+    "walls=opaque + particles": [
+      {
+        "index": 47,
+        "delta": 7.329112432423379,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 4.51870986415812,
+        "sourceFps": 26.93854455952546,
+        "terrain": 13.086419753086421
+      },
+      {
+        "index": 48,
+        "delta": -2.5551254465994155,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 4.51870986415812,
+        "sourceFps": 24.457698715312855,
+        "terrain": 16.57608695652174
+      }
+    ],
+    "freezeCreateAnimations=true": [
+      {
+        "index": 50,
+        "delta": 18.45163402928176,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 4.203732468921994,
+        "sourceFps": 29.776045171659398,
+        "terrain": 4.026845637583892
+      },
+      {
+        "index": 51,
+        "delta": 13.766353908741792,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 4.203732468921994,
+        "sourceFps": 28.598272373045333,
+        "terrain": 0.0
+      }
+    ],
+    "blockEntityRenderDistance=64": [
+      {
+        "index": 53,
+        "delta": 2.0505875872885326,
+        "noise": 8.018327906810317,
+        "ok": false,
+        "controlDrift": 8.018327906810317,
+        "sourceFps": 24.145948810668344,
+        "terrain": 22.31404958677686
+      },
+      {
+        "index": 54,
+        "delta": 7.643528287043355,
+        "noise": 8.018327906810317,
+        "ok": false,
+        "controlDrift": 8.018327906810317,
+        "sourceFps": 25.46928131693022,
+        "terrain": 15.404699738903393
+      }
+    ],
+    "factoryConnectionDistance=64": [
+      {
+        "index": 56,
+        "delta": -22.517131874731056,
+        "noise": 13.594897777470225,
+        "ok": false,
+        "controlDrift": 13.594897777470225,
+        "sourceFps": 18.881497203799853,
+        "terrain": 14.43661971830986
+      },
+      {
+        "index": 57,
+        "delta": -20.25231539595079,
+        "noise": 13.594897777470225,
+        "ok": false,
+        "controlDrift": 13.594897777470225,
+        "sourceFps": 19.43340147691056,
+        "terrain": 14.04109589041096
+      }
+    ],
+    "itemRenderDistance=16": [
+      {
+        "index": 59,
+        "delta": 17.47115162654871,
+        "noise": 26.41552552462132,
+        "ok": false,
+        "controlDrift": 26.41552552462132,
+        "sourceFps": 27.00515270951577,
+        "terrain": 0.0
+      },
+      {
+        "index": 60,
+        "delta": 8.508038012887287,
+        "noise": 26.41552552462132,
+        "ok": false,
+        "controlDrift": 26.41552552462132,
+        "sourceFps": 24.944644673813816,
+        "terrain": 16.266666666666666
+      }
+    ],
+    "particleRenderDistance=64": [
+      {
+        "index": 62,
+        "delta": 13.653812520006925,
+        "noise": 24.244052806640415,
+        "ok": false,
+        "controlDrift": 24.244052806640415,
+        "sourceFps": 25.804786444708437,
+        "terrain": 24.742268041237114
+      },
+      {
+        "index": 63,
+        "delta": 21.1673607121317,
+        "noise": 24.244052806640415,
+        "ok": false,
+        "controlDrift": 24.244052806640415,
+        "sourceFps": 27.510716956328313,
+        "terrain": 10.653753026634384
+      }
+    ],
+    "indexedLighting=false": [
+      {
+        "index": 65,
+        "delta": -11.978937286867886,
+        "noise": 14.775984415975286,
+        "ok": false,
+        "controlDrift": 14.775984415975286,
+        "sourceFps": 24.195049047763522,
+        "terrain": 0.0
+      },
+      {
+        "index": 66,
+        "delta": -9.33549339385128,
+        "noise": 14.775984415975286,
+        "ok": false,
+        "controlDrift": 14.775984415975286,
+        "sourceFps": 24.921673479179365,
+        "terrain": 0.0
+      }
+    ],
+    "FG=FSR/parallel/x2": [
+      {
+        "index": 68,
+        "delta": -5.7956297139597375,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 3.7152525298834984,
+        "sourceFps": 27.300658449266134,
+        "terrain": 18.048780487804876
+      },
+      {
+        "index": 69,
+        "delta": -1.3402699060582002,
+        "noise": 5,
+        "ok": true,
+        "controlDrift": 3.7152525298834984,
+        "sourceFps": 28.591832691127525,
+        "terrain": 8.13953488372093
+      }
+    ],
+    "FG=SIMPLE/parallel/x4": [
+      {
+        "index": 71,
+        "delta": 1.5674376876697815,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 3.4509121908368843,
+        "sourceFps": 29.394906840258002,
+        "terrain": 0.0
+      },
+      {
+        "index": 72,
+        "delta": -18.384329877870364,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 3.4509121908368843,
+        "sourceFps": 23.620611827608176,
+        "terrain": 2.2535211267605635
+      }
+    ],
+    "hiddenTickInterval=8": [
+      {
+        "index": 74,
+        "delta": -3.307941634510292,
+        "noise": 18.51035336777186,
+        "ok": false,
+        "controlDrift": 18.51035336777186,
+        "sourceFps": 26.055296482685577,
+        "terrain": 9.207161125319693
+      },
+      {
+        "index": 75,
+        "delta": 2.105964287698958,
+        "noise": 18.51035336777186,
+        "ok": false,
+        "controlDrift": 18.51035336777186,
+        "sourceFps": 27.51416421512466,
+        "terrain": 10.16949152542373
+      }
+    ],
+    "disableFlywheelRendering=true": [
+      {
+        "index": 77,
+        "delta": 10.676242117540347,
+        "noise": 6.720973161158248,
+        "ok": false,
+        "controlDrift": 6.720973161158248,
+        "sourceFps": 26.18345380276024,
+        "terrain": 10.687022900763358
+      },
+      {
+        "index": 78,
+        "delta": 1.2006490413190685,
+        "noise": 6.720973161158248,
+        "ok": false,
+        "controlDrift": 6.720973161158248,
+        "sourceFps": 23.941746379214877,
+        "terrain": 0.2777777777777778
+      }
+    ],
+    "cullBreakingOverlays=false": [
+      {
+        "index": 80,
+        "delta": 8.444605406369199,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 4.800914257622445,
+        "sourceFps": 24.212148011574683,
+        "terrain": 0.0
+      },
+      {
+        "index": 81,
+        "delta": 0.056330284266081776,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 4.800914257622445,
+        "sourceFps": 22.339319408832196,
+        "terrain": 16.666666666666664
+      }
+    ],
+    "occludeParticles=false": [
+      {
+        "index": 83,
+        "delta": 2.9037931871209954,
+        "noise": 13.45353553489442,
+        "ok": false,
+        "controlDrift": 13.45353553489442,
+        "sourceFps": 24.040722079669766,
+        "terrain": 18.005540166204987
+      },
+      {
+        "index": 84,
+        "delta": 4.115040188468622,
+        "noise": 13.45353553489442,
+        "ok": false,
+        "controlDrift": 13.45353553489442,
+        "sourceFps": 24.32369758161537,
+        "terrain": 20.0
+      }
+    ],
+    "hideFactoryConnections=true": [
+      {
+        "index": 86,
+        "delta": -10.892917937756696,
+        "noise": 5,
+        "ok": true,
+        "controlDrift": 4.426821580334618,
+        "sourceFps": 22.72073650260156,
+        "terrain": 0.0
+      },
+      {
+        "index": 87,
+        "delta": 5.84859110636724,
+        "noise": 5,
+        "ok": true,
+        "controlDrift": 4.426821580334618,
+        "sourceFps": 26.989526444368,
+        "terrain": 0.0
+      }
+    ],
+    "factoryBulbRange=false": [
+      {
+        "index": 89,
+        "delta": 10.437316291055353,
+        "noise": 15.509123406651309,
+        "ok": false,
+        "controlDrift": 15.509123406651309,
+        "sourceFps": 26.711497930311875,
+        "terrain": 19.45137157107232
+      },
+      {
+        "index": 90,
+        "delta": -13.459752470617936,
+        "noise": 15.509123406651309,
+        "ok": false,
+        "controlDrift": 15.509123406651309,
+        "sourceFps": 20.9315086639514,
+        "terrain": 19.10828025477707
+      }
+    ],
+    "createLight=false": [
+      {
+        "index": 92,
+        "delta": -0.18161095949685846,
+        "noise": 25.741663346748755,
+        "ok": false,
+        "controlDrift": 25.741663346748755,
+        "sourceFps": 25.560790769391385,
+        "terrain": 11.458333333333332
+      },
+      {
+        "index": 93,
+        "delta": 14.550469890256501,
+        "noise": 25.741663346748755,
+        "ok": false,
+        "controlDrift": 25.741663346748755,
+        "sourceFps": 29.333278382325165,
+        "terrain": 2.9545454545454546
+      }
+    ],
+    "factoryItemDistance=64": [
+      {
+        "index": 95,
+        "delta": -11.485979476616892,
+        "noise": 17.284977823315796,
+        "ok": false,
+        "controlDrift": 17.284977823315796,
+        "sourceFps": 23.54820540822853,
+        "terrain": 0.0
+      },
+      {
+        "index": 96,
+        "delta": -18.680894885681244,
+        "noise": 17.284977823315796,
+        "ok": false,
+        "controlDrift": 17.284977823315796,
+        "sourceFps": 21.634075364811086,
+        "terrain": 16.923076923076923
+      }
+    ],
+    "cacheParticleLight=false": [
+      {
+        "index": 98,
+        "delta": 10.063218410447927,
+        "noise": 13.033130678518543,
+        "ok": false,
+        "controlDrift": 13.033130678518543,
+        "sourceFps": 25.113952059397363,
+        "terrain": 16.445623342175068
+      },
+      {
+        "index": 99,
+        "delta": 9.267362587318884,
+        "noise": 13.033130678518543,
+        "ok": false,
+        "controlDrift": 13.033130678518543,
+        "sourceFps": 24.932355652560346,
+        "terrain": 12.566844919786096
+      }
+    ],
+    "disabled": [
+      {
+        "index": 101,
+        "delta": -19.01137272741146,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 3.631359027739683,
+        "sourceFps": 17.595005716277452,
+        "terrain": 4.545454545454546
+      },
+      {
+        "index": 102,
+        "delta": -18.705279764168193,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 3.631359027739683,
+        "sourceFps": 17.661505268367037,
+        "terrain": 0.0
+      }
+    ],
+    "createVisualDistance=64": [
+      {
+        "index": 104,
+        "delta": 0.8782317967631181,
+        "noise": 25.557576730470753,
+        "ok": false,
+        "controlDrift": 25.557576730470753,
+        "sourceFps": 25.583230533495037,
+        "terrain": 15.625
+      },
+      {
+        "index": 105,
+        "delta": -0.6408885668633513,
+        "noise": 25.557576730470753,
+        "ok": false,
+        "controlDrift": 25.557576730470753,
+        "sourceFps": 25.19797391491075,
+        "terrain": 14.550264550264549
+      }
+    ],
+    "itemImpostors=false": [
+      {
+        "index": 107,
+        "delta": 6.839002014837137,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 4.109626773272255,
+        "sourceFps": 31.19838205190679,
+        "terrain": 0.0
+      },
+      {
+        "index": 108,
+        "delta": -0.7327504726259093,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 4.109626773272255,
+        "sourceFps": 28.987331569859588,
+        "terrain": 0.0
+      }
+    ],
+    "occludeCreateTicks=false": [
+      {
+        "index": 110,
+        "delta": 37.869779550406065,
+        "noise": 8.666926060997888,
+        "ok": false,
+        "controlDrift": 8.666926060997888,
+        "sourceFps": 39.380497727378796,
+        "terrain": 16.243654822335024
+      },
+      {
+        "index": 111,
+        "delta": 27.269647484945114,
+        "noise": 8.666926060997888,
+        "ok": false,
+        "controlDrift": 8.666926060997888,
+        "sourceFps": 36.35272414222425,
+        "terrain": 15.722120658135283
+      }
+    ],
+    "particleRenderDistance=16": [
+      {
+        "index": 113,
+        "delta": 0.8216474792214878,
+        "noise": 12.057359373021116,
+        "ok": false,
+        "controlDrift": 12.057359373021116,
+        "sourceFps": 29.31774977661707,
+        "terrain": 12.727272727272727
+      },
+      {
+        "index": 114,
+        "delta": 0.5596023182644183,
+        "noise": 12.057359373021116,
+        "ok": false,
+        "controlDrift": 12.057359373021116,
+        "sourceFps": 29.241550124546357,
+        "terrain": 0.0
+      }
+    ],
+    "disableAmbientEffects=false": [
+      {
+        "index": 116,
+        "delta": -19.740890324996975,
+        "noise": 13.95253882197336,
+        "ok": false,
+        "controlDrift": 13.95253882197336,
+        "sourceFps": 23.131675254851064,
+        "terrain": 19.596541786743515
+      },
+      {
+        "index": 117,
+        "delta": -15.141014718656443,
+        "noise": 13.95253882197336,
+        "ok": false,
+        "controlDrift": 13.95253882197336,
+        "sourceFps": 24.457416708618023,
+        "terrain": 16.893732970027248
+      }
+    ],
+    "factoryItemDistance=16": [
+      {
+        "index": 119,
+        "delta": -20.598692214481485,
+        "noise": 9.887909416879271,
+        "ok": false,
+        "controlDrift": 9.887909416879271,
+        "sourceFps": 22.395172645885605,
+        "terrain": 12.202380952380953
+      },
+      {
+        "index": 120,
+        "delta": -0.034516472963730394,
+        "noise": 9.887909416879271,
+        "ok": true,
+        "controlDrift": 9.887909416879271,
+        "sourceFps": 28.195307163765893,
+        "terrain": 0.0
+      }
+    ],
+    "walls=opaque + items": [
+      {
+        "index": 122,
+        "delta": 9.386241206262325,
+        "noise": 24.8577861581316,
+        "ok": false,
+        "controlDrift": 24.8577861581316,
+        "sourceFps": 28.798439124599444,
+        "terrain": 0.0
+      },
+      {
+        "index": 123,
+        "delta": -10.415272921193752,
+        "noise": 24.8577861581316,
+        "ok": false,
+        "controlDrift": 24.8577861581316,
+        "sourceFps": 23.585235956760883,
+        "terrain": 28.8135593220339
+      }
+    ],
+    "FG=SIMPLE/parallel/x8": [
+      {
+        "index": 125,
+        "delta": -15.840106558814393,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 1.5954036734518353,
+        "sourceFps": 19.559175046686555,
+        "terrain": 20.74829931972789
+      },
+      {
+        "index": 126,
+        "delta": 7.696154847380887,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 1.5954036734518353,
+        "sourceFps": 25.02911848369979,
+        "terrain": 6.648936170212766
+      }
+    ],
+    "disableBlockEntityRendering=true": [
+      {
+        "index": 128,
+        "delta": 27.668163654427147,
+        "noise": 7.0209689141612355,
+        "ok": false,
+        "controlDrift": 7.0209689141612355,
+        "sourceFps": 30.995487595768825,
+        "terrain": 0.2145922746781116
+      },
+      {
+        "index": 129,
+        "delta": 58.32981770132753,
+        "noise": 7.0209689141612355,
+        "ok": false,
+        "controlDrift": 7.0209689141612355,
+        "sourceFps": 38.439574598139515,
+        "terrain": 0.0
+      }
+    ],
+    "disableParticles=true": [
+      {
+        "index": 131,
+        "delta": 17.69726941225236,
+        "noise": 14.786443042797337,
+        "ok": false,
+        "controlDrift": 14.786443042797337,
+        "sourceFps": 27.541635052273524,
+        "terrain": 5.072463768115942
+      },
+      {
+        "index": 132,
+        "delta": -2.9135668262671,
+        "noise": 14.786443042797337,
+        "ok": false,
+        "controlDrift": 14.786443042797337,
+        "sourceFps": 22.718616365109458,
+        "terrain": 23.16715542521994
+      }
+    ],
+    "blockEntityRenderDistance=16": [
+      {
+        "index": 134,
+        "delta": 12.591300459143895,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 4.187263687782776,
+        "sourceFps": 24.920686583306036,
+        "terrain": 14.171122994652407
+      },
+      {
+        "index": 135,
+        "delta": 30.36209914456789,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 4.187263687782776,
+        "sourceFps": 28.854032255382894,
+        "terrain": 24.249422632794456
+      }
+    ],
+    "FG=FSR/parallel/x4": [
+      {
+        "index": 137,
+        "delta": 6.049602597115444,
+        "noise": 12.41388614730932,
+        "ok": false,
+        "controlDrift": 12.41388614730932,
+        "sourceFps": 25.550074813147447,
+        "terrain": 0.0
+      },
+      {
+        "index": 138,
+        "delta": 6.180917612329417,
+        "noise": 12.41388614730932,
+        "ok": false,
+        "controlDrift": 12.41388614730932,
+        "sourceFps": 25.581711975198424,
+        "terrain": 0.0
+      }
+    ],
+    "walls=opaque": [
+      {
+        "index": 140,
+        "delta": -6.543525486277457,
+        "noise": 10.912959968603051,
+        "ok": false,
+        "controlDrift": 10.912959968603051,
+        "sourceFps": 22.676298361221157,
+        "terrain": 17.008797653958943
+      },
+      {
+        "index": 141,
+        "delta": -24.13881581859322,
+        "noise": 10.912959968603051,
+        "ok": false,
+        "controlDrift": 10.912959968603051,
+        "sourceFps": 18.40697346528453,
+        "terrain": 18.4115523465704
+      }
+    ],
+    "throttleCreateVisuals=false": [
+      {
+        "index": 143,
+        "delta": -4.748007266087939,
+        "noise": 23.54185295852467,
+        "ok": false,
+        "controlDrift": 23.54185295852467,
+        "sourceFps": 24.76605811735017,
+        "terrain": 26.344086021505376
+      },
+      {
+        "index": 144,
+        "delta": 4.576605617734053,
+        "noise": 23.54185295852467,
+        "ok": false,
+        "controlDrift": 23.54185295852467,
+        "sourceFps": 27.190510330624544,
+        "terrain": 10.53921568627451
+      }
+    ],
+    "throttleHiddenCreate=true": [
+      {
+        "index": 146,
+        "delta": 10.078869057980544,
+        "noise": 11.95477102786228,
+        "ok": false,
+        "controlDrift": 11.95477102786228,
+        "sourceFps": 30.185781651108535,
+        "terrain": 0.0
+      },
+      {
+        "index": 147,
+        "delta": -7.136552957228526,
+        "noise": 11.95477102786228,
+        "ok": false,
+        "controlDrift": 11.95477102786228,
+        "sourceFps": 25.464975792274057,
+        "terrain": 29.581151832460733
+      }
+    ],
+    "pauseXaeroBenchmark=false": [
+      {
+        "index": 149,
+        "delta": -0.9903559634288239,
+        "noise": 5,
+        "ok": true,
+        "controlDrift": 4.605765200412004,
+        "sourceFps": 26.12922568253693,
+        "terrain": 8.396946564885496
+      },
+      {
+        "index": 150,
+        "delta": -0.878065528490446,
+        "noise": 5,
+        "ok": true,
+        "controlDrift": 4.605765200412004,
+        "sourceFps": 26.158859786820866,
+        "terrain": 9.669211195928753
+      }
+    ],
+    "factoryBulbDistance=64": [
+      {
+        "index": 152,
+        "delta": -13.465706253269927,
+        "noise": 5.489300454648928,
+        "ok": false,
+        "controlDrift": 5.489300454648928,
+        "sourceFps": 24.02213843013462,
+        "terrain": 1.10803324099723
+      },
+      {
+        "index": 153,
+        "delta": -1.842472487925506,
+        "noise": 5.489300454648928,
+        "ok": false,
+        "controlDrift": 5.489300454648928,
+        "sourceFps": 27.24877747030671,
+        "terrain": 6.341463414634147
+      }
+    ],
+    "factoryItemRange=false": [
+      {
+        "index": 155,
+        "delta": -7.0917966192743265,
+        "noise": 6.2752004448818886,
+        "ok": false,
+        "controlDrift": 6.2752004448818886,
+        "sourceFps": 25.693287090919107,
+        "terrain": 26.94300518134715
+      },
+      {
+        "index": 156,
+        "delta": -9.46309994012947,
+        "noise": 6.2752004448818886,
+        "ok": false,
+        "controlDrift": 6.2752004448818886,
+        "sourceFps": 25.03751532066205,
+        "terrain": 19.414893617021274
+      }
+    ],
+    "particleBudget=false": [
+      {
+        "index": 158,
+        "delta": 0.19375245961932297,
+        "noise": 31.216657799845848,
+        "ok": false,
+        "controlDrift": 31.216657799845848,
+        "sourceFps": 23.21519579177281,
+        "terrain": 0.0
+      },
+      {
+        "index": 159,
+        "delta": -21.61986404109638,
+        "noise": 31.216657799845848,
+        "ok": false,
+        "controlDrift": 31.216657799845848,
+        "sourceFps": 18.160914805591997,
+        "terrain": 0.0
+      }
+    ],
+    "lightQueryCache=false": [
+      {
+        "index": 161,
+        "delta": 4.866495816833738,
+        "noise": 38.27750123344457,
+        "ok": false,
+        "controlDrift": 38.27750123344457,
+        "sourceFps": 25.358736095567053,
+        "terrain": 18.11023622047244
+      },
+      {
+        "index": 162,
+        "delta": 13.993998043846222,
+        "noise": 38.27750123344457,
+        "ok": false,
+        "controlDrift": 38.27750123344457,
+        "sourceFps": 27.565941727676623,
+        "terrain": 25.60386473429952
+      }
+    ],
+    "FG=SIMPLE/parallel=false": [
+      {
+        "index": 164,
+        "delta": -35.45863314700928,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 0.3236188192272581,
+        "sourceFps": 18.564355941542747,
+        "terrain": 0.0
+      },
+      {
+        "index": 165,
+        "delta": -34.90983335368897,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 0.3236188192272581,
+        "sourceFps": 18.72220996913174,
+        "terrain": 0.0
+      }
+    ],
+    "gpuGlassCulling=false": [
+      {
+        "index": 167,
+        "delta": 1.4178983845311022,
+        "noise": 10.190141250840924,
+        "ok": false,
+        "controlDrift": 10.190141250840924,
+        "sourceFps": 27.71217991709486,
+        "terrain": 12.23021582733813
+      },
+      {
+        "index": 168,
+        "delta": -2.1061851090559247,
+        "noise": 10.190141250840924,
+        "ok": false,
+        "controlDrift": 10.190141250840924,
+        "sourceFps": 26.749233165360124,
+        "terrain": 8.955223880597014
+      }
+    ],
+    "particlesPerTick=32": [
+      {
+        "index": 170,
+        "delta": -20.356437224592693,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 1.62633722744907,
+        "sourceFps": 20.82291453039142,
+        "terrain": 1.2779552715654952
+      },
+      {
+        "index": 171,
+        "delta": -4.908995119576809,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 1.62633722744907,
+        "sourceFps": 24.861668642547226,
+        "terrain": 0.0
+      }
+    ],
+    "createTickInterval=2": [
+      {
+        "index": 173,
+        "delta": -15.133606821987167,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 1.0665878270718292,
+        "sourceFps": 22.488791134061564,
+        "terrain": 23.964497041420117
+      },
+      {
+        "index": 174,
+        "delta": 5.123991154849161,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 1.0665878270718292,
+        "sourceFps": 27.85686290804723,
+        "terrain": 18.899521531100476
+      }
+    ],
+    "hiddenTickInterval=2": [
+      {
+        "index": 176,
+        "delta": 7.953525306903586,
+        "noise": 26.629224338800018,
+        "ok": false,
+        "controlDrift": 26.629224338800018,
+        "sourceFps": 25.3799750305011,
+        "terrain": 12.073490813648293
+      },
+      {
+        "index": 177,
+        "delta": 1.4730249679208551,
+        "noise": 26.629224338800018,
+        "ok": false,
+        "controlDrift": 26.629224338800018,
+        "sourceFps": 23.856403323871362,
+        "terrain": 0.0
+      }
+    ],
+    "factoryBulbDistance=16": [
+      {
+        "index": 179,
+        "delta": 19.212562435003267,
+        "noise": 29.131839980759537,
+        "ok": false,
+        "controlDrift": 29.131839980759537,
+        "sourceFps": 28.437481658407066,
+        "terrain": 0.0
+      },
+      {
+        "index": 180,
+        "delta": 5.058208972374434,
+        "noise": 29.131839980759537,
+        "ok": false,
+        "controlDrift": 29.131839980759537,
+        "sourceFps": 25.061040797154917,
+        "terrain": 33.244680851063826
+      }
+    ],
+    "visibleSections=false": [
+      {
+        "index": 182,
+        "delta": -3.6484271040927996,
+        "noise": 5.888137835315369,
+        "ok": false,
+        "controlDrift": 5.888137835315369,
+        "sourceFps": 27.13071793212468,
+        "terrain": 10.073710073710075
+      },
+      {
+        "index": 183,
+        "delta": -7.466774573112334,
+        "noise": 5.888137835315369,
+        "ok": false,
+        "controlDrift": 5.888137835315369,
+        "sourceFps": 26.055545985936227,
+        "terrain": 10.741687979539643
+      }
+    ],
+    "FG=SIMPLE/parallel=true": [
+      {
+        "index": 185,
+        "delta": 2.3638835450767726,
+        "noise": 10.957277841430168,
+        "ok": false,
+        "controlDrift": 10.957277841430168,
+        "sourceFps": 28.131056593153062,
+        "terrain": 0.0
+      },
+      {
+        "index": 186,
+        "delta": 2.5205309138776055,
+        "noise": 10.957277841430168,
+        "ok": false,
+        "controlDrift": 10.957277841430168,
+        "sourceFps": 28.17410552647107,
+        "terrain": 12.735849056603774
+      }
+    ],
+    "createTickInterval=8": [
+      {
+        "index": 188,
+        "delta": 0.46733451313676344,
+        "noise": 7.949085344301611,
+        "ok": false,
+        "controlDrift": 7.949085344301611,
+        "sourceFps": 27.17739040419234,
+        "terrain": 15.196078431372548
+      },
+      {
+        "index": 189,
+        "delta": -11.190092405732754,
+        "noise": 7.949085344301611,
+        "ok": false,
+        "controlDrift": 7.949085344301611,
+        "sourceFps": 24.023943126848362,
+        "terrain": 9.418282548476455
+      }
+    ],
+    "particleRange=true": [
+      {
+        "index": 191,
+        "delta": 8.841412822899276,
+        "noise": 6.846586075986679,
+        "ok": false,
+        "controlDrift": 6.846586075986679,
+        "sourceFps": 29.59959034166967,
+        "terrain": 0.0
+      },
+      {
+        "index": 192,
+        "delta": 11.007199145189862,
+        "noise": 6.846586075986679,
+        "ok": false,
+        "controlDrift": 6.846586075986679,
+        "sourceFps": 30.188579277450053,
+        "terrain": 10.572687224669604
+      }
+    ],
+    "disableTextureInterpolation=false": [
+      {
+        "index": 194,
+        "delta": 7.034881052308117,
+        "noise": 10.632912690373042,
+        "ok": false,
+        "controlDrift": 10.632912690373042,
+        "sourceFps": 26.692731375541083,
+        "terrain": 9.72568578553616
+      },
+      {
+        "index": 195,
+        "delta": -2.810198715843726,
+        "noise": 10.632912690373042,
+        "ok": false,
+        "controlDrift": 10.632912690373042,
+        "sourceFps": 24.237531098412504,
+        "terrain": 13.972602739726028
+      }
+    ],
+    "particles + items": [
+      {
+        "index": 197,
+        "delta": 10.22546034195988,
+        "noise": 16.680201030061845,
+        "ok": false,
+        "controlDrift": 16.680201030061845,
+        "sourceFps": 28.395187015800822,
+        "terrain": 0.0
+      },
+      {
+        "index": 198,
+        "delta": 17.391001408496187,
+        "noise": 16.680201030061845,
+        "ok": false,
+        "controlDrift": 16.680201030061845,
+        "sourceFps": 30.241102451512955,
+        "terrain": 0.0
+      }
+    ],
+    "distanceCreateTicks=true": [
+      {
+        "index": 200,
+        "delta": 0.25673961114720534,
+        "noise": 5.650782250620289,
+        "ok": true,
+        "controlDrift": 5.650782250620289,
+        "sourceFps": 28.79471749801915,
+        "terrain": 13.394919168591224
+      },
+      {
+        "index": 201,
+        "delta": 1.8811714719413786,
+        "noise": 5.650782250620289,
+        "ok": true,
+        "controlDrift": 5.650782250620289,
+        "sourceFps": 29.26127023759327,
+        "terrain": 13.863636363636363
+      }
+    ],
+    "original": [
+      {
+        "index": 203,
+        "delta": 8.702383004875426,
+        "noise": 6.305380834646902,
+        "ok": false,
+        "controlDrift": 6.305380834646902,
+        "sourceFps": 31.12132796985568,
+        "terrain": 0.0
+      },
+      {
+        "index": 204,
+        "delta": 4.469753444990876,
+        "noise": 6.305380834646902,
+        "ok": false,
+        "controlDrift": 6.305380834646902,
+        "sourceFps": 29.90953252373225,
+        "terrain": 0.0
+      }
+    ],
+    "freezeCreateClientTicks=true": [
+      {
+        "index": 206,
+        "delta": 37.532728048944094,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 0.9403308752879695,
+        "sourceFps": 38.31416730970611,
+        "terrain": 24.0
+      },
+      {
+        "index": 207,
+        "delta": 61.412558722707125,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 0.9403308752879695,
+        "sourceFps": 44.966662615669996,
+        "terrain": 9.481481481481481
+      }
+    ],
+    "itemLodDistance=64": [
+      {
+        "index": 209,
+        "delta": 3.640885251570447,
+        "noise": 10.246654574723742,
+        "ok": false,
+        "controlDrift": 10.246654574723742,
+        "sourceFps": 27.594496021771327,
+        "terrain": 0.0
+      },
+      {
+        "index": 210,
+        "delta": -7.3618209559253245,
+        "noise": 10.246654574723742,
+        "ok": false,
+        "controlDrift": 10.246654574723742,
+        "sourceFps": 24.665013781876432,
+        "terrain": 0.0
+      }
+    ],
+    "occludeCreateRendering=false": [
+      {
+        "index": 212,
+        "delta": -8.917454858331809,
+        "noise": 29.354542229774545,
+        "ok": false,
+        "controlDrift": 29.354542229774545,
+        "sourceFps": 20.06358824344385,
+        "terrain": 18.272425249169437
+      },
+      {
+        "index": 213,
+        "delta": 4.699509722560036,
+        "noise": 29.354542229774545,
+        "ok": false,
+        "controlDrift": 29.354542229774545,
+        "sourceFps": 23.06312201856656,
+        "terrain": 10.404624277456648
+      }
+    ],
+    "occludeCreateAnimations=false": [
+      {
+        "index": 215,
+        "delta": 12.11964097134759,
+        "noise": 33.19504400373927,
+        "ok": false,
+        "controlDrift": 33.19504400373927,
+        "sourceFps": 25.266258195492505,
+        "terrain": 5.013192612137203
+      },
+      {
+        "index": 216,
+        "delta": 20.640374051644518,
+        "noise": 33.19504400373927,
+        "ok": false,
+        "controlDrift": 33.19504400373927,
+        "sourceFps": 27.1864127746235,
+        "terrain": 0.0
+      }
+    ],
+    "minimumSections=2": [
+      {
+        "index": 218,
+        "delta": 5.435863705522248,
+        "noise": 9.89323074424949,
+        "ok": false,
+        "controlDrift": 9.89323074424949,
+        "sourceFps": 26.39784505591527,
+        "terrain": 0.0
+      },
+      {
+        "index": 219,
+        "delta": -5.434057538229586,
+        "noise": 9.89323074424949,
+        "ok": false,
+        "controlDrift": 9.89323074424949,
+        "sourceFps": 23.676356497107797,
+        "terrain": 17.97752808988764
+      }
+    ],
+    "FG=FSR/parallel/x8": [
+      {
+        "index": 221,
+        "delta": -0.6584067545768346,
+        "noise": 10.88062961873135,
+        "ok": false,
+        "controlDrift": 10.88062961873135,
+        "sourceFps": 25.001887941764327,
+        "terrain": 21.808510638297875
+      },
+      {
+        "index": 222,
+        "delta": -10.77064188202339,
+        "noise": 10.88062961873135,
+        "ok": false,
+        "controlDrift": 10.88062961873135,
+        "sourceFps": 22.45688175414875,
+        "terrain": 17.50741839762611
+      }
+    ],
+    "itemStackLod=false": [
+      {
+        "index": 224,
+        "delta": 13.666663841686955,
+        "noise": 17.229600862568958,
+        "ok": false,
+        "controlDrift": 17.229600862568958,
+        "sourceFps": 27.771061628081483,
+        "terrain": 0.0
+      },
+      {
+        "index": 225,
+        "delta": 11.586129206444241,
+        "noise": 17.229600862568958,
+        "ok": false,
+        "controlDrift": 17.229600862568958,
+        "sourceFps": 27.2627449974891,
+        "terrain": 0.0
+      }
+    ],
+    "limitItemRendering=false": [
+      {
+        "index": 227,
+        "delta": 9.06014693247732,
+        "noise": 26.669299885478654,
+        "ok": false,
+        "controlDrift": 26.669299885478654,
+        "sourceFps": 28.096732469191917,
+        "terrain": 8.530805687203792
+      },
+      {
+        "index": 228,
+        "delta": 12.791400876394675,
+        "noise": 26.669299885478654,
+        "ok": false,
+        "controlDrift": 26.669299885478654,
+        "sourceFps": 29.058000602287045,
+        "terrain": 9.63302752293578
+      }
+    ],
+    "createVisualInterval=2": [
+      {
+        "index": 230,
+        "delta": 1.542744950337105,
+        "noise": 5,
+        "ok": false,
+        "controlDrift": 3.0283501965353232,
+        "sourceFps": 29.206173088595186,
+        "terrain": 12.984054669703873
+      },
+      {
+        "index": 231,
+        "delta": 1.494781778940002,
+        "noise": 5,
+        "ok": true,
+        "controlDrift": 3.0283501965353232,
+        "sourceFps": 29.1923777092563,
+        "terrain": 0.0
+      }
+    ]
+  }
+}

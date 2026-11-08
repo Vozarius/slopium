@@ -69,12 +69,13 @@ public final class Slopium {
     }
 
     /** Apply transient analyzer settings without writing the config file. */
-    public static void refreshOptions() {
+    public static void refreshOptions() { refreshOptions(true,true,true); }
+
+    public static void refreshOptions(boolean terrain,boolean frameGeneration,boolean filter) {
         configRevision++;
-        dev.slopium.visibility.ProcessedBlocks.rebuild();
+        if(filter) dev.slopium.visibility.ProcessedBlocks.rebuild();
         dev.slopium.visibility.VisibilityPool.clear();
-        dev.slopium.framegen.FrameGeneration.release();
-        dev.slopium.framegen.FrameGeneration.resetCounters();
+        if(frameGeneration){dev.slopium.framegen.FrameGeneration.release();dev.slopium.framegen.FrameGeneration.resetCounters();}
         if(loaded("flywheel")&&(!SlopiumConfig.get().enabled||!SlopiumConfig.get().gpuGlassCulling))
             dev.slopium.visibility.GpuGlassDepth.release();
         dev.slopium.visibility.WallOcclusion.invalidate();
@@ -82,7 +83,7 @@ public final class Slopium {
         if (loaded("sodiumdynamiclights")) SodiumLightBridge.clear();
         // Cached chunk light must be rebuilt when a source group is disabled/re-enabled.
         Minecraft client = Minecraft.getInstance();
-        if (client.level != null) client.levelRenderer.allChanged();
+        if (terrain && loaded("sodiumdynamiclights") && client.level != null) client.levelRenderer.allChanged();
     }
 
     public static boolean loaded(String id) { return ModList.get().isLoaded(id); }

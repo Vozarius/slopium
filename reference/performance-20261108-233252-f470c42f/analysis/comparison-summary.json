@@ -1,0 +1,7 @@
+{
+  "oldControlMedian": 25.049461459033324,
+  "newControlMedian": 25.522490392719646,
+  "gcFilterWarnings": 162,
+  "gcFilterBug": "ZGC concurrent cycle time treated as pause time",
+  "sourceReportsUnchanged": true
+}

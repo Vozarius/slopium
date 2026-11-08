@@ -1,0 +1,10 @@
+{
+  "jar": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-16.jar",
+  "sha256": "7f1fc283952c506d08d320f235eef47e150bbd34531216fa720fdc4b70a8f64c",
+  "bytes": 30952919,
+  "tests": 60,
+  "failures": 0,
+  "integration": "build/beta16-final-analysis.log",
+  "noSparkUi": "build/beta16-ui-no-spark.log",
+  "report": "run/smoke-legacy/slopium-reports/performance-20261108-201400-ed7f5c9b/report.json"
+}

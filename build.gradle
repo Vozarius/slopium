@@ -81,6 +81,7 @@ dependencies {
         include 'sodiumdynamiclights-*.jar'
         include 'entityculling-*.jar'
     }
+    compileOnly fileTree('reference/mods') { include 'spark-*.jar' }
     compileOnly files(extractCompat.map { compatDir.get().asFile.listFiles() ?: [] })
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
     testImplementation 'com.google.code.gson:gson:2.10.1'
@@ -96,6 +97,7 @@ if (project.hasProperty('withReferenceMods')) {
                 include '*.jar'
                 exclude 'create-dyn-light-forge-1.21.1-2.0.1.jar'
             } else {
+                if (project.hasProperty('analysisSmoke')) include 'spark-*.jar'
                 include 'sodium-neoforge-*.jar', 'reeses-sodium-options-*.jar'
                 if (smokeProfile == 'legacy' || smokeProfile == 'plain') {
                     include 'create-1.21.1-*.jar', 'sodiumdynamiclights-*.jar'
@@ -137,7 +139,7 @@ def nativeFsr = tasks.register('buildNativeFsr', Exec) {
 }
 tasks.named('processResources') { dependsOn nativeFsr }
 tasks.named('jar') {
-    archiveVersion = 'beta-15'
+    archiveVersion = 'beta-16'
     from('LICENSE') { rename { 'LICENSE-slopium' } }
     from('licenses') { into 'licenses' }
     from('src/main/java/dev/slopium/framegen/reference') { into 'sources/dev/slopium/framegen/reference' }
@@ -146,7 +148,7 @@ tasks.named('jar') {
 
 java.withSourcesJar()
 tasks.named('sourcesJar') {
-    archiveVersion = 'beta-15'
+    archiveVersion = 'beta-16'
     from('LICENSE'); from('README.md')
     from('licenses') { into 'licenses' }
     from('native') { into 'native' }
