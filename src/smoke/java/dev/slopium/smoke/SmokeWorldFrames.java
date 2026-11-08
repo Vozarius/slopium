@@ -18,6 +18,7 @@ import net.neoforged.neoforge.common.NeoForge;
 /** Actual integrated-server world + normal GameRenderer/swap loop; no simulated world draw. */
 final class SmokeWorldFrames {
     private final SmokeSectionWorld sections=Boolean.getBoolean("slopium.sectionSmoke")?new SmokeSectionWorld():null;
+    private final SmokeAnalysis analysis=Boolean.getBoolean("slopium.analysisSmoke")?new SmokeAnalysis():null;
     private final SmokeWorldOwnership ownership=new SmokeWorldOwnership();
     private final SmokeParallelFrames parallel=Boolean.getBoolean("slopium.asyncSmoke")?new SmokeParallelFrames():null;
     private boolean started;
@@ -43,7 +44,7 @@ final class SmokeWorldFrames {
     SmokeWorldFrames(){NeoForge.EVENT_BUS.addListener(this::tick);NeoForge.EVENT_BUS.addListener(this::frame);NeoForge.EVENT_BUS.addListener(this::simulatedRenderLoad);NeoForge.EVENT_BUS.addListener(this::hud);}
     private void tick(ClientTickEvent.Post event) {
         var mc=Minecraft.getInstance();
-        if(sections!=null&&System.getProperty("slopium.sectionSmokeReuse")!=null&&mc.screen instanceof net.minecraft.client.gui.screens.BackupConfirmScreen backup){
+        if((sections!=null||analysis!=null)&&System.getProperty("slopium.sectionSmokeReuse")!=null&&mc.screen instanceof net.minecraft.client.gui.screens.BackupConfirmScreen backup){
             String skip=net.minecraft.network.chat.Component.translatable("selectWorld.backupJoinSkipButton").getString();
             for(var child:backup.children())if(child instanceof net.minecraft.client.gui.components.Button button&&button.getMessage().getString().equals(skip)){button.onPress();return;}
         }
@@ -54,7 +55,7 @@ final class SmokeWorldFrames {
             mc.options.graphicsMode().set(net.minecraft.client.GraphicsStatus.FANCY);
             var c=SlopiumConfig.get();c.frameGenerationMode=FrameGenerationMode.OFF;
             String reuse=System.getProperty("slopium.sectionSmokeReuse");
-            if(sections!=null&&reuse!=null){
+            if((sections!=null||analysis!=null)&&reuse!=null){
                 if(!reuse.matches("framegen-beta2-[0-9]+"))throw new AssertionError("Only isolated generated test worlds may be reused");
                 mc.createWorldOpenFlows().openWorld(reuse,()->{throw new AssertionError("Unable to reopen test world");});return;
             }
@@ -65,7 +66,7 @@ final class SmokeWorldFrames {
         if(mc.level!=null&&mc.player!=null) {
             mc.setWindowActive(true);
             // Continuous slow rotation exercises changing camera matrices on generated frames.
-            mc.player.setYRot(sections!=null&&sections.fixedYaw()!=null?sections.fixedYaw():(float)(6*Math.sin(++phaseTicks*Math.PI/80)));mc.player.setXRot(0);
+            mc.player.setYRot(analysis!=null?0:sections!=null&&sections.fixedYaw()!=null?sections.fixedYaw():(float)(6*Math.sin(++phaseTicks*Math.PI/80)));mc.player.setXRot(0);
             if(warmup++==100) {
                 var server=mc.getSingleplayerServer();
                 server.execute(()->{
@@ -107,6 +108,7 @@ final class SmokeWorldFrames {
         var mc=Minecraft.getInstance();
         if(!started||mc.level==null||mc.player==null||mc.screen!=null||warmup<200||!sceneReady||mc.player.getY()<290||
             (sections==null&&!mc.level.getBlockState(new net.minecraft.core.BlockPos(0,301,14)).is(net.minecraft.world.level.block.Blocks.BRICKS)))return;
+        if(analysis!=null){analysis.frame();return;}
         if(sections!=null){sections.frame();return;}
         if(!ownership.frame())return;
         if(parallel!=null){parallel.frame();return;}

@@ -24,18 +24,23 @@ public final class Slopium {
         modBus.addListener((net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent event)->event.enqueueWork(dev.slopium.visibility.ProcessedBlocks::discover));
         NeoForge.EVENT_BUS.addListener(Slopium::registerCommands);
         NeoForge.EVENT_BUS.addListener(dev.slopium.framegen.FrameGeneration::overlay);
+        NeoForge.EVENT_BUS.addListener(dev.slopium.benchmark.PerformanceAnalysis::overlay);
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) -> {
+            dev.slopium.benchmark.PerformanceAnalysis.cancel("logout");
             dev.slopium.framegen.FrameGeneration.release();
             dev.slopium.visibility.GpuSections.release();
             if(loaded("flywheel")) dev.slopium.visibility.GpuGlassDepth.release();
         });
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.ChunkEvent.Load event) -> {
+            if(event.getLevel().isClientSide()) dev.slopium.benchmark.PerformanceAnalysis.chunkChanged();
             if(event.getLevel().isClientSide()) dev.slopium.visibility.VisibilityGeometry.chunk(event.getChunk().getPos().x,event.getChunk().getPos().z);
         });
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.ChunkEvent.Unload event) -> {
+            if(event.getLevel().isClientSide()) dev.slopium.benchmark.PerformanceAnalysis.chunkChanged();
             if(event.getLevel().isClientSide()) dev.slopium.visibility.VisibilityGeometry.chunk(event.getChunk().getPos().x,event.getChunk().getPos().z);
         });
         NeoForge.EVENT_BUS.addListener((RenderFrameEvent.Pre event) -> {
+            dev.slopium.benchmark.PerformanceAnalysis.tick();
             frame++;
             Minecraft client = Minecraft.getInstance();
             boolean hasLevel = client.level != null;
@@ -57,8 +62,14 @@ public final class Slopium {
     }
 
     public static void applyOptions() {
+        if(dev.slopium.benchmark.PerformanceAnalysis.running()){dev.slopium.benchmark.PerformanceAnalysis.cancel("video settings changed");return;}
         SlopiumConfig.get().minimumSections=dev.slopium.visibility.SectionVisibility.minimum();
         SlopiumConfig.get().save();
+        refreshOptions();
+    }
+
+    /** Apply transient analyzer settings without writing the config file. */
+    public static void refreshOptions() {
         configRevision++;
         dev.slopium.visibility.ProcessedBlocks.rebuild();
         dev.slopium.visibility.VisibilityPool.clear();
@@ -88,6 +99,9 @@ public final class Slopium {
 
     private static void registerCommands(RegisterClientCommandsEvent event) {
         event.getDispatcher().register(Commands.literal("slopium")
+            .then(Commands.literal("analyze").executes(context -> {
+                Minecraft.getInstance().tell(() -> Minecraft.getInstance().setScreen(new dev.slopium.benchmark.AnalysisScreen(null))); return Command.SINGLE_SUCCESS;
+            }).then(Commands.literal("stop").executes(context -> {dev.slopium.benchmark.PerformanceAnalysis.cancel("stopped by command");return Command.SINGLE_SUCCESS;})))
             .then(Commands.literal("status").executes(context -> {
                 context.getSource().sendSuccess(()->Component.literal(dev.slopium.visibility.SectionVisibility.status()),false);
                 context.getSource().sendSuccess(() -> Component.literal(

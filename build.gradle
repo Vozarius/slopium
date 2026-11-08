@@ -38,6 +38,7 @@ neoForge {
             sourceSet = sourceSets.smoke
             gameDirectory = smokeDir
             jvmArgument '-Xmx4G'
+            if (project.hasProperty('analysisSmoke')) jvmArgument '-Dslopium.analysisSmoke=true'
             if (project.hasProperty('worldSmoke')) jvmArgument '-Dslopium.worldSmoke=true'
             if (project.hasProperty('inputSmoke')) jvmArgument '-Dslopium.inputSmoke=true'
             if (project.hasProperty('fastSmoke')) jvmArgument '-Dslopium.fastSmoke=true'
@@ -82,6 +83,7 @@ dependencies {
     }
     compileOnly files(extractCompat.map { compatDir.get().asFile.listFiles() ?: [] })
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+    testImplementation 'com.google.code.gson:gson:2.10.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
@@ -135,7 +137,7 @@ def nativeFsr = tasks.register('buildNativeFsr', Exec) {
 }
 tasks.named('processResources') { dependsOn nativeFsr }
 tasks.named('jar') {
-    archiveVersion = 'beta-14'
+    archiveVersion = 'beta-15'
     from('LICENSE') { rename { 'LICENSE-slopium' } }
     from('licenses') { into 'licenses' }
     from('src/main/java/dev/slopium/framegen/reference') { into 'sources/dev/slopium/framegen/reference' }
@@ -144,7 +146,7 @@ tasks.named('jar') {
 
 java.withSourcesJar()
 tasks.named('sourcesJar') {
-    archiveVersion = 'beta-14'
+    archiveVersion = 'beta-15'
     from('LICENSE'); from('README.md')
     from('licenses') { into 'licenses' }
     from('native') { into 'native' }

@@ -1,0 +1,11 @@
+{
+  "jar": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-15.jar",
+  "sha256": "3fd766194ff7b6e2d812338244121a7f7b3a227c8d7ea00e5646b0b73285e4d9",
+  "bytes": 30929957,
+  "tests": 56,
+  "failures": 0,
+  "language_keys": 283,
+  "world_smoke": "build/beta15-final-analysis.log",
+  "ui_smoke": "build/beta15-ui-build.log",
+  "runtime_report": "run/smoke-legacy/slopium-reports/performance-20261108-164557-001fcdae/report.json"
+}

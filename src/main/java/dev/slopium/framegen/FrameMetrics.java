@@ -27,10 +27,10 @@ public final class FrameMetrics {
     }
     public static void reset(){bank=new Bank();display=new Snapshot(0,0,0);}
     public static Snapshot display(){return display;}
-    public static void sourceCompleted(){if(tracking&&!sourceCounted){bank.source.event(System.nanoTime());sourceCounted=true;}}
+    public static void sourceCompleted(){if(tracking&&!sourceCounted){long now=System.nanoTime();bank.source.event(now);dev.slopium.benchmark.PerformanceAnalysis.source(now);sourceCounted=true;}}
     public static void synthesized(){synthesized=true;}
     public static void mainPresented(){if(tracking)presented(System.nanoTime(),synthesized);}
-    public static void presented(long now,boolean generated){var b=bank;b.output.event(now);if(generated)b.generated++;}
+    public static void presented(long now,boolean generated){dev.slopium.benchmark.PerformanceAnalysis.presented(generated);var b=bank;b.output.event(now);if(generated)b.generated++;}
     public static Component counter(){var s=display;return Component.translatable("slopium.frame_generation.counter",Math.round(s.source),Math.round(s.output),s.generated);}
     public static String debugLine(String vanilla){
         if(SlopiumConfig.get().frameGenerationMode==FrameGenerationMode.OFF)return vanilla;

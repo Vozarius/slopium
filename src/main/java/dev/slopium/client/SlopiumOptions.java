@@ -26,6 +26,8 @@ public final class SlopiumOptions implements ConfigEntryPoint {
             .setColorTheme(builder.createColorTheme().setBaseThemeRGB(0x72c7a6))
             .addPage(builder.createOptionPage().setName(text("page.general"))
                 .addOptionGroup(builder.createOptionGroup().setName(text("group.general"))
+                    .addOption(builder.createExternalButtonOption(id("performance_analysis")).setName(text("analysis.title")).setTooltip(text("analysis.tooltip"))
+                        .setScreenConsumer(parent->net.minecraft.client.Minecraft.getInstance().setScreen(new dev.slopium.benchmark.AnalysisScreen(parent))))
                     .addOption(bool(builder, "enabled", v -> c.enabled = v, () -> c.enabled, true, true))
                     .addOption(bool(builder, "camera_culling", v -> c.cameraCulling = v, () -> c.cameraCulling, false, true))
                     .addOption(bool(builder, "gpu_glass_culling", v -> c.gpuGlassCulling = v, () -> c.gpuGlassCulling, false, true))

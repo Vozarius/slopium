@@ -1,0 +1,192 @@
+{
+  "completed": 191,
+  "valid": 64,
+  "controls": 39,
+  "validControls": 13,
+  "controlFpsMedian": 25.049461459033324,
+  "controlFpsMin": 20.180226203552188,
+  "controlFpsMax": 33.17728815562019,
+  "chunkEvents": 0,
+  "rawObservations": {
+    "original": [
+      {
+        "trial": 143,
+        "realFps": 17.961489488846542,
+        "outputFps": 17.961489488846542,
+        "valid": true,
+        "changes": {
+          "enabled": false
+        }
+      },
+      {
+        "trial": 150,
+        "realFps": 30.160278009053734,
+        "outputFps": 30.160278009053734,
+        "valid": true,
+        "changes": {
+          "enabled": false
+        }
+      }
+    ],
+    "cameraCulling=false": [
+      {
+        "trial": 45,
+        "realFps": 33.28488932594381,
+        "outputFps": 33.28488932594381,
+        "valid": false,
+        "changes": {
+          "cameraCulling": false
+        }
+      },
+      {
+        "trial": 47,
+        "realFps": 35.94387866560667,
+        "outputFps": 35.94387866560667,
+        "valid": true,
+        "changes": {
+          "cameraCulling": false
+        }
+      }
+    ],
+    "occludeCreateTicks=false": [
+      {
+        "trial": 104,
+        "realFps": 32.39735767150832,
+        "outputFps": 32.39735767150832,
+        "valid": true,
+        "changes": {
+          "occludeCreateTicks": false
+        }
+      },
+      {
+        "trial": 108,
+        "realFps": 35.65746171789441,
+        "outputFps": 35.65746171789441,
+        "valid": false,
+        "changes": {
+          "occludeCreateTicks": false
+        }
+      }
+    ],
+    "freezeCreateClientTicks=true": [
+      {
+        "trial": 55,
+        "realFps": 36.14451275124992,
+        "outputFps": 36.14451275124992,
+        "valid": true,
+        "changes": {
+          "freezeCreateClientTicks": true
+        }
+      },
+      {
+        "trial": 58,
+        "realFps": 37.555433342806424,
+        "outputFps": 37.555433342806424,
+        "valid": false,
+        "changes": {
+          "freezeCreateClientTicks": true
+        }
+      }
+    ],
+    "hideAllCreateModels=true": [
+      {
+        "trial": 142,
+        "realFps": 30.86804848301523,
+        "outputFps": 30.86804848301523,
+        "valid": true,
+        "changes": {
+          "hideAllCreateModels": true
+        }
+      },
+      {
+        "trial": 149,
+        "realFps": 44.38259181601201,
+        "outputFps": 44.38259181601201,
+        "valid": true,
+        "changes": {
+          "hideAllCreateModels": true
+        }
+      }
+    ],
+    "disableBlockEntityRendering=true": [
+      {
+        "trial": 22,
+        "realFps": 32.58057187918272,
+        "outputFps": 32.58057187918272,
+        "valid": false,
+        "changes": {
+          "disableBlockEntityRendering": true
+        }
+      },
+      {
+        "trial": 28,
+        "realFps": 43.38845823622458,
+        "outputFps": 43.38845823622458,
+        "valid": false,
+        "changes": {
+          "disableBlockEntityRendering": true
+        }
+      }
+    ],
+    "disableParticles=true": [
+      {
+        "trial": 62,
+        "realFps": 26.107247476527764,
+        "outputFps": 26.107247476527764,
+        "valid": false,
+        "changes": {
+          "disableParticles": true
+        }
+      },
+      {
+        "trial": 69,
+        "realFps": 27.794035677883883,
+        "outputFps": 27.794035677883883,
+        "valid": false,
+        "changes": {
+          "disableParticles": true
+        }
+      }
+    ],
+    "disableFlywheelRendering=true": [
+      {
+        "trial": 182,
+        "realFps": 24.532510083459997,
+        "outputFps": 24.532510083459997,
+        "valid": false,
+        "changes": {
+          "disableFlywheelRendering": true
+        }
+      },
+      {
+        "trial": 189,
+        "realFps": 25.25377019574197,
+        "outputFps": 25.25377019574197,
+        "valid": true,
+        "changes": {
+          "disableFlywheelRendering": true
+        }
+      }
+    ],
+    "gpuGlassCulling=false": [
+      {
+        "trial": 183,
+        "realFps": 21.610772577750083,
+        "outputFps": 21.610772577750083,
+        "valid": false,
+        "changes": {
+          "gpuGlassCulling": false
+        }
+      },
+      {
+        "trial": 190,
+        "realFps": 31.96243750447325,
+        "outputFps": 31.96243750447325,
+        "valid": true,
+        "changes": {
+          "gpuGlassCulling": false
+        }
+      }
+    ]
+  }
+}
