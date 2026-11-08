@@ -1,0 +1,49 @@
+{
+  "date": "2026-11-09",
+  "scope": "Source and bytecode audit; no runtime modifications and no new FPS benchmark. Current repo versions are distinguished from installed artifacts.",
+  "versions": {
+    "installedSodium": "0.8.13+mc1.21.1",
+    "attachedSodium": "0.9.3-beta.1 / Minecraft 26.3",
+    "Create": "6.0.11 / Minecraft 1.21.1",
+    "Flywheel": "1.0.6 / Minecraft 1.21.1",
+    "attachedNvidium": "0.3.0 / Fabric Minecraft 1.21 (current folder, not Forge 1.20.1)"
+  },
+  "files": [
+    {
+      "path": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\src\\main\\java\\dev\\slopium\\client\\SlopiumOptions.java",
+      "sha256": "694f60cce121331b91cfaaf012d7f0e635581eb86d14acbfa7cfd75aa2a774dc"
+    },
+    {
+      "path": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\compat\\net.caffeinemc.sodium-neoforge-0.8.13+mc1.21.1-mod.jar",
+      "sha256": "d71acbffafd3d177add7624710114d8570cdd70d5553a2b5c8ab371852c59ce3"
+    },
+    {
+      "path": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\compat\\flywheel-neoforge-1.21.1-1.0.6.jar",
+      "sha256": "31dda15c205eb596d3b3449ef03f6af7363a6cd35b3da4bfe916b304f9e5337e"
+    },
+    {
+      "path": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\reference\\mods\\create-1.21.1-6.0.11.jar",
+      "sha256": "45bf9c537b81554d977cecafffa6c258334b090e9bc098ade0065e685170ff64"
+    },
+    {
+      "path": "D:\\Minecraft files\\Zuboglaziki\\_test\\sodium\\buildSrc\\src\\main\\kotlin\\BuildConfig.kt",
+      "sha256": "adc5e2d18ad1bda56fae8eb516ca9518e5fae16bc705c97637ed63066fe8ee2b"
+    },
+    {
+      "path": "D:\\Minecraft files\\Zuboglaziki\\_test\\Create\\gradle.properties",
+      "sha256": "6ea871c1710d340dc7067fd052fe7569cb87c08c88e2c3b67bea2d0a421fca25"
+    },
+    {
+      "path": "D:\\_projects\\nvidium\\gradle.properties",
+      "sha256": "330fe48c2d69b23100b20baefd99716e20259222e22c8abdde35113969536cc5"
+    },
+    {
+      "path": "D:\\_projects\\nvidium\\build.gradle",
+      "sha256": "db99ce1ca1c2d0ff91f22d7f0ec78990bee978fb3e6197e82864347dc8b01c1e"
+    },
+    {
+      "path": "D:\\_projects\\nvidium\\LICENSE.txt",
+      "sha256": "a5681bf9b05db14d86776930017c647ad9e6e56ff6bbcfdf21e5848288dfaf1b"
+    }
+  ]
+}
