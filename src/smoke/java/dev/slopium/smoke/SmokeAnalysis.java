@@ -61,6 +61,9 @@ final class SmokeAnalysis {
             }
             for(var r:root.getAsJsonArray("trials")){
                 var m=r.getAsJsonObject().getAsJsonObject("metrics");var q=r.getAsJsonObject().getAsJsonObject("quality");if(q.get("minimizedChecks").getAsInt()<1)throw new AssertionError("Measurement not minimized");
+                if(root.get("schema").getAsInt()!=3||q.getAsJsonObject("collectors").size()==0)throw new AssertionError("Missing per-collector GC accounting");
+                long pauses=0;for(var gc:q.getAsJsonObject("collectors").entrySet())if(gc.getValue().getAsJsonObject().get("kind").getAsString().equals("PAUSE"))pauses+=gc.getValue().getAsJsonObject().get("millis").getAsLong();
+                if(q.get("gcMillis").getAsLong()!=pauses)throw new AssertionError("Concurrent GC leaked into pause accounting");
                 if(m.get("sourceFrames").getAsLong()<10||m.get("outputFrames").getAsLong()<10)throw new AssertionError("Missing real/swap samples");
                 if(r.getAsJsonObject().get("id").getAsString().equals("parallel FG")&&m.get("generatedFrames").getAsLong()<10)throw new AssertionError("Parallel output not measured");
             }

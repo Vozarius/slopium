@@ -31,9 +31,9 @@ public final class SlopiumOptions implements ConfigEntryPoint {
                     .addOption(bool(builder, "enabled", v -> c.enabled = v, () -> c.enabled, true, true))
                     .addOption(bool(builder, "camera_culling", v -> c.cameraCulling = v, () -> c.cameraCulling, false, true))
                     .addOption(bool(builder, "gpu_glass_culling", v -> c.gpuGlassCulling = v, () -> c.gpuGlassCulling, false, true))
-                    .addOption(bool(builder, "diagnostics", v -> c.diagnostics = v, () -> c.diagnostics, false, true))
-                    .addOption(bool(builder, "cull_breaking", v -> c.cullBreakingOverlays = v, () -> c.cullBreakingOverlays, true, true))
                     .addOption(bool(builder, "pause_xaero_benchmark", v -> c.pauseXaeroBenchmark = v, () -> c.pauseXaeroBenchmark, false, Slopium.loaded("xaeroworldmap"))))
+                .addOptionGroup(builder.createOptionGroup().setName(text("group.diagnostics"))
+                    .addOption(bool(builder, "diagnostics", v -> c.diagnostics = v, () -> c.diagnostics, false, true)))
                 .addOptionGroup(builder.createOptionGroup().setName(text("group.sections"))
                     .addOption(bool(builder,"visible_sections",v->c.visibleSections=v,()->c.visibleSections,false,true))
                     .addOption(integer(builder,"minimum_sections",v->c.minimumSections=v,()->dev.slopium.visibility.SectionVisibility.minimum(),2,0,31,1)
@@ -117,7 +117,6 @@ public final class SlopiumOptions implements ConfigEntryPoint {
                 .addOptionGroup(builder.createOptionGroup().setName(text("group.world_detail"))
                     .addOption(mode(builder, "block_models", BlockModels.class, v -> { c.disableBlockEntityRendering = v == BlockModels.HIDE; c.limitBlockEntityRendering = v == BlockModels.NEAR; }, () -> c.disableBlockEntityRendering ? BlockModels.HIDE : c.limitBlockEntityRendering ? BlockModels.NEAR : BlockModels.SHOW, BlockModels.SHOW, true))
                     .addOption(integer(builder, "be_render_distance", v -> c.blockEntityRenderDistance = v, () -> c.blockEntityRenderDistance, 64, 0, 512, 1))
-                    .addOption(bool(builder, "disable_shadows", v -> c.disableEntityShadows = v, () -> c.disableEntityShadows, false, true))
                     .addOption(bool(builder, "texture_interpolation", v -> c.disableTextureInterpolation = v, () -> c.disableTextureInterpolation, false, true))
                     .addOption(bool(builder, "disable_ambient", v -> c.disableAmbientEffects = v, () -> c.disableAmbientEffects, false, true))));
 
@@ -174,7 +173,6 @@ public final class SlopiumOptions implements ConfigEntryPoint {
         java.util.Map.entry("item_render_distance", "item_range"), java.util.Map.entry("item_lod_distance", "item_lod"),
         java.util.Map.entry("item_impostor_distance", "item_impostors"),
         java.util.Map.entry("create_visual_distance", "create_visuals"), java.util.Map.entry("create_visual_interval", "create_visuals"),
-        java.util.Map.entry("flywheel_distance_radius", "flywheel_distance"), java.util.Map.entry("flywheel_interval", "flywheel_distance"),
         java.util.Map.entry("light_cache", "indexed_lighting"), java.util.Map.entry("sable_light", "create_light"));
     private static String override(String key) {
         if (key.startsWith("particle") && !key.equals("particle_visibility")) return "particle_visibility";
@@ -227,7 +225,6 @@ public final class SlopiumOptions implements ConfigEntryPoint {
         if (key.equals("be_render_distance")) return state.readEnumOption(id("block_models"), BlockModels.class) == BlockModels.NEAR;
         if (key.startsWith("factory_") && !Slopium.loaded("create")) return false;
         if (key.startsWith("create_visual_") && (!Slopium.loaded("create") || !Slopium.loaded("flywheel"))) return false;
-        if ((key.equals("flywheel_distance_radius") || key.equals("flywheel_interval")) && !Slopium.loaded("flywheel")) return false;
         if (key.equals("factory_connection_distance")) return state.readEnumOption(id("factory_connection_mode"), Connections.class) == Connections.NEAR;
         if (key.equals("tick_interval") || key.equals("hidden_grace") || key.equals("protected_distance") || key.equals("create_tick_distance") || key.equals("create_tick_interval")) {
             if (!Slopium.loaded("create")) return false;

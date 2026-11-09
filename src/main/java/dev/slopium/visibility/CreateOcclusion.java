@@ -10,6 +10,12 @@ public final class CreateOcclusion {
     }
     public static Boolean decision(BlockPos target,Vec3 eye,boolean any,boolean queued) {
         Boolean result=VisibilityPool.read(Vec3.atCenterOf(target),eye,true,any);
+        return counted(result);
+    }
+    public static Boolean decision(VisibilityPool.Handle handle,Vec3 eye,boolean any){
+        return counted(VisibilityPool.read(handle,eye,any));
+    }
+    private static Boolean counted(Boolean result){
         if(SlopiumConfig.get().diagnostics) {
             SlopiumStats.createOcclusionChecks++;
             if(result==null) SlopiumStats.createOcclusionDeferred++;

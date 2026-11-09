@@ -4,6 +4,11 @@ import dev.slopium.visibility.InstanceVisibility;
 import dev.slopium.visibility.VisualOcclusionState;
 
 final class SmokeFlywheelWallChecks {
+    private static org.joml.Matrix4f testView,testProjection;
+    private static void deferProcessor()throws ReflectiveOperationException{
+        var processed=dev.slopium.visibility.VisibilityPool.class.getDeclaredField("processed");processed.setAccessible(true);
+        processed.setLong(null,dev.slopium.client.Slopium.frame()+1);
+    }
     static final class Handle implements InstanceHandle {
         boolean visible; int changes; Handle(boolean value){visible=value;}
         public void setChanged(){changes++;} public void setDeleted(){} public void setVisible(boolean value){visible=value;} public boolean isVisible(){return visible;}
@@ -36,13 +41,16 @@ final class SmokeFlywheelWallChecks {
         boolean oldFreeze=c.freezeCreateAnimations;boolean oldGpu=c.gpuGlassCulling;
         boolean oldAnimation=c.occludeCreateAnimations, oldFlyMode=c.flywheelAnyBlock, oldAnimMode=c.animationAnyBlock;
         var testLevel=(SmokeWallChecks.TestLevel)mc.level;var oldWall=testLevel.wall;
+        var camera=mc.gameRenderer.getMainCamera();var oldEye=camera.getPosition();
+        var cameraPosition=net.minecraft.client.Camera.class.getDeclaredMethod("setPosition",double.class,double.class,double.class);cameraPosition.setAccessible(true);
         try {
+            cameraPosition.invoke(camera,3.75,.5,.5);
             c.enabled=true;c.occludeFlywheel=true;c.gpuGlassCulling=false;mc.screen=null;
             mc.player=(net.minecraft.client.player.LocalPlayer)SmokeRadicalChecks.allocate(net.minecraft.client.player.LocalPlayer.class);
             var position=net.minecraft.world.entity.Entity.class.getDeclaredField("position");position.setAccessible(true);position.set(mc.player,net.minecraft.world.phys.Vec3.ZERO);
             var side=net.minecraft.world.level.Level.class.getDeclaredField("isClientSide");side.setAccessible(true);side.setBoolean(mc.level,true);
             var block=net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("create","large_cogwheel"));
-            var be=((net.minecraft.world.level.block.EntityBlock)block).newBlockEntity(new net.minecraft.core.BlockPos(5,0,0),block.defaultBlockState());be.setLevel(mc.level);
+            var be=((net.minecraft.world.level.block.EntityBlock)block).newBlockEntity(new net.minecraft.core.BlockPos(9,0,0),block.defaultBlockState());be.setLevel(mc.level);
             var base=Class.forName("com.simibubi.create.content.kinetics.base.SingleAxisRotatingVisual");
             var type=Class.forName("com.simibubi.create.content.kinetics.simpleRelays.BracketedKineticBlockEntityVisual$LargeCogVisual");
             var visual=SmokeRadicalChecks.allocate(type);
@@ -76,12 +84,10 @@ final class SmokeFlywheelWallChecks {
             index.add((dev.engine_room.flywheel.api.visual.Visual)stored);
             var hook=java.util.Arrays.stream(managerType.getDeclaredMethods()).filter(m->m.getName().endsWith("slopium$beforeFrame")).findFirst().orElseThrow();hook.setAccessible(true);
             settle(hook,manager);
-            if(handle.visible || shaftHandle.visible)throw new AssertionError("Actual Flywheel manager policy did not hide instance");
+            if(handle.visible || shaftHandle.visible)throw new AssertionError("Actual Flywheel manager policy did not hide instance: "+mc.getBlockEntityRenderDispatcher().getRenderer(be).getRenderBoundingBox(be)+" eye="+camera.getPosition()+" "+dev.slopium.visibility.VisibilityPool.describe(be.getBlockPos()));
             if(!extensionHandle.visible)throw new AssertionError("Unbounded BnB behaviour geometry was hidden with the delegate");
             // Opening chat and tiny movements must not reveal hidden shafts between scheduled checks.
-            var camera=mc.gameRenderer.getMainCamera(); var eye=camera.getPosition();
-            var cameraPosition=net.minecraft.client.Camera.class.getDeclaredMethod("setPosition",double.class,double.class,double.class);
-            cameraPosition.setAccessible(true);
+            var eye=camera.getPosition();
             mc.screen=new net.minecraft.client.gui.screens.ChatScreen("");
             for(int i=0;i<32;i++) {
                 cameraPosition.invoke(camera,eye.x+(i%2)*.001,eye.y,eye.z);
@@ -89,6 +95,15 @@ final class SmokeFlywheelWallChecks {
                 if(handle.visible||shaftHandle.visible)throw new AssertionError("Chat or camera jitter revealed hidden shaft");
             }
             cameraPosition.invoke(camera,eye.x,eye.y,eye.z);mc.screen=null;
+
+            // Walking around a corner must restore on the first new camera frame, not after the 8-frame queue.
+            long revealRays=dev.slopium.client.SlopiumStats.visibilityRays;
+            cameraPosition.invoke(camera,6,.5,.5);deferProcessor();
+            step(hook,manager);
+            if(dev.slopium.client.SlopiumStats.visibilityRays!=revealRays)throw new AssertionError("Reveal traversed world geometry");
+            if(!handle.visible||!shaftHandle.visible)throw new AssertionError("Camera-side crossing did not reveal in the first frame");
+            cameraPosition.invoke(camera,eye.x,eye.y,eye.z);settle(hook,manager);
+            if(handle.visible||shaftHandle.visible)throw new AssertionError("Return behind wall did not re-hide");
 
             // BnB material changes replace this field. The new instance must not leak through a wall.
             var retiredHandle = handle;
@@ -111,7 +126,7 @@ final class SmokeFlywheelWallChecks {
             nextFrame();
             settle(hook,manager);
             if(!handle.visible || !((VisualOcclusionState)visual).slopium$isOccluded(dev.slopium.client.Slopium.frame()))
-                throw new AssertionError("Opaque Flywheel / all-block animation policies were coupled");
+                throw new AssertionError("Opaque Flywheel / all-block animation policies were coupled: "+mc.getBlockEntityRenderDispatcher().getRenderer(be).getRenderBoundingBox(be)+" eye="+camera.getPosition()+" "+dev.slopium.visibility.VisibilityPool.describe(be.getBlockPos()));
             c.flywheelAnyBlock=true;c.animationAnyBlock=false;
             nextFrame();
             settle(hook,manager);
@@ -120,21 +135,32 @@ final class SmokeFlywheelWallChecks {
             nextFrame();
             if(dev.slopium.visibility.CreateWallControl.hidden(be,false) || !dev.slopium.visibility.CreateWallControl.hidden(be,true))
                 throw new AssertionError("Create geometry policy ignored mode");
-            testLevel.wall=net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();nextFrame();
+            testLevel.wall=net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();nextFrame();deferProcessor();
+            step(hook,manager);
+            if(!handle.visible||!shaftHandle.visible)throw new AssertionError("Removed obstacle did not reveal in the first frame");
             settle(hook,manager);
             if(!handle.visible || !shaftHandle.visible)throw new AssertionError("Removed window did not restore large cog and shaft");
-            if(((dev.slopium.visibility.PausedRotation)model).slopium$renderSpeed(120)!=120
-                || ((dev.slopium.visibility.PausedRotation)shaft).slopium$renderSpeed(60)!=60)
-                throw new AssertionError("Removed window left animations paused");
-
+            boolean previousCamera=c.cameraCulling,previousFly=c.occludeFlywheel,previousAnimation=c.occludeCreateAnimations;
+            try {
+                c.cameraCulling=true;c.occludeFlywheel=c.occludeCreateAnimations=false;
+                testProjection=new org.joml.Matrix4f().perspective((float)Math.toRadians(110),1,.1f,100);
+                testView=new org.joml.Matrix4f().rotateY((float)-Math.PI/2);
+                settle(hook,manager);
+                if(handle.visible||shaftHandle.visible)throw new AssertionError("Frustum reveal test did not first hide rear models");
+                testView=new org.joml.Matrix4f().rotateY((float)Math.PI/2);deferProcessor();
+                step(hook,manager);
+                if(!handle.visible||!shaftHandle.visible)throw new AssertionError("Turn into view waited for the slow hide queue");
+            } finally {c.cameraCulling=previousCamera;c.occludeFlywheel=previousFly;c.occludeCreateAnimations=previousAnimation;testView=testProjection=null;}
             c.occludeCreateAnimations=false;c.freezeCreateAnimations=true;model.rotationalSpeed=120;shaft.rotationalSpeed=60;
+            int dirtyBefore=handle.changes+shaftHandle.changes;
             settle(hook,manager);
-            if(((dev.slopium.visibility.PausedRotation)model).slopium$renderSpeed(120)!=0 || ((dev.slopium.visibility.PausedRotation)shaft).slopium$renderSpeed(60)!=0)
-                throw new AssertionError("Full pause did not reach both large cog instances");
-            c.enabled=false;
-            settle(hook,manager);
-            if(((dev.slopium.visibility.PausedRotation)model).slopium$renderSpeed(120)!=120 || !handle.visible || !shaftHandle.visible)
-                throw new AssertionError("Global off did not restore GPU rotation and visibility");
+            if(!((VisualOcclusionState)visual).slopium$isOccluded(dev.slopium.client.Slopium.frame()))
+                throw new AssertionError("CPU updates did not pause");
+            if(model.rotationalSpeed!=120||shaft.rotationalSpeed!=60||handle.changes+shaftHandle.changes!=dirtyBefore)
+                throw new AssertionError("CPU pause changed shader motion or dirtied GPU uploads");
+            c.enabled=false;settle(hook,manager);
+            if(!handle.visible||!shaftHandle.visible||((VisualOcclusionState)visual).slopium$isOccluded(dev.slopium.client.Slopium.frame()))
+                throw new AssertionError("Global off did not restore visibility / CPU updates");
             // Exercise the real manager hook with an actual indirect manager type, without submitting GL draws.
             c.enabled=c.occludeFlywheel=true;c.freezeCreateAnimations=c.occludeCreateAnimations=false;c.flywheelAnyBlock=true;
             testLevel.wall=net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();nextFrame();settle(hook,manager);
@@ -160,6 +186,17 @@ final class SmokeFlywheelWallChecks {
             } finally {c.diagnostics=diagnostics;}
             if(!dev.slopium.client.SlopiumStats.flywheelGpuModels||!index.describe(be).contains("native GPU"))
                 throw new AssertionError("Actual backend routing not reported");
+            // A requested section pass cannot suppress the selective CPU fallback when its GPU shader cannot honor the filter.
+            var savedMode=dev.slopium.client.SlopiumConfig.get().processedBlockMode;
+            var savedIds=c.processedBlockIds;boolean savedSections=c.visibleSections,savedGpu=c.gpuGlassCulling;
+            try {
+                c.processedBlockMode=dev.slopium.visibility.BlockSelectionMode.BLACKLIST;
+                c.processedBlockIds=java.util.List.of("create:chain_conveyor");
+                dev.slopium.visibility.ProcessedBlocks.rebuild();c.visibleSections=c.gpuGlassCulling=true;
+                settle(hook,manager);
+                if(handle.visible||shaftHandle.visible||dev.slopium.client.SlopiumStats.flywheelGpuModels)
+                    throw new AssertionError("Requested GPU mask swallowed filtered CPU fallback");
+            } finally {c.processedBlockMode=savedMode;c.processedBlockIds=savedIds;c.visibleSections=savedSections;c.gpuGlassCulling=savedGpu;dev.slopium.visibility.ProcessedBlocks.rebuild();}
             c.occludeCreateAnimations=true;c.animationAnyBlock=false;settle(hook,manager);
             if(!handle.visible||!((VisualOcclusionState)visual).slopium$isOccluded(dev.slopium.client.Slopium.frame()))
                 throw new AssertionError("GPU model delegation disabled CPU animation occlusion");
@@ -180,10 +217,11 @@ final class SmokeFlywheelWallChecks {
                 throw new AssertionError("Backend fallback did not restore CPU opaque policy");
             c.enabled=false;settle(hook,manager);
             if(!handle.visible||!shaftHandle.visible)throw new AssertionError("Routing test left hidden instances");
+            com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: ONE-FRAME reveal on camera crossing, obstacle removal and frustum re-entry, with trace processor deliberately deferred, passed");
             com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: actual indirect hook handoff: zero CPU visibility reads/evaluations in 24 steady frames; animations, any-block mode and backend fallback passed");
             SmokeCullingQueueChecks.stress(be,base,type,beField,modelField,shaftField);
             com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: large cog + shaft behind adjacent pane, Azimuth delegate ownership, replacement, independent modes, removal, full pause and global restore passed");
-        } finally {mc.player=oldPlayer;mc.screen=oldScreen;c.occludeFlywheel=old;c.enabled=enabled;c.freezeCreateAnimations=oldFreeze;c.gpuGlassCulling=oldGpu;c.occludeCreateAnimations=oldAnimation;c.flywheelAnyBlock=oldFlyMode;c.animationAnyBlock=oldAnimMode;testLevel.wall=oldWall;dev.slopium.visibility.WallOcclusion.invalidate();}
+        } finally {cameraPosition.invoke(camera,oldEye.x,oldEye.y,oldEye.z);mc.player=oldPlayer;mc.screen=oldScreen;c.occludeFlywheel=old;c.enabled=enabled;c.freezeCreateAnimations=oldFreeze;c.gpuGlassCulling=oldGpu;c.occludeCreateAnimations=oldAnimation;c.flywheelAnyBlock=oldFlyMode;c.animationAnyBlock=oldAnimMode;testLevel.wall=oldWall;dev.slopium.visibility.WallOcclusion.invalidate();}
     }
 
     private static void settle(java.lang.reflect.Method hook,Object manager) throws ReflectiveOperationException {
@@ -198,8 +236,8 @@ final class SmokeFlywheelWallChecks {
             public net.minecraft.client.renderer.LevelRenderer renderer(){return mc.levelRenderer;}
             public net.minecraft.client.multiplayer.ClientLevel level(){return mc.level;}
             public net.minecraft.client.renderer.RenderBuffers buffers(){return mc.renderBuffers();}
-            public org.joml.Matrix4fc modelView(){return new org.joml.Matrix4f();}
-            public org.joml.Matrix4fc projection(){return new org.joml.Matrix4f();}
+            public org.joml.Matrix4fc modelView(){return testView==null?new org.joml.Matrix4f():testView;}
+            public org.joml.Matrix4fc projection(){return testProjection==null?new org.joml.Matrix4f():testProjection;}
             public org.joml.Matrix4fc viewProjection(){return new org.joml.Matrix4f();}
             public net.minecraft.client.Camera camera(){return mc.gameRenderer.getMainCamera();}
             public float partialTick(){return 0;}
@@ -211,26 +249,12 @@ final class SmokeFlywheelWallChecks {
         var type=com.simibubi.create.foundation.render.AllInstanceTypes.ROTATING;
         var handle=new Handle(true);
         var instance=type.create(handle);
-        var pause=(dev.slopium.visibility.PausedRotation)instance;
         long pointer=org.lwjgl.system.MemoryUtil.nmemAlloc(128);
         try {
             instance.rotationalSpeed=120;instance.rotationOffset=10;
-            pause.slopium$pauseRotation(true,2);
             type.writer().write(pointer,instance);
-            if(org.lwjgl.system.MemoryUtil.memGetFloat(pointer+40)!=0 || org.lwjgl.system.MemoryUtil.memGetFloat(pointer+44)!=250)
-                throw new AssertionError("Actual GPU writer did not freeze angle");
-            if(instance.rotationalSpeed!=120 || instance.rotationOffset!=10 || handle.changes!=1)
-                throw new AssertionError("Pause mutated mechanism state or failed to mark upload dirty");
-            instance.rotationalSpeed=30;instance.rotationOffset=15;
-            pause.slopium$pauseRotation(true,3);
-            type.writer().write(pointer,instance);
-            if(org.lwjgl.system.MemoryUtil.memGetFloat(pointer+40)!=0 || org.lwjgl.system.MemoryUtil.memGetFloat(pointer+44)!=250 || handle.changes!=1)
-                throw new AssertionError("State update changed paused GPU angle");
-            pause.slopium$pauseRotation(false,4);
-            type.writer().write(pointer,instance);
-            if(org.lwjgl.system.MemoryUtil.memGetFloat(pointer+40)!=30 || org.lwjgl.system.MemoryUtil.memGetFloat(pointer+44)!=15 || handle.changes!=2)
-                throw new AssertionError("Resume did not upload current mechanism state");
-            com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: actual rotating GPU writer pause, update while paused and resume passed");
+            if(org.lwjgl.system.MemoryUtil.memGetFloat(pointer+40)!=120 || org.lwjgl.system.MemoryUtil.memGetFloat(pointer+44)!=10||handle.changes!=0)
+                throw new AssertionError("Slopium changed native rotation payload");
         } finally {org.lwjgl.system.MemoryUtil.nmemFree(pointer);}
     }
 

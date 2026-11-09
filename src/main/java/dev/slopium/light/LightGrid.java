@@ -10,6 +10,8 @@ public final class LightGrid {
     private static final int CELL_BITS = 4;
     private static final int XZ_LIMIT = 1 << 21;
     private static final int Y_LIMIT = 1 << 19;
+    private static final int[] NO_INTS = new int[0];
+    private static final long[] NO_KEYS = new long[0];
     private final double[] x, y, z;
     private final int[] luminance, next, heads, counts;
     private final long[] keys;
@@ -27,19 +29,23 @@ public final class LightGrid {
     public LightGrid(List<Light> lights) {
         int size = lights.size();
         x = new double[size]; y = new double[size]; z = new double[size];
-        luminance = new int[size]; next = new int[size];
+        luminance = new int[size];
+        // Small snapshots are sampled linearly anyway. Do not build unused buckets every frame.
+        boolean buildIndex=size>16;
+        next = buildIndex?new int[size]:NO_INTS;
         int capacity = 2;
-        while (capacity < size * 2L) {
+        while (buildIndex && capacity < size * 2L) {
             if (capacity >= (1 << 27)) throw new IllegalArgumentException("Too many sources");
             capacity <<= 1;
         }
-        keys = new long[capacity]; heads = new int[capacity]; counts = new int[capacity];
+        keys = buildIndex?new long[capacity]:NO_KEYS; heads = buildIndex?new int[capacity]:NO_INTS; counts = buildIndex?new int[capacity]:NO_INTS;
         Arrays.fill(heads, -1);
         mask = capacity - 1;
-        boolean bounded = true;
+        boolean bounded = buildIndex;
         for (int i = 0; i < size; i++) {
             Light light = lights.get(i);
             x[i] = light.x(); y[i] = light.y(); z[i] = light.z(); luminance[i] = light.luminance();
+            if(!buildIndex)continue;
             int cx = cell(x[i]), cy = cell(y[i]), cz = cell(z[i]);
             bounded &= inBounds(cx, cy, cz);
             long key = key(cx, cy, cz);
@@ -56,9 +62,10 @@ public final class LightGrid {
     public double sample(int blockX, int blockY, int blockZ) {
         if (x.length == 0) return 0;
         double px = blockX + 0.5, py = blockY + 0.5, pz = blockZ + 0.5;
+        if(!indexable)return sampleAll(px,py,pz);
         int minX = cell(px - RADIUS), minY = cell(py - RADIUS), minZ = cell(pz - RADIUS);
         int maxX = cell(px + RADIUS), maxY = cell(py + RADIUS), maxZ = cell(pz + RADIUS);
-        if (x.length <= 16 || !indexable || !inBounds(minX, minY, minZ) || !inBounds(maxX, maxY, maxZ)) {
+        if (!inBounds(minX, minY, minZ) || !inBounds(maxX, maxY, maxZ)) {
             return sampleAll(px, py, pz);
         }
         int candidates = 0;

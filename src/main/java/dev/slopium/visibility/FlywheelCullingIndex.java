@@ -23,6 +23,8 @@ public final class FlywheelCullingIndex {
     private int policy=-1;
     private long selectionRevision=-1;
     private BlockEntity aimed;
+    private net.minecraft.world.phys.Vec3 lastEye;
+    private long lastCamera=Long.MIN_VALUE,lastGeometry=Long.MIN_VALUE;
     private int supported;
     private boolean nativeDepth, gpuModels;
 
@@ -33,7 +35,7 @@ public final class FlywheelCullingIndex {
         VisualOcclusionState state;
         InstanceVisibility visibility;
         OwnedInstances owner;
-        boolean alive=true, paused, supported;
+        boolean alive=true, paused, supported, cameraDependent;
         long next, order, checked=-1, validated=-1;
         String reason="not checked";
         Entry(Visual stored) { this.stored=stored; }
@@ -89,12 +91,9 @@ public final class FlywheelCullingIndex {
         altered.remove(e); // Flywheel deleted these instances; never restore them.
     }
     private void schedule(Entry e,long frame) { e.next=frame; e.order=order++; due.add(e); }
-    private void restore(Entry e,float seconds) {
+    private void restore(Entry e) {
         if(e.visibility!=null) { e.visibility.restore(); e.visibility=null; }
-        if(e.paused) instances(e,instance->{
-            if(instance instanceof PausedRotation rotation) rotation.slopium$pauseRotation(false,seconds);
-        });
-        e.paused=false;
+        e.paused=false;e.cameraDependent=false;
         if(e.state!=null) e.state.slopium$setOccluded(false,Slopium.frame());
         e.reason="restored after world/settings change";
     }
@@ -102,7 +101,7 @@ public final class FlywheelCullingIndex {
     public void frame(boolean nativeDepth) {
         var c=SlopiumConfig.get();
         this.nativeDepth=nativeDepth;
-        gpuModels=GpuSections.requested() || c.enabled && ProcessedBlocks.all() && c.occludeFlywheel && nativeDepth && (!c.flywheelAnyBlock||GpuGlassDepth.available());
+        gpuModels=c.enabled && ProcessedBlocks.all() && c.occludeFlywheel && nativeDepth && (!c.flywheelAnyBlock||GpuGlassDepth.available());
         SlopiumStats.flywheelNativeDepth=nativeDepth;
         SlopiumStats.flywheelGpuModels=gpuModels;
         boolean active=c.enabled&&(c.disableFlywheelRendering||(c.occludeFlywheel&&!gpuModels)||c.occludeCreateAnimations||c.freezeCreateAnimations||(c.cameraCulling&&!nativeDepth));
@@ -110,7 +109,6 @@ public final class FlywheelCullingIndex {
         long started=System.nanoTime(), frame=Slopium.frame();
         BUDGET.begin(frame);
         var mc=Minecraft.getInstance();
-        float seconds=(((LevelRendererAccessor)mc.levelRenderer).slopium$ticks()+mc.getTimer().getGameTimeDeltaPartialTick(true))/20f;
         int nextPolicy=(c.enabled?1:0)|(c.occludeFlywheel?2:0)|(c.occludeCreateAnimations?4:0)|(c.freezeCreateAnimations?8:0)
             |(c.flywheelAnyBlock?16:0)|(c.animationAnyBlock?32:0)|(nativeDepth?64:0)|(gpuModels?128:0)|(c.cameraCulling?256:0)|(c.disableFlywheelRendering?512:0)|(c.visibleSections?1024:0);
         try {
@@ -120,12 +118,30 @@ public final class FlywheelCullingIndex {
             }
             // Only settings/world changes restore all instances. Camera movement is handled by the shared pool.
             while(restoring!=null && restoring.hasNext() && BUDGET.take()) {
-                restore(restoring.next(),seconds); restoring.remove();
+                restore(restoring.next()); restoring.remove();
             }
             if(restoring!=null) {
                 if(restoring.hasNext()) return;
                 restoring=null;
             }
+            // Reveal before the slow hide queue. This only touches previously altered visuals,
+            // reuses one blocker per pool entry and never walks world voxels or waits for a ray budget.
+            var eye=mc.gameRenderer.getMainCamera().getPosition();
+            long camera=VisibilityPool.cameraRevision(),geometry=WallOcclusion.epoch();
+            boolean sceneChanged=!eye.equals(lastEye)||geometry!=lastGeometry;
+            boolean needsReveal=(!c.disableFlywheelRendering&&((c.occludeFlywheel&&!gpuModels)||(c.cameraCulling&&!nativeDepth)))
+                ||(c.occludeCreateAnimations&&!c.freezeCreateAnimations);
+            if(needsReveal&&(sceneChanged||camera!=lastCamera)){
+                var it=altered.iterator();
+                while(it.hasNext()){
+                    Entry e=it.next();
+                    if(!sceneChanged&&!e.cameraDependent)continue;
+                    evaluate(e,c,frame,true);
+                    if(e.visibility==null&&!e.paused)it.remove();
+                    // Keep its existing hide-queue slot. Revealing needs no TreeSet reordering.
+                }
+            }
+            lastEye=eye;lastCamera=camera;lastGeometry=geometry;
             // Reserve work for existing entries even during bulk chunk loading.
             for(int i=0;i<128 && !changes.isEmpty() && BUDGET.take();i++) {
                 Change change=changes.poll();
@@ -142,14 +158,14 @@ public final class FlywheelCullingIndex {
                 Entry e=byBlock.get(target);
                 if(e!=null && altered.contains(e)) {
                     if(!BUDGET.take()) return;
-                    restore(e,seconds);altered.remove(e);
+                    restore(e);altered.remove(e);
                 }
             }
             aimed=target;
             while(!due.isEmpty() && due.first().next<=frame && BUDGET.take()) {
                 Entry e=due.pollFirst();
                 if(!e.alive) continue;
-                evaluate(e,c,seconds,frame);
+                evaluate(e,c,frame,false);
                 schedule(e,frame+(e.reason.equals("deferred")?1:e.visibility!=null||e.paused?8:20));
             }
         } finally {
@@ -165,16 +181,18 @@ public final class FlywheelCullingIndex {
             }
         }
     }
-    private void evaluate(Entry e,SlopiumConfig c,float seconds,long frame) {
-        if(!ProcessedBlocks.allows(e.block)){restore(e,seconds);altered.remove(e);e.reason="excluded by block filter";return;}
+    private void evaluate(Entry e,SlopiumConfig c,long frame,boolean reveal) {
+        if(!ProcessedBlocks.allows(e.block)){restore(e);if(!reveal)altered.remove(e);e.reason="excluded by block filter";return;}
         if(c.diagnostics) SlopiumStats.flywheelVisualsChecked++;
         var mc=Minecraft.getInstance();
         if(e.block.getLevel()!=mc.level || mc.level==null
                 || (e.block instanceof com.simibubi.create.foundation.blockEntity.SmartBlockEntity smart && smart.isVirtual())
                 || SableGuard.protects(mc.level,e.block.getBlockPos())) {
-            restore(e,seconds);altered.remove(e);e.reason="protected world / virtual block";return;
+            restore(e);if(!reveal)altered.remove(e);e.reason="protected world / virtual block";return;
         }
-        Boolean hidden=c.disableFlywheelRendering?Boolean.TRUE:c.cameraCulling&&!nativeDepth&&CreateWallControl.outsideCamera(e.block)?Boolean.TRUE:c.occludeFlywheel&&!gpuModels?CreateWallControl.decision(e.block,c.flywheelAnyBlock):Boolean.FALSE;
+        boolean outside=c.cameraCulling&&(!nativeDepth||c.occludeCreateAnimations)&&CreateWallControl.outsideCamera(e.block);
+        e.cameraDependent=outside;
+        Boolean hidden=c.disableFlywheelRendering?Boolean.TRUE:outside&&!nativeDepth?Boolean.TRUE:c.occludeFlywheel&&!gpuModels?CreateWallControl.modelDecision(e.block,c.flywheelAnyBlock,false):Boolean.FALSE;
         final Boolean paused;
         if(c.freezeCreateAnimations) {
             paused=e.block.getLevel()==mc.level && mc.level!=null
@@ -183,28 +201,25 @@ public final class FlywheelCullingIndex {
         } else if(c.occludeCreateAnimations) {
             // Preserve null (deferred). Mixing primitive boolean and Boolean in a ternary unboxes it.
             paused=c.occludeFlywheel&&!gpuModels&&c.animationAnyBlock==c.flywheelAnyBlock
-                ?hidden:CreateWallControl.decision(e.block,c.animationAnyBlock);
+                ?hidden:CreateWallControl.modelDecision(e.block,c.animationAnyBlock,c.cameraCulling);
         } else { paused=Boolean.FALSE; }
         e.checked=frame;
-        if(hidden==null || paused==null) {
-            e.reason="deferred";return;
-        }
-        e.validated=frame;
-        e.reason=hidden?"hidden":paused?"animation paused":"visible / protected";
-        if(paused || e.paused) instances(e,instance->{
-            if(instance instanceof PausedRotation rotation) rotation.slopium$pauseRotation(paused,seconds);
-        });
-        e.paused=paused;
+        boolean deferred=hidden==null||paused==null;
+        if(hidden==null)hidden=false;
+        // Never keep a stale model/CPU pause merely because the background trace queue is busy.
+        boolean pause=Boolean.TRUE.equals(paused);
+        if(!deferred)e.validated=frame;
+        e.reason=deferred?"deferred":hidden?"hidden":pause?"animation paused":"visible / protected";
+        e.paused=pause;
         // Stable worker snapshot; explicitly restored when policy or visibility changes.
-        e.state.slopium$setOccludedUntil(paused,frame,Long.MAX_VALUE);
-        if(hidden) {
+        e.state.slopium$setOccludedUntil(pause,frame,Long.MAX_VALUE);
+        if(hidden && (!reveal || e.visibility!=null)) {
             if(e.visibility==null) e.visibility=new InstanceVisibility();
-            int count=e.owner==null?e.visibility.hide(e.visual):e.visibility.hide(e.owner);
+            int count=reveal?0:e.owner==null?e.visibility.hide(e.visual):e.visibility.hide(e.owner);
             if(c.diagnostics) SlopiumStats.wallFlywheelInstancesHidden+=count;
-        } else if(e.visibility!=null) { e.visibility.restore();e.visibility=null; }
-        if(e.visibility!=null||e.paused) altered.add(e);else altered.remove(e);
+        } else if(!hidden&&e.visibility!=null) { e.visibility.restore();e.visibility=null; }
+        if(!reveal){if(e.visibility!=null||e.paused) altered.add(e);else altered.remove(e);}
     }
-    private static void instances(Entry e,java.util.function.Consumer<dev.engine_room.flywheel.api.instance.Instance> action){if(e.owner!=null)e.owner.forEach(action);else e.visual.collectCrumblingInstances(action);}
     public String describe(BlockEntity block) {
         Entry e=byBlock.get(block);
         if(e==null) return "Flywheel: not registered yet / no visual";

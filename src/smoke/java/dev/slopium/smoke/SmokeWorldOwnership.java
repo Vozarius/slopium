@@ -27,7 +27,7 @@ final class SmokeWorldOwnership {
         first.addConnectionTo(end);second.addConnectionTo(pos(2));
     }
     boolean frame(){
-        if(phase>=4)return true;
+        if(phase>=6)return true;
         var mc=Minecraft.getInstance();var c=SlopiumConfig.get();
         var manager=VisualizationManager.get(mc.level);
         if(manager==null)throw new AssertionError("Actual world Flywheel backend unavailable");
@@ -47,22 +47,35 @@ final class SmokeWorldOwnership {
         if(++frames<35)return false;
         for(int i=0;i<IDS.length;i++){
             var visual=storage.visualAtPos(pos(i).asLong());var owner=OwnedInstances.get(visual);
+            if(phase==3){
+                if(owner!=null)throw new AssertionError("Disabled master retains ownership wrapper");
+                int[] visible={0};visual.collectCrumblingInstances(instance->{if(instance.handle().isVisible()||instance.handle() instanceof dev.engine_room.flywheel.backend.engine.InstanceHandleImpl<?> h&&h.index>=0)visible[0]++;});
+                if(visible[0]==0)throw new AssertionError("Master off did not recreate visible geometry");
+                continue;
+            }
             if(owner==null)throw new AssertionError("Real visual was not created through owned context: "+IDS[i]);
-            boolean expected=phase==0||phase==1&&i==0||phase==2&&i!=0;
+            if(phase==4){
+                int[] tracked={0};owner.forEach(instance->tracked[0]++);
+                if(tracked[0]!=0||!owner.slopium$isOccluded(dev.slopium.client.Slopium.frame()))throw new AssertionError("CPU-only mode wraps instances / lacks metadata");
+                continue;
+            }
+            boolean expected=phase==0||phase==5||phase==1&&i==0||phase==2&&i!=0;
             int[] count={0,0};owner.forEach(instance->{count[0]++;if(instance.handle() instanceof InstanceOwnership tag&&tag.slopium$hidden())count[1]++;});
             if(count[0]==0||expected!=(count[1]>0)||expected!=owner.slopium$isOccluded(dev.slopium.client.Slopium.frame()))
                 throw new AssertionError("Real selection/animation mismatch phase="+phase+" "+IDS[i]+" instances="+java.util.Arrays.toString(count));
             com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_OWNERS: phase {} {} instances={} hidden={} visual={}",phase,IDS[i],count[0],count[1],visual.getClass().getName());
         }
-        next(c);return phase>=4;
+        next(c);return phase>=6;
     }
     private void next(SlopiumConfig c){
         frames=0;phase++;
         c.processedBlockIds=java.util.List.of(IDS[0]);
         c.processedBlockMode=phase==1?BlockSelectionMode.WHITELIST:phase==2?BlockSelectionMode.BLACKLIST:BlockSelectionMode.ALL;
         if(phase==3)c.enabled=false;
-        if(phase==4){c.enabled=enabled;c.disableFlywheelRendering=hidden;c.freezeCreateAnimations=freeze;c.processedBlockMode=mode;c.processedBlockIds=ids;
-            com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_OWNERS: actual registered shaft/press/conveyor creation, all/whitelist/blacklist and global restore passed");}
+        if(phase==4){c.enabled=true;c.disableFlywheelRendering=false;}
+        if(phase==5)c.disableFlywheelRendering=true;
+        if(phase==6){c.enabled=enabled;c.disableFlywheelRendering=hidden;c.freezeCreateAnimations=freeze;c.processedBlockMode=mode;c.processedBlockIds=ids;
+            com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_OWNERS: actual registered shaft/press/conveyor creation, all/whitelist/blacklist disable/re-enable ownership lifecycle passed");}
         ProcessedBlocks.rebuild();
     }
 }

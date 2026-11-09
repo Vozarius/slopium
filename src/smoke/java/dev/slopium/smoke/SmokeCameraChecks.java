@@ -15,6 +15,16 @@ final class SmokeCameraChecks {
             long checks=SlopiumStats.cameraChecks,rays=SlopiumStats.visibilityRays;
             for(int i=0;i<100;i++)if(!VisibilityPool.outsideCamera(back,true,rear))throw new AssertionError("Cached frustum result changed");
             if(checks!=SlopiumStats.cameraChecks||rays!=SlopiumStats.visibilityRays)throw new AssertionError("Camera reads repeated geometry work");
+            var frame=Slopium.class.getDeclaredField("frame");frame.setAccessible(true);
+            long savedFrame=frame.getLong(null);
+            try {
+                for(int i=0;i<50;i++){
+                    frame.setLong(null,frame.getLong(null)+1);
+                    VisibilityPool.captureCamera(new org.joml.Matrix4f(),projection,Vec3.ZERO);
+                    if(!VisibilityPool.outsideCamera(back,true,rear))throw new AssertionError("Stationary camera result lost");
+                }
+                if(SlopiumStats.cameraChecks!=checks)throw new AssertionError("Stationary camera repeated frustum tests across frames");
+            } finally {frame.setLong(null,savedFrame);VisibilityPool.captureCamera(new org.joml.Matrix4f(),projection,Vec3.ZERO);}
             var table=VisibilityPool.class.getDeclaredField("TABLE");table.setAccessible(true);
             int before=((java.util.Map<?,?>)table.get(null)).size();VisibilityPool.read(front,Vec3.ZERO,true,true);
             if(((java.util.Map<?,?>)table.get(null)).size()!=before)throw new AssertionError("Camera and walls use duplicate entries");

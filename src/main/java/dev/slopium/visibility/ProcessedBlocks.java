@@ -34,6 +34,6 @@ public final class ProcessedBlocks {
         allowed=next;revision++;
     }
     public static boolean accept(BlockSelectionMode mode,boolean listed){return mode.allows(listed);}
-    public static boolean allows(BlockEntity be){return be!=null&&allows(be.getBlockState().getBlock());}
+    public static boolean allows(BlockEntity be){return be instanceof TrackedBlockEntity tracked?tracked.slopium$allowsProcessing():be!=null&&allows(be.getBlockState().getBlock());}
     public static boolean allows(Block block){int id=BuiltInRegistries.BLOCK.getId(block);var table=allowed;return id>=0&&id<table.length&&table[id];}
 }

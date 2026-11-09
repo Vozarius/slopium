@@ -18,7 +18,6 @@
     "AmbientCutMixin",
     "ItemRenderBudgetMixin",
     "XaeroBenchmarkMixin",
-    "EntityShadowCutMixin",
     "SodiumBlockEntityBudgetMixin",
     "ParticleBudgetMixin",
     "TextureInterpolationMixin",
@@ -34,8 +33,6 @@
     "FlywheelStorageMixin",
     "AzimuthVisualAccessor",
     "FactoryItemBudgetMixin",
-    "RotatingInstancePauseMixin",
-    "RotatingWriterPauseMixin",
     "FlywheelGpuContextMixin",
     "FlywheelDepthSourceMixin",
     "FrameGenerationMixin",
@@ -55,8 +52,6 @@
     "BlockEntityTypeBlocksAccess",
     "FlywheelOwnershipMixin",
     "FlywheelUpdatePolicyMixin",
-    "ScrollInstancePauseMixin",
-    "ScrollWriterPauseMixin",
     "InstanceOwnershipMixin",
     "SectionDrawMixin",
     "SodiumSectionAccess",
@@ -69,7 +64,10 @@
     "SectionBatchMixin",
     "SparkClientAnalysisMixin",
     "AnalysisBackgroundMixin",
-    "AnalysisWindowMixin"
+    "AnalysisWindowMixin",
+    "KineticCleanColorMixin",
+    "KineticEffectsAccess",
+    "KineticStressAccess"
   ],
   "injectors": {
     "defaultRequire": 1

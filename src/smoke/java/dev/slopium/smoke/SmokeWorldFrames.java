@@ -111,6 +111,10 @@ final class SmokeWorldFrames {
         if(analysis!=null){analysis.frame();return;}
         if(sections!=null){sections.frame();return;}
         if(!ownership.frame())return;
+        if(Boolean.getBoolean("slopium.optimizationSmoke")){
+            LogUtils.getLogger().info("SLOPIUM_WORLD: optimization ownership lifecycle completed");
+            mc.stop();return;
+        }
         if(parallel!=null){parallel.frame();return;}
         if(phase<0){next();return;}
         if(!measuring) {

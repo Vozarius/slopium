@@ -43,6 +43,7 @@ public final class Slopium {
             dev.slopium.benchmark.PerformanceAnalysis.tick();
             frame++;
             Minecraft client = Minecraft.getInstance();
+            migrateShadowOption(client);
             boolean hasLevel = client.level != null;
             boolean recordFrames = SlopiumConfig.get().diagnostics && hasLevel
                 && client.screen == null && !client.isPaused();
@@ -51,6 +52,15 @@ public final class Slopium {
             if(hadLevel && !hasLevel) dev.slopium.visibility.VisibilityPool.clear();
             hadLevel = hasLevel;
         });
+    }
+
+    /** Read old alpha/beta configs without maintaining a second shadow toggle. */
+    public static void migrateShadowOption(Minecraft client){
+        var c=SlopiumConfig.get();
+        if(c.disableEntityShadows&&client.options!=null){
+            if(c.enabled){client.options.entityShadows().set(false);client.options.save();}
+            c.disableEntityShadows=false;c.save();
+        }
     }
 
     public static long configRevision() { return configRevision; }
@@ -128,7 +138,7 @@ public final class Slopium {
                     + " | ambient passes=" + SlopiumStats.ambientPassesSkipped
                     + " | frozen Create ticks=" + SlopiumStats.frozenCreateTicks), false);
                 context.getSource().sendSuccess(() -> Component.literal("Render budget | item draws=" + SlopiumStats.itemDrawsSkipped
-                    + " | copies=" + SlopiumStats.itemCopiesSkipped + " | shadows=" + SlopiumStats.shadowsSkipped
+                    + " | copies=" + SlopiumStats.itemCopiesSkipped
                     + " | Sodium passes=" + SlopiumStats.sodiumPassesSkipped + " | Xaero guards=" + SlopiumStats.xaeroMeasurementGuardsSkipped), false);
                 context.getSource().sendSuccess(() -> Component.literal("Radical | item sprites=" + SlopiumStats.itemImpostorsRendered
                     + " | Create visual frames=" + SlopiumStats.CREATE_VISUALS_SKIPPED.sum()

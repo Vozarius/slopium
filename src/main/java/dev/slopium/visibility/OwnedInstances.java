@@ -22,9 +22,19 @@ public final class OwnedInstances implements VisualOcclusionState {
     private final Queue<Instance> hiddenAtCreation=new ConcurrentLinkedQueue<>();
     private volatile boolean hiding;
     private final Set<Instance> live=Collections.newSetFromMap(new IdentityHashMap<>());
-    public static void register(Visual visual,OwnedInstances owner){if(visual!=null)OWNERS.put(visual,owner);}
-    public static OwnedInstances get(Visual visual){return OWNERS.get(visual);}
-    public static void remove(Visual visual){OWNERS.remove(visual);}
+    public static int mode(){
+        var c=dev.slopium.client.SlopiumConfig.get();
+        if(!c.enabled)return 0;
+        if(c.disableFlywheelRendering||c.occludeFlywheel||c.cameraCulling)return 2;
+        return c.occludeCreateAnimations||c.freezeCreateAnimations||c.throttleCreateVisuals?1:0;
+    }
+    public static boolean required(){return mode()!=0;}
+    public static void register(Visual visual,OwnedInstances owner){
+        if(visual instanceof VisualOwnerAccess direct)direct.slopium$owner(owner);
+        else if(visual!=null)OWNERS.put(visual,owner);
+    }
+    public static OwnedInstances get(Visual visual){return visual instanceof VisualOwnerAccess direct?direct.slopium$owner():OWNERS.get(visual);}
+    public static void remove(Visual visual){if(visual instanceof VisualOwnerAccess direct)direct.slopium$owner(null);else OWNERS.remove(visual);}
     public void hiding(boolean value){hiding=value;}
     public boolean owns(Instance instance) {
         return !(instance.handle() instanceof InstanceOwnership tag) || tag.slopium$owner()==this;
@@ -35,7 +45,6 @@ public final class OwnedInstances implements VisualOcclusionState {
             var old=tag.slopium$owner();
             if(old!=this) {
                 if(tag.slopium$hidden()) { instance.setVisible(true);tag.slopium$hidden(false); }
-                if(old!=null && instance instanceof PausedRotation rotation)rotation.slopium$pauseRotation(false,0);
                 tag.slopium$owner(this);
             }
         }

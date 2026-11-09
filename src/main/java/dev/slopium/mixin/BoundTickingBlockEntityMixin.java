@@ -32,10 +32,12 @@ public abstract class BoundTickingBlockEntityMixin {
     private boolean slopium$allowClientTick(boolean hasLevel) {
         if (!hasLevel || (!slopium$eligible && !slopium$create)) return hasLevel;
         SlopiumConfig config = SlopiumConfig.get();
-        if (!config.enabled || !dev.slopium.visibility.ProcessedBlocks.allows(blockEntity)) return true;
-        if (slopium$create && config.freezeCreateClientTicks && CreateFreezeControl.skip(blockEntity, config.diagnostics)) return false;
-        if (slopium$create && config.occludeCreateTicks) return !dev.slopium.visibility.CreateWallControl.skipTick(blockEntity, config);
-        if (slopium$create && config.distanceCreateTicks) return !dev.slopium.visibility.CreateDistanceControl.skip(blockEntity, config);
+        if (!config.enabled || !(config.freezeCreateClientTicks || config.occludeCreateTicks
+                || config.distanceCreateTicks || config.throttleHiddenCreate)) return true;
+        if (!dev.slopium.visibility.ProcessedBlocks.allows(blockEntity)) return true;
+        if (slopium$create && config.freezeCreateClientTicks && CreateFreezeControl.skipSelected(blockEntity, config.diagnostics)) return false;
+        if (slopium$create && config.occludeCreateTicks) return !dev.slopium.visibility.CreateWallControl.skipTickSelected(blockEntity, config);
+        if (slopium$create && config.distanceCreateTicks) return !dev.slopium.visibility.CreateDistanceControl.skipSelected(blockEntity, config);
         return !slopium$eligible || !config.throttleHiddenCreate || !CreateTickControl.skipEligible(blockEntity, config);
     }
 }

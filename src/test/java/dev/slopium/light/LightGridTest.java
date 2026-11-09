@@ -55,6 +55,13 @@ class LightGridTest {
         assertThrows(IllegalArgumentException.class, () -> new LightGrid.Light(Double.NaN, 0, 0, 15));
     }
 
+    @Test void smallLinearSnapshotMatchesAttenuationWithoutBuckets() {
+        var lights=new ArrayList<LightGrid.Light>();
+        for(int i=0;i<16;i++)lights.add(new LightGrid.Light(i-8.25, i*.2, -i*.4, i));
+        var grid=new LightGrid(lights);
+        for(int x=-15;x<15;x++)for(int y=-3;y<6;y++)assertEquals(original(lights,x,y,-2),grid.sample(x,y,-2),1e-12);
+    }
+
     private static double original(List<LightGrid.Light> lights, int x, int y, int z) {
         double result = 0;
         for (var light : lights) {

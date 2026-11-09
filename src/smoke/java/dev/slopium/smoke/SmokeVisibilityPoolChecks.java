@@ -21,6 +21,18 @@ final class SmokeVisibilityPoolChecks {
         pump(frame,eye);
         if(!CreateOcclusion.hidden(target,eye,false)||!CreateOcclusion.hidden(target,eye,true))throw new AssertionError("Opaque wall did not classify both modes");
         if(SlopiumStats.visibilityRays!=rays+1)throw new AssertionError("Two modes performed separate traversals");
+        var direct=new VisibilityPool.Handle(Vec3.atCenterOf(target));
+        if(!Boolean.TRUE.equals(VisibilityPool.read(direct,eye,true)))throw new AssertionError("Direct BE reference did not share the pool entry");
+        var modelBox=new net.minecraft.world.phys.AABB(5.25,.25,.25,5.75,.75,.75);
+        if(!VisibilityPool.provesHidden(direct,eye,true,modelBox))throw new AssertionError("Fresh remembered wall did not prove model bounds");
+        if(VisibilityPool.provesHidden(direct,new Vec3(6,.5,.5),true,modelBox))throw new AssertionError("Old hidden answer survived crossing the wall");
+        if(VisibilityPool.provesHidden(direct,eye,true,new net.minecraft.world.phys.AABB(5.25,.25,.25,5.75,10,.75)))throw new AssertionError("One centre ray hid a partially exposed model");
+        long hits=SlopiumStats.visibilityHits;
+        for(int i=0;i<100;i++)if(!Boolean.TRUE.equals(VisibilityPool.read(direct,eye,true)))throw new AssertionError("Direct pool read changed");
+        if(SlopiumStats.visibilityHits!=hits+100)throw new AssertionError("Direct references bypassed counters");
+        VisibilityPool.clear();
+        if(VisibilityPool.read(direct,eye,true)!=null)throw new AssertionError("Direct reference survived pool invalidation");
+        pump(frame,eye);
         level.wall=Blocks.GLASS.defaultBlockState();WallOcclusion.invalidate();
         CreateOcclusion.hidden(target,eye,true);pump(frame,eye);
         if(CreateOcclusion.hidden(target,eye,false)||!CreateOcclusion.hidden(target,eye,true))throw new AssertionError("Glass did not separate modes");

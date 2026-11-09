@@ -16,6 +16,12 @@ public final class VisibilityPool {
         Vec3 point;
         Vec3 eye, samplePoint;
         BlockPos witness;
+        BlockPos shapeWitness;
+        long shapeGeneration=Long.MIN_VALUE,shapeVersion;
+        java.util.List<net.minecraft.world.phys.AABB> opaqueBoxes=List.of(),anyBoxes=List.of();
+        Vec3 proofEye;
+        net.minecraft.world.phys.AABB proofBounds;
+        int proofKnown,proofResult;
         long geometryGeneration, traced;
         long[] columns, versions;
         int pathCount;
@@ -23,11 +29,28 @@ public final class VisibilityPool {
         long sampled=-1, epoch=-1, requested;
         int result, knownMask, wanted;
         int distanceLimit=128;
-        boolean known, queued;
+        boolean known, queued, live=true;
         long cameraFrame=Long.MIN_VALUE;
         net.minecraft.world.phys.AABB bounds;
         boolean outside;
         Entry(Key key, Vec3 point) { this.key=key; this.point=point; }
+    }
+    /** BE-owned direct reference into the same pool used by particles and other readers. */
+    public static final class Handle {
+        final Vec3 point;
+        private Entry entry;
+        private long generation=-1;
+        public long boundsFrame=Long.MIN_VALUE;
+        public net.minecraft.world.phys.AABB bounds, rawBounds;
+        public Handle(Vec3 point){this.point=point;}
+    }
+    private static long generation;
+    private static Entry entry(Handle handle){
+        if(handle.generation!=generation || handle.entry==null || !handle.entry.live){
+            handle.entry=entry(handle.point,true);handle.generation=generation;
+        }
+        if(handle.entry!=null)handle.entry.requested=Slopium.frame();
+        return handle.entry;
     }
     private static final Map<Key,Entry> TABLE=new HashMap<>();
     private static final ArrayDeque<Entry> CREATE=new ArrayDeque<>(), PARTICLES=new ArrayDeque<>(), SWEEP=new ArrayDeque<>();
@@ -44,7 +67,7 @@ public final class VisibilityPool {
 
     private static void world(ClientLevel level) {
         if(world==level) return;
-        TABLE.clear(); CREATE.clear(); PARTICLES.clear(); SWEEP.clear();
+        generation++; TABLE.clear(); CREATE.clear(); PARTICLES.clear(); SWEEP.clear();
         VisibilityGeometry.reset();
         SectionVisibility.clear();
         cameraFrustum=null;cameraFrame=Long.MIN_VALUE;
@@ -53,7 +76,7 @@ public final class VisibilityPool {
     }
     public static void clear() { world(null); }
     private static void discard(Entry e) {
-        if(TABLE.remove(e.key,e)) { if(e.key.mechanism) createEntries--; else particleEntries--; }
+        if(TABLE.remove(e.key,e)) { e.live=false; if(e.key.mechanism) createEntries--; else particleEntries--; }
     }
     private static boolean finite(Vec3 p) { return Double.isFinite(p.x)&&Double.isFinite(p.y)&&Double.isFinite(p.z); }
     private static void enqueue(Entry e) {
@@ -62,19 +85,17 @@ public final class VisibilityPool {
     }
     public static void captureCamera(org.joml.Matrix4fc view,org.joml.Matrix4fc projection,Vec3 eye) {
         world(Minecraft.getInstance().level);
-        if(cameraFrame==Slopium.frame()&&view.equals(viewMatrix)&&projection.equals(projectionMatrix)&&eye.equals(viewEye))return;
-        cameraFrame=Slopium.frame();cameraRevision++;
-        cameraFrustum=null;
-
+        cameraFrame=Slopium.frame();
         var c=SlopiumConfig.get();
-        if(!c.enabled||!c.cameraCulling)return;
-        if(!view.equals(viewMatrix)||!projection.equals(projectionMatrix)||!eye.equals(viewEye)){
-            viewMatrix.set(view);projectionMatrix.set(projection);viewEye=eye;
-        }
+        if(!c.enabled||!c.cameraCulling){cameraFrustum=null;return;}
+        if(cameraFrustum!=null&&view.equals(viewMatrix)&&projection.equals(projectionMatrix)&&eye.equals(viewEye))return;
+        cameraRevision++;
+        viewMatrix.set(view);projectionMatrix.set(projection);viewEye=eye;
         var frustum=new net.minecraft.client.renderer.culling.Frustum(viewMatrix,projectionMatrix);
         frustum.prepare(eye.x,eye.y,eye.z);
         if(c.cameraCulling)cameraFrustum=frustum;
     }
+    public static boolean cameraReady(){return cameraFrustum!=null&&cameraFrame==Slopium.frame()&&world==Minecraft.getInstance().level;}
     /** Camera and wall results occupy the same entry, but have independent lifetimes. */
     public static boolean outsideCamera(Vec3 point,boolean mechanism,net.minecraft.world.phys.AABB bounds) {
         var mc=Minecraft.getInstance();var c=SlopiumConfig.get();
@@ -82,8 +103,17 @@ public final class VisibilityPool {
             ||cameraFrustum==null||cameraFrame!=Slopium.frame()||world!=mc.level
             ||!Double.isFinite(bounds.minX+bounds.minY+bounds.minZ+bounds.maxX+bounds.maxY+bounds.maxZ)) return false;
         if(SableGuard.protects(mc.level,BlockPos.containing(point))) return false;
-        Entry e=entry(point,mechanism);
-        if(e==null) return false;
+        return outsideCamera(entry(point,mechanism),bounds,c);
+    }
+    public static boolean outsideCamera(Handle handle,net.minecraft.world.phys.AABB bounds){
+        var mc=Minecraft.getInstance();var c=SlopiumConfig.get();
+        if(!c.enabled||!c.cameraCulling||!mc.isSameThread()||mc.level==null||world!=mc.level
+            ||bounds==null||cameraFrustum==null||cameraFrame!=Slopium.frame())return false;
+        if(!Double.isFinite(bounds.minX+bounds.minY+bounds.minZ+bounds.maxX+bounds.maxY+bounds.maxZ))return false;
+        return outsideCamera(entry(handle),bounds,c);
+    }
+    private static boolean outsideCamera(Entry e,net.minecraft.world.phys.AABB bounds,SlopiumConfig c){
+        if(e==null)return false;
         if(e.cameraFrame!=cameraRevision||!bounds.equals(e.bounds)) {
             e.outside=!cameraFrustum.isVisible(bounds);e.bounds=bounds;e.cameraFrame=cameraRevision;
             if(c.diagnostics) SlopiumStats.cameraChecks++;
@@ -113,6 +143,18 @@ public final class VisibilityPool {
         long now=Slopium.frame();
         Entry e=entry(point,mechanism);
         if(e==null) return false;
+        return request(e,point,eye,mechanism,any,distanceLimit,now);
+    }
+    public static Boolean read(Handle handle,Vec3 eye,boolean any){
+        var mc=Minecraft.getInstance();
+        if(!mc.isSameThread()||mc.level==null||!finite(eye))return false;
+        world(mc.level);
+        double distance=handle.point.distanceToSqr(eye);
+        if(distance<.0001||distance>128.0*128)return false;
+        var e=entry(handle);if(e==null)return false;
+        return request(e,handle.point,eye,true,any,128,Slopium.frame());
+    }
+    private static Boolean request(Entry e,Vec3 point,Vec3 eye,boolean mechanism,boolean any,int distanceLimit,long now){
         e.distanceLimit=Math.max(e.distanceLimit,distanceLimit);
         int mode=any?2:1; e.wanted|=mode;
         boolean stale=(e.knownMask&mode)==0||e.epoch!=WallOcclusion.epoch()||!eye.equals(e.eye)
@@ -125,6 +167,37 @@ public final class VisibilityPool {
         }
         // Retain the previous answer while a fresh check is queued. No camera/TTL flicker.
         return (e.knownMask&mode)!=0 ? (e.result & mode)!=0 : null;
+    }
+    public static long cameraRevision(){return cameraRevision;}
+    /** Re-prove a hidden MODEL against its remembered blocker, never against an old centre-ray result.
+     * Unknown/partial bounds stay visible. The two policies share the same pool and witness geometry. */
+    public static boolean provesHidden(Handle handle,Vec3 eye,boolean any,net.minecraft.world.phys.AABB bounds){
+        var mc=Minecraft.getInstance();
+        if(!mc.isSameThread()||mc.level==null||world!=mc.level||bounds==null||!finite(eye))return false;
+        Entry e=entry(handle);
+        int mode=any?2:1;
+        if(e==null||(e.knownMask&mode)==0||(e.result&mode)==0||e.witness==null)return false;
+        BlockPos blocker=e.witness;
+        if(!world.hasChunkAt(blocker))return false;
+        long gen=VisibilityGeometry.generation();
+        long version=VisibilityGeometry.version(net.minecraft.world.level.ChunkPos.asLong(blocker.getX()>>4,blocker.getZ()>>4));
+        if(!blocker.equals(e.shapeWitness)||gen!=e.shapeGeneration||version!=e.shapeVersion){
+            var state=world.getBlockState(blocker);
+            e.opaqueBoxes=OccluderShapes.volume(state,world,blocker,false).toAabbs();
+            e.anyBoxes=OccluderShapes.volume(state,world,blocker,true).toAabbs();
+            e.shapeWitness=blocker;e.shapeGeneration=gen;e.shapeVersion=version;e.proofKnown=0;
+        }
+        if(!eye.equals(e.proofEye)||!bounds.equals(e.proofBounds)){
+            e.proofEye=eye;e.proofBounds=bounds;e.proofKnown=0;
+        }
+        if((e.proofKnown&mode)!=0)return (e.proofResult&mode)!=0;
+        e.proofKnown|=mode;e.proofResult&=~mode;
+        var boxes=any?e.anyBoxes:e.opaqueBoxes;
+        if(boxes.size()>16)return false;
+        double x=blocker.getX(),y=blocker.getY(),z=blocker.getZ();
+        for(var box:boxes)if(BlockShadow.covers(box.minX,box.minY,box.minZ,box.maxX,box.maxY,box.maxZ,
+            bounds.minX-x,bounds.minY-y,bounds.minZ-z,bounds.maxX-x,bounds.maxY-y,bounds.maxZ-z,eye.x-x,eye.y-y,eye.z-z)){e.proofResult|=mode;return true;}
+        return false;
     }
     /** Called once at LevelRenderer entry, after the camera has been positioned. */
     public static void process(Vec3 eye) {
@@ -233,6 +306,6 @@ public final class VisibilityPool {
         Entry e=TABLE.get(new Key((int)Math.floor(p.x*8),(int)Math.floor(p.y*8),(int)Math.floor(p.z*8),true));
         return e==null?"Pool: not requested": "Pool: opaque="+((e.knownMask&1)!=0?(e.result&1)!=0:"unknown")
             +" | any="+((e.knownMask&2)!=0?(e.result&2)!=0:"unknown")+" | queued="+e.queued
-            +" | sample age="+(e.known?Slopium.frame()-e.sampled:"never")+" frames";
+            +" | sample age="+(e.known?Slopium.frame()-e.sampled:"never")+" frames | blocker="+e.witness+" | witness shapes="+e.anyBoxes.size();
     }
 }

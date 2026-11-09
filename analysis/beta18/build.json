@@ -1,0 +1,20 @@
+{
+  "jar": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-18.jar",
+  "bytes": 30960104,
+  "sha256": "b84c0c3010fd0edd906f4303bd94efcd951f69059f5494649d7663a9ac0ecf33",
+  "tests": 69,
+  "failures": 0,
+  "errors": 0,
+  "passedLogs": [
+    "build/beta18-smoke4.log",
+    "build/beta18-final-smoke.log",
+    "build/beta18-release-build.log"
+  ],
+  "revealFixture": {
+    "previouslyHidden": 6000,
+    "revealCpuMs": 3.9808,
+    "steadyHideQueueCpuMs": 0.3287758333333333,
+    "newWorldRays": 0,
+    "revealedFrames": 1
+  }
+}

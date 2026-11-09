@@ -21,6 +21,9 @@ final class SmokeCullingQueueChecks {
         protected Visual createRaw(VisualizationContext context,Object object,float partial) { return latest=new Plain(); }
     }
     static void lifecycle() throws ReflectiveOperationException {
+        var c=SlopiumConfig.get();boolean enabled=c.enabled,occlude=c.occludeFlywheel;
+        c.enabled=c.occludeFlywheel=true;
+        try {
         var storage=new TestStorage();var index=((CullingStorage)(Object)storage).slopium$cullingIndex();
         var object=new Object();
         storage.add(null,object,0);pump(index,8);
@@ -34,7 +37,11 @@ final class SmokeCullingQueueChecks {
         if(index.tracked()!=0||!storage.latest.deleted)throw new AssertionError("Remove lifecycle lost");
         storage.add(null,object,0);pump(index,8);storage.invalidate();pump(index,8);
         if(index.tracked()!=0)throw new AssertionError("Storage invalidate retained entries");
-        com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: real Storage add/duplicate/recreate/remove/invalidate lifecycle passed");
+        c.enabled=false;
+        storage.add(null,new Object(),0);pump(index,8);
+        if(index.tracked()!=0)throw new AssertionError("Disabled master still indexes visuals");
+        com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: real Storage add/duplicate/recreate/remove/invalidate lifecycle and disabled bypass passed");
+        } finally {c.enabled=enabled;c.occludeFlywheel=occlude;}
     }
     static void pump(FlywheelCullingIndex index,int count) throws ReflectiveOperationException {
         var frame=Slopium.class.getDeclaredField("frame");frame.setAccessible(true);
@@ -67,6 +74,18 @@ final class SmokeCullingQueueChecks {
             level.wall=net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();WallOcclusion.invalidate();
             pump(index,120);
             if(index.altered()==0)throw new AssertionError("Budgeted queue never hid a mechanism");
+            int hiddenBefore=index.altered();
+            if(hiddenBefore<=512)throw new AssertionError("Reveal stress fixture did not exceed the slow queue capacity");
+            level.wall=net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();WallOcclusion.invalidate();
+            var processed=VisibilityPool.class.getDeclaredField("processed");processed.setAccessible(true);
+            processed.setLong(null,Slopium.frame()+1);
+            long revealStarted=System.nanoTime(),rays=SlopiumStats.visibilityRays;
+            pump(index,1);long revealNs=System.nanoTime()-revealStarted;
+            if(index.altered()!=0||SlopiumStats.visibilityRays!=rays)throw new AssertionError("Bulk reveal waited for traces or the bounded hide queue");
+            var result=java.util.Map.of("previouslyHidden",hiddenBefore,"revealedFrames",1,"revealCpuMs",revealNs/1e6,"newWorldRays",SlopiumStats.visibilityRays-rays,"steadyHideQueueCpuMs",elapsed/120.0/1e6);
+            try{java.nio.file.Files.writeString(java.nio.file.Path.of("slopium-reveal-benchmark.json"),new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(result));}
+            catch(java.io.IOException e){throw new java.io.UncheckedIOException(e);}
+            com.mojang.logging.LogUtils.getLogger().info("SLOPIUM_SMOKE: BULK ONE-FRAME reveal: {} hidden visuals, {} ms, zero new world rays",hiddenBefore,revealNs/1e6);
             c.enabled=false;pump(index,120);
             if(index.altered()!=0||index.restoring())throw new AssertionError("Global off did not drain restoration queue");
             level.wall=oldWall;WallOcclusion.invalidate();

@@ -84,13 +84,14 @@ public final class SlopiumSmoke {
             SmokeBreakingChecks.run();
             SmokeExperimentChecks.run();
             SmokeBudgetChecks.run();
+            if(Slopium.loaded("create"))SmokeCleanColorChecks.run();
             SmokeRadicalChecks.run();
             SmokeTargetedChecks.run();
             SmokeWallChecks.run();
             SmokeParticleOcclusionChecks.run();
             SmokeOptionsChecks.run();
             SmokeFrameGenerationChecks.run();
-            SmokeFrameLifecycleChecks.run();
+            if(!Boolean.getBoolean("slopium.optimizationSmoke"))SmokeFrameLifecycleChecks.run();
             if (Slopium.loaded("sodiumdynamiclights")) {
                 Object lights = Class.forName("toni.sodiumdynamiclights.SodiumDynamicLights").getMethod("get").invoke(null);
                 if (!(lights instanceof LightIndexControl)) throw new AssertionError("Light mixin missing");

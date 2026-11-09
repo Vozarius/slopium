@@ -1,0 +1,32 @@
+{
+  "jar": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\build\\libs\\slopium-neoforge-1.21.1-beta-17.jar",
+  "bytes": 30956512,
+  "sha256": "e84573b1a73805d9689761452193d112cf26fd6e829b055ac7100b95a1787d42",
+  "unitTests": 63,
+  "failures": 0,
+  "errors": 0,
+  "cleanColorCpuMedianMs": {
+    "False": 1.4846,
+    "True": 0.56715
+  },
+  "benchmarkScope": "8192 synthetic Create rotating instances, 100 unchanged-tint updates; no world FPS claim",
+  "removedMixins": [
+    "EntityShadowCutMixin",
+    "RotatingInstancePauseMixin",
+    "RotatingWriterPauseMixin",
+    "ScrollInstancePauseMixin",
+    "ScrollWriterPauseMixin"
+  ],
+  "reportSchema": 3,
+  "zgcReport": "D:\\Minecraft files\\Zuboglaziki\\_test\\slopium\\run\\smoke-legacy\\slopium-reports\\performance-20261109-203433-795115ba\\report.json",
+  "passedLogs": [
+    "build/beta17-final-ui.log",
+    "build/beta17-full-world.log",
+    "build/beta17-zgc-analysis.log",
+    "build/beta17-base-smoke.log"
+  ],
+  "notPassedTimingTest": {
+    "log": "build/beta17-legacy-smoke4.log",
+    "test": "No adaptive synthesis in FSR (SmokeFrameLifecycleChecks)"
+  }
+}

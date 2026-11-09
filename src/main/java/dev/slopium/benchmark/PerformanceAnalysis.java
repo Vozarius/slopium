@@ -163,7 +163,8 @@ public final class PerformanceAnalysis {
         var warnings=new ArrayList<String>();
         if(terrainBusy)warnings.add(String.format(Locale.ROOT,"Terrain busy in %.1f%% of checks; compare with adjacent controls",quality.terrainPercent()));
         if(!warmedQuiet)warnings.add("No quiet terrain interval before measurement; ongoing workload");
-        if(quality.gcMillis()>metrics.seconds()*100)warnings.add("GC occupied over 10% of measurement");
+        if(quality.collectors().values().stream().anyMatch(gc->gc.kind()==AnalysisRuntime.GcKind.UNKNOWN))warnings.add("Unclassified GC counters are reported separately; pause time may be incomplete");
+        if(quality.gcMillis()>metrics.seconds()*100)warnings.add("GC pauses occupied over 10% of measurement");
         if(chunkChanges>0)warnings.add("Chunks loaded/unloaded during measurement: "+chunkChanges);
         if(metrics.sourceFrames()<30)warnings.add("Fewer than 30 real frames");
         if(metrics.withinRunDriftPercent()>15)warnings.add("Real FPS drifted over 15% within this measurement");
@@ -193,7 +194,7 @@ public final class PerformanceAnalysis {
     }
     private void write(String state){
         // Freeze on the render thread; serialize and perform filesystem I/O away from timed rendering.
-        var copy=List.copyOf(rows);var root=new JsonObject();root.addProperty("schema",2);root.addProperty("state",state);
+        var copy=List.copyOf(rows);var root=new JsonObject();root.addProperty("schema",3);root.addProperty("state",state);
         root.addProperty("plannedTrials",trials.size());root.addProperty("warmupSeconds",warmup/1e9);root.addProperty("measurementSeconds",measurement/1e9);
         root.add("originalSettings",original);root.add("referenceSettings",BenchmarkPlan.reference(original));root.add("environment",environment);
         root.addProperty("method","A-B-B-A: two adjacent variant measurements bracketed by immediate controls; no skipping invalid controls. Frame times measured without an analyzer-started Spark recording; existing server/background samplers are not controlled. Optional separate 10 ms Java Spark diagnostics, all threads, no uploads. Foreground behavior forced during entire run. Only light-source changes rebuild terrain.");

@@ -97,20 +97,9 @@ final class SmokeBudgetChecks {
                 renderBe.invoke(null, null, null, null, 0f, null, 1000d, 1000d, 1000d, mc.getBlockEntityRenderDispatcher(), be, null, null);
                 if (SlopiumStats.blockEntityDrawsSkipped != before + 1) throw new AssertionError("Sodium radius entry not cut");
             }
-            var shadow = Arrays.stream(net.minecraft.client.renderer.entity.EntityRenderDispatcher.class.getDeclaredMethods())
-                .filter(m -> m.getName().equals("renderShadow")).findFirst().orElseThrow();
-            shadow.setAccessible(true);
-            Object[] shadowArgs = new Object[shadow.getParameterCount()];
-            for (int i = 0; i < shadowArgs.length; i++) {
-                var type = shadow.getParameterTypes()[i];
-                if (type == float.class) shadowArgs[i] = 0f;
-                if (type == double.class) shadowArgs[i] = 0d;
-                if (type == int.class) shadowArgs[i] = 0;
-            }
-            c.disableEntityShadows = true;
-            before = SlopiumStats.shadowsSkipped;
-            shadow.invoke(null, shadowArgs);
-            if (SlopiumStats.shadowsSkipped != before + 1) throw new AssertionError("Shadow entry not cut");
+            // The duplicate Slopium shadow option/hook was removed; vanilla owns this setting.
+            if(java.util.Arrays.stream(net.minecraft.client.renderer.entity.EntityRenderDispatcher.class.getDeclaredMethods())
+                .anyMatch(m->m.getName().contains("slopium$")))throw new AssertionError("Duplicate shadow mixin remains");
             if (Slopium.loaded("xaeroworldmap")) {
                 var type = Class.forName("xaero.map.graphics.TextureUploader");
                 var guard = Arrays.stream(type.getDeclaredMethods()).filter(m -> m.getName().endsWith("slopium$measurementFinished")).findFirst().orElseThrow();

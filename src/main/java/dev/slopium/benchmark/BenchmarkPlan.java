@@ -6,7 +6,7 @@ import java.util.*;
 /** Deterministic, bounded screening, not an exhaustive Cartesian product. */
 public final class BenchmarkPlan {
     public record Trial(String id, String category, JsonObject settings, boolean control) {}
-    private static final Set<String> EXCLUDED = Set.of("enabled", "diagnostics", "throttleFlywheelDistance",
+    private static final Set<String> EXCLUDED = Set.of("enabled", "diagnostics", "throttleFlywheelDistance", "disableEntityShadows", "cullBreakingOverlays",
         "opaqueGlassParticles", "createRenderAnyBlock", "flywheelAnyBlock", "animationAnyBlock", "tickAnyBlock", "sectionsAnyBlock");
     private static final Map<String,String> PARENTS = Map.of(
         "visibleSections", "gpuGlassCulling", "lightQueryCache", "indexedLighting");
@@ -42,7 +42,7 @@ public final class BenchmarkPlan {
         }
         addGroup(variants,base,"particles",List.of("cacheParticleLight","particleRange","occludeParticles","particleBudget"));
         addGroup(variants,base,"create",List.of("occludeCreateRendering","occludeFlywheel","occludeCreateAnimations","throttleCreateVisuals","factoryItemRange","factoryBulbRange","factoryConnectionRange"));
-        addGroup(variants,base,"items",List.of("itemStackLod","itemImpostors","limitItemRendering","disableEntityShadows"));
+        addGroup(variants,base,"items",List.of("itemStackLod","itemImpostors","limitItemRendering"));
         addGroup(variants,base,"combined",List.of("cacheParticleLight","particleRange","occludeParticles","particleBudget","occludeCreateRendering","occludeFlywheel","occludeCreateAnimations","throttleCreateVisuals","factoryItemRange","factoryBulbRange","factoryConnectionRange","itemStackLod","itemImpostors","limitItemRendering"));
         for(String mode:List.of("SIMPLE","FSR"))for(boolean parallel:new boolean[]{false,true}) {
             var c=base.deepCopy();c.addProperty("frameGenerationMode",mode);c.addProperty("frameGenerationParallel",parallel);
